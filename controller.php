@@ -90,6 +90,11 @@ abstract class controller
 			return new session( $this->registry->get('db'));
 		}
 	}
+	
+	public function load_locale( $l )
+	{
+		include SITE_PATH . DIRSEP . "languages" . DIRSEP . LOCALE . DIRSEP . $l . ".php";
+	}
 
 	/**
 	 * All controllers need to have a default option.

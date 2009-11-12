@@ -4,13 +4,13 @@ class controller_index extends controller
 {
 	public function index( $args )
 	{
-		$view = new view;
+		$view = new view( $this->registry );
 		
-		include SITE_PATH . DIRSEP . "languages" . LOCALE . "sample.php";
+		$this->load_locale( "sample" );
 		
 		$view->set( "sample", L_SAMPLE );
 		$view->show( "sample" );
 	}
 }
 
-?>
+?>	

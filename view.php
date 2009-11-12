@@ -34,12 +34,8 @@ class view
 		return true;
 	}
 
-	public function show( $name, $bypasslanguages = 0 )
+	public function show( $name )
 	{
-		if(!$bypasslanguages = 0 )
-		{
-			include SITE_PATH . 'languages' . DIRSEP . LOCALE . '.php';
-		}
 		$path = SITE_PATH . 'views' . DIRSEP . $name . '.php';
 
 		if( file_exists( $path ) == false )
