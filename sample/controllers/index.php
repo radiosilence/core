@@ -13,4 +13,4 @@ class controller_index extends controller
 	}
 }
 
-?>	
+?>
