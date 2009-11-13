@@ -14,10 +14,10 @@ abstract class model
 	public $name;
 	public $nice_name;
 	public $primary_table;
+	public $primary_key;
 	public $id;
 	public $fields_to_save = array();
 	
-	abstract public function get_list( $string = null );
 	abstract public function default_form();
 	/**
 	 * The define function is where all we need to know about the model
@@ -37,7 +37,23 @@ abstract class model
 	 *	
 	 */
 	abstract protected function define();
-	
+
+	/**
+	 * Set overloader.
+	 */	
+	public function __set( $member, $value )
+	{
+		$this->values[ $member ] = $value;
+	}
+
+	/**
+	 * Get overloader.
+	 */	
+	public function __get( $member )
+	{
+		return $this->values[ $member ];
+	}
+
 	/**
 	 * Sets the static MODEL::$db.
 	 */
@@ -51,6 +67,7 @@ abstract class model
 	public static function create( $class, $id = 0 )
 	{		
 		if(DEBUG) FB::send( $class, "Creating" );
+
 		if( !in_array( $class, self::$loaded_classes ) )
 		{
 			if( include SITE_PATH . "models" . DIRSEP . $class . ".php" )
@@ -59,7 +76,7 @@ abstract class model
 			}
 		}
 		
-		$class = "models_" . $class;
+		$class = "model_" . $class;
 		
 		if( !self::$db )
 		{
@@ -82,7 +99,6 @@ abstract class model
 	public function save()
 	{
 		$t = $this;
-//		echo "SAVING $this->name #$this->id";
 		if(DEBUG) FB::send( $this, "Saving model" );
 		$db = self::$db;
 		
@@ -95,30 +111,56 @@ abstract class model
 		" );
 		
 		$binds = array( 
-			":id"				=> $t->id
+			":id"	=> $t->id
 		);
 		
 		$sth->execute( $binds );
-		$sth->debugDumpParams();
-		die( "not implemented " );
+
 		# If more than 0 rows, we're updating.
-		$updating = $result->num_rows > 0 ? 1 : 0;
-		die();
+		$updating = $sth->rowCount() > 0 ? 1 : 0;
 		
 		if( $updating )
 		{
 			foreach( $t->definition[ "tables" ] as $table_name => $table )
 			{
 				# Update query
-				$db->build_query()
-					->update( $table_name );
+				$sql = "UPDATE " . $table_name . " SET ";
+
+				foreach( $table as $field => $date )
+				{
+					$fields[]	= $field . " = :" . $field;
+					$binds[ ":" . $field ]	= $t->values[ $field ];
+				}
 				
+				$sql .= implode( ", ", $fields );
+				$sql .= " LIMIT 1";
+				
+				$sth = $db->prepare( $sql );
+				$sth->execute( $binds );
+						
 			}
 		}
 		else
 		{
-			# Insert query
-		}
+			foreach( $t->definition[ "tables" ] as $table_name => $table )
+			{
+				# Update query
+				$sql = "INSERT INTO " . $table_name . " VALUES ( ";
+
+				foreach( $table as $field => $date )
+				{
+					$fields[]		= ":" . $field;
+					$binds[ ":" . $field ]	= $t->values[ $field ] ? $t->values[ $field ] : "NULL";
+				}
+				
+				$sql .= implode( ", ", $fields );
+				$sql .= ")";
+				
+				$sth = $db->prepare( $sql );
+				$sth->execute( $binds );
+			}
+
+		}		
 
 	}
 	
@@ -131,7 +173,7 @@ abstract class model
 		$t = $this;
 		$db = self::$db;
 		
-		#Cycle through the fields, pulling them into a flat array $fields
+		# Cycle through the fields, pulling them into a flat array $fields
 		foreach( $t->definition[ "tables" ] as $table_name => $table )
 		{
 			foreach( $table as $field_name => $field )
@@ -151,19 +193,16 @@ abstract class model
 		}
 		
 		# Get the data for this id we're loading
-		foreach( $t->definition[ "joins" ] as $join )
+		if( is_array( $joins ) )
 		{
-			$b = explode( ".", $join[ 1 ] );
-			$joins .= "LEFT JOIN " . $b[ 0 ] . "
-				ON " . $join[ 0 ] . " = " . $join[ 1 ] . "\n";
+			foreach( $t->definition[ "joins" ] as $join )
+			{
+				$b = explode( ".", $join[ 1 ] );
+				$joins .= "LEFT JOIN " . $b[ 0 ] . "
+					ON " . $join[ 0 ] . " = " . $join[ 1 ] . "\n";
+			}
 		}
 		
-		/*$query = "
-			SELECT 	" . implode( ", ", $fields ) . "
-			FROM	" . $t->primary_table . "
-			" . $joins . "
-			WHERE " . $t->primary_key . " = :id
-		";*/
 		$sql = "
 			SELECT 	" . implode( ", ", $fields ) . "
 			FROM	" . $t->primary_table . "
@@ -178,6 +217,7 @@ abstract class model
 		$sth->execute( $binds );
 		$t->values = $sth->fetch();
 		$t->id = $id;
+
 	}
 	
 	public function set_fields_to_save( $input )
