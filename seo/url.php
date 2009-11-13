@@ -5,9 +5,9 @@ class seo_url
 	{
 		$t = $page[ "title" ];
 		$i = $page[ "id" ];
-		$this->url = sprintf( "%d/%s.html", $i, $this->processString( $t ) );
+		$this->url = sprintf( "%d/%s.html", $i, $this->process_string( $t ) );
 	}
-	private function processString( $string )
+	private function process_string( $string )
 	{
 		$a = array( 
 			" ", "?", "!", "&", "_", ":", "#",

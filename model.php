@@ -86,10 +86,12 @@ abstract class model
 		else
 		{
 			$model = new $class( self::$sdb );
+	
 			if( $id )
 			{
 				$model->load( $id );
 			}
+			
 			return $model;
 		}	
 	}
@@ -211,11 +213,12 @@ abstract class model
 			WHERE " . $t->primary_key . " = :id
 		";
 		$binds = array(
-			":id"			=> $id
+			":id"	=> $id
 		);
-		
 		$sth = $db->prepare( $sql ) or print_r( $db->errorInfo() );
 		$sth->execute( $binds );
+		$sth->debugDumpParams();
+		print_r( $t->values );
 		$t->values = $sth->fetch();
 		$t->id = $id;
 
