@@ -1,7 +1,5 @@
-config/*
-!config/*.sample.php
 .settings/*
 .project
 .cache/*
 .buildpath*
-*.sublime-projec
+*.sublime-project
