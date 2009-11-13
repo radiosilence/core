@@ -17,7 +17,7 @@ abstract class model
 	public $primary_key;
 	public $id;
 	public $fields_to_save = array();
-	
+	public $db;
 	abstract public function default_form();
 	/**
 	 * The define function is where all we need to know about the model
@@ -239,6 +239,14 @@ abstract class model
 				$this->fields_to_save[] = $input;
 			}
 		}
+	}
+	
+	/**
+	 * Get the sql for a model.
+	 */
+	public function schema()
+	{
+		
 	}
 	
 	/* Table definitions */
