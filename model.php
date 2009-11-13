@@ -5,7 +5,7 @@
 abstract class model
 {
 	# Database
-	private static $db;
+	private static $sdb;
 	# Array of loaded classes (to avoid double-include)
 	private static $loaded_classes = array();
 	
@@ -18,6 +18,7 @@ abstract class model
 	public $id;
 	public $fields_to_save = array();
 	public $db;
+	
 	abstract public function default_form();
 	/**
 	 * The define function is where all we need to know about the model
@@ -55,11 +56,11 @@ abstract class model
 	}
 
 	/**
-	 * Sets the static MODEL::$db.
+	 * Sets the static MODEL::$sdb.
 	 */
 	public static function set_db( $db )
 	{
-		self::$db = $db;
+		self::$sdb = $db;
 	}
 	/**
 	 * Spawn an instance of a model.
@@ -78,13 +79,13 @@ abstract class model
 		
 		$class = "model_" . $class;
 		
-		if( !self::$db )
+		if( !self::$sdb )
 		{
 			if(DEBUG) FB::warn( "MODEL::\$db is not set." );	
 		}
 		else
 		{
-			$model = new $class( self::$db );
+			$model = new $class( self::$sdb );
 			if( $id )
 			{
 				$model->load( $id );
@@ -100,7 +101,7 @@ abstract class model
 	{
 		$t = $this;
 		if(DEBUG) FB::send( $this, "Saving model" );
-		$db = self::$db;
+		$db = self::$sdb;
 		
 		# Check to see if id exists..
 		$sth = $db->prepare( "
@@ -171,7 +172,7 @@ abstract class model
 	{
 		# Shortcuts
 		$t = $this;
-		$db = self::$db;
+		$db = self::$sdb;
 		
 		# Cycle through the fields, pulling them into a flat array $fields
 		foreach( $t->definition[ "tables" ] as $table_name => $table )
