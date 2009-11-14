@@ -7,37 +7,36 @@
  */
 class registry
 {
-	private $vars = array(
-	);
+	private static $vars = array();
 
-	public function set( $key, $var )
+	public static function set( $key, $var )
 	{
-		if( isset( $this->vars[ $key ] ) == true )
+		if( isset( self::$vars[ $key ] ) == true )
 		{
 			throw new Exception( 'Unable to set var `' . $key . '`. Already set.' );
 		}
-		$this->vars[ $key ] = $var;
+		self::$vars[ $key ] = $var;
 		return true;
 	}
 
-	public function get( $key )
+	public static function get( $key )
 	{
-		if( isset( $this->vars[ $key ] ) == false )
+		if( isset( self::$vars[ $key ] ) == false )
 		{
 			return false;
 		}
-		return $this->vars[ $key ];
+		return self::$vars[ $key ];
 	}
 
-	public function remove( $var )
+	public static function remove( $var )
 	{
-		unset( $this->vars[ $key ] );
+		unset( self::$vars[ $key ] );
 	}
 
-	public function spill()
+	public static function spill()
 	{
 		echo "<pre>";
-		print_r( $this->vars );
+		print_r( self::$vars );
 		echo "</pre>";
 	}
 }

@@ -9,17 +9,6 @@
 abstract class controller
 {
 	/**
-	 * Registry object.
-	 * @var registry
-	 */
-	protected $registry;
-
-	public function __construct( $registry )
-	{
-		$this->registry = $registry;
-	}
-
-	/**
 	 * Gets the database config, returns
 	 * a new database.
 	 * @return database database object
@@ -32,27 +21,30 @@ abstract class controller
 		}
 		extract( $args );
 		$type 			= $type ? $type : "pdo";
-		$name 			= $name ? $name : null;
+		$name 			= $name ? $name : "db";
 		$config_file 	= $config_file ? $config_file : "database";
-		if( !$config_db )
-		{
-			$conf_path =  CONFIG_PATH . DIRSEP . $config_file . ".php";
-			if( file_exists( $conf_path ))
-			{
-				include $conf_path;
-			}
-			else
-			{
-				die( "Database requested but no database config available." );
-			}
-		}
 		
-		if( $args[ "name" ] && $this->registry->get( $name ) )
+		
+		if( $args[ "name" ] && REGISTRY::get( $name ) )
 		{
-			return $this->registry->get( $name );
+			return REGISTRY::get( $name );
 		}
 		else
-		{
+		{				
+			if( !$config_db )
+			{
+				$conf_path =  CONFIG_PATH . DIRSEP . $config_file . ".php";
+		
+				if( file_exists( $conf_path ))
+				{
+					include $conf_path;
+				}
+				else
+				{
+					die( "Database requested but no database config available." );
+				}
+			}
+		
 			if( $type == "pdo" && class_exists( "PDO" ) )
 			{
 				$pdo_driver = $args[ "pdo_driver" ] ? $args[ "pdo_driver" ] : "mysql";
@@ -68,10 +60,9 @@ abstract class controller
 					, $config_db[ "database" ]
 				);
 			}
-			if( $args[ "name" ] )
-			{
-				$this->registry->set( $name, $database );				
-			}
+
+			REGISTRY::set( $name, $database );				
+	
 			return $database;
 		}
 	}
