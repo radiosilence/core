@@ -62,39 +62,6 @@ abstract class model
 	{
 		self::$sdb = $db;
 	}
-	/**
-	 * Spawn an instance of a model.
-	 */
-	public static function create( $class, $id = 0 )
-	{		
-		if(DEBUG) FB::send( $class, "Creating" );
-
-		if( !in_array( $class, self::$loaded_classes ) )
-		{
-			if( include SITE_PATH . "models" . DIRSEP . $class . ".php" )
-			{
-				self::$loaded_classes[] = $class;
-			}
-		}
-		
-		$class = "model_" . $class;
-		
-		if( !self::$sdb )
-		{
-			if(DEBUG) FB::warn( "MODEL::\$db is not set." );	
-		}
-		else
-		{
-			$model = new $class( self::$sdb );
-	
-			if( $id )
-			{
-				$model->load( $id );
-			}
-			
-			return $model;
-		}	
-	}
 	
 	/**
 	 * Function to save the model to the db.
@@ -174,8 +141,7 @@ abstract class model
 	{
 		# Shortcuts
 		$t = $this;
-		$db = self::$sdb;
-		
+		$db = $this->db;
 		# Cycle through the fields, pulling them into a flat array $fields
 		foreach( $t->definition[ "tables" ] as $table_name => $table )
 		{
@@ -185,13 +151,13 @@ abstract class model
 				# is part of the primary table.
 				$fields[] = $table_name
 					. "." . $field_name
-					. " as '"
+					. " as "
 					. (
 						$table_name != $t->primary_table ?
 						$table_name . "." :
 						null
 					)
-					. $field_name . "'";
+					. $field_name . "";
 			}
 		}
 		
@@ -211,17 +177,16 @@ abstract class model
 			FROM	" . $t->primary_table . "
 			" . $joins . "
 			WHERE " . $t->primary_key . " = :id
+			LIMIT 1
 		";
+
 		$binds = array(
 			":id"	=> $id
 		);
-		$sth = $db->prepare( $sql ) or print_r( $db->errorInfo() );
+		$sth = $db->prepare( $sql );
 		$sth->execute( $binds );
-		$sth->debugDumpParams();
-		print_r( $t->values );
-		$t->values = $sth->fetch();
+		$t->values = $sth->fetch( PDO::FETCH_ASSOC );
 		$t->id = $id;
-
 	}
 	
 	public function set_fields_to_save( $input )
