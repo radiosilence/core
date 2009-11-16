@@ -11,14 +11,15 @@ abstract class model
 	
 	public $definition;
 	public $values;
-	public $name;
+	public $model_name;
 	public $nice_name;
 	public $primary_table;
 	public $primary_key;
 	public $id;
 	public $fields_to_save = array();
 	public $db;
-	
+
+	abstract public function __construct();	
 	abstract public function default_form();
 	/**
 	 * The define function is where all we need to know about the model
@@ -172,21 +173,21 @@ abstract class model
 			}
 		}
 		
-		$sql = "
+		$binds = array(
+			":id"	=> $id
+		);
+		
+		$sth = $db->prepare( "
 			SELECT 	" . implode( ", ", $fields ) . "
 			FROM	" . $t->primary_table . "
 			" . $joins . "
 			WHERE " . $t->primary_key . " = :id
 			LIMIT 1
-		";
-
-		$binds = array(
-			":id"	=> $id
-		);
-		$sth = $db->prepare( $sql );
+		" );
+		
 		$sth->execute( $binds );
-		$t->values = $sth->fetch( PDO::FETCH_ASSOC );
-		$t->id = $id;
+		$t->values 	= $sth->fetch( PDO::FETCH_ASSOC );
+		$t->id 		= $id;
 	}
 	
 	public function set_fields_to_save( $input )

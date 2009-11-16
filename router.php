@@ -10,13 +10,7 @@ class router
 {
 	private $registry;
 	private $path;
-	private $args = array(
-	);
-
-	public function __construct( $registry )
-	{
-		$this->registry = $registry;
-	}
+	private $args = array();
 
 	public function set_path( $path )
 	{

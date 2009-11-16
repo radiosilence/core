@@ -78,7 +78,7 @@ abstract class controller
 		}
 		else
 		{
-			return new session( $this->registry->get('db'));
+			return new session( REGISTRY::get('db'));
 		}
 	}
 	

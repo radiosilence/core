@@ -50,12 +50,9 @@ function __autoload( $class_name )
 
 }
 
-# System happening
-$registry = new registry;
-
 # Load router
-$router = new router( $registry );
-$registry->set( 'router', $router );
+$router = new router();
+REGISTRY::set( 'router', $router );
 $router->set_path( SITE_PATH . 'controllers' );
 $router->delegate();
 ?>

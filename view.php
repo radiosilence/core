@@ -8,14 +8,8 @@
 class view
 {
 	private $registry;
-	private $vars = array( 
-	);
-
-	public function __construct( $registry )
-	{
-		$this->registry = $registry;
-	}
-
+	private $vars = array();
+	
 	public function set( $varname, $value, $overwrite = false )
 	{
 		if( isset( $this->vars[ $varname ] ) == true and $overwrite == false )
