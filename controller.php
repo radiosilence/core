@@ -20,8 +20,8 @@ abstract class controller
 			die( "Arguments to controller::database must be passed as array." );
 		}
 		extract( $args );
-		$type 			= $type ? $type : "pdo";
-		$name 			= $name ? $name : "db";
+		$type 		= $type ? $type : "pdo";
+		$name 		= $name ? $name : "db";
 		$config_file 	= $config_file ? $config_file : "database";
 		
 		
