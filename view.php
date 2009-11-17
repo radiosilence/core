@@ -15,7 +15,7 @@ class view
 		if( isset( $this->vars[ $varname ] ) == true and $overwrite == false )
 		{
 			trigger_error( 'Unable to set var `' . $varname . '`. Already set, and overwrite not allowed.', 
-					E_USER_NOTICE );
+				E_USER_NOTICE );
 			return false;
 		}
 		$this->vars[ $varname ] = $value;

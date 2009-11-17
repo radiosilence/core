@@ -36,6 +36,7 @@ function __autoload( $class_name )
 	{
 		$class_path = CORE_PATH;
 	}
+	
 	$filename = str_replace( "_", DIRSEP, strtolower( $class_name ) ) . '.php';
 	
 	if( file_exists( $class_path . DIRSEP . $filename ))
