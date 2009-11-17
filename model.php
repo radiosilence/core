@@ -263,6 +263,7 @@ abstract class model
 	
 	/**
 	 * A one to one link on a key. Key will be the same as present table's.
+	 * Kind of stupid for new systems, designed to work with existing schema.
 	 */
 	protected function link_key( $field )
 	{
