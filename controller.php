@@ -22,9 +22,9 @@ abstract class controller
 		
 		extract( $args );
 		
-		$type 		= $type ? $type : "pdo";
-		$name 		= $name ? $name : "db";
-		$config_file 	= $config_file ? $config_file : "database";
+		$type 		= $type 	? $type 	: "pdo";
+		$name 		= $name 	? $name 	: "db";
+		$config_file 	= $config_file 	? $config_file 	: "database";
 		
 		if( $args[ "name" ] && REGISTRY::get( $name ) )
 		{
@@ -55,10 +55,10 @@ abstract class controller
 			else
 			{	
 				$class = "db_" . $type;	
-				$database = new $class( $config_db[ "hostname" ]
-					, $config_db[ "username" ]
-					, $config_db[ "password" ]
-					, $config_db[ "database" ]
+				$database = new $class( $config_db[ "hostname" ],
+					$config_db[ "username" ],
+					$config_db[ "password" ],
+					$config_db[ "database" ]
 				);
 			}
 
