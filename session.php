@@ -55,8 +55,8 @@ class session
 		$this->keyphrase 	= $config_auth[ 'keyphrase' ];
 		$this->base_salt 	= $config_auth[ 'base_salt' ];
 		$this->db 		= $db;
-		$sid 			= $_COOKIE['sid'];
-		$tok			= $_COOKIE['tok'];
+		$sid 			= $_COOKIE[ "sid" ];
+		$tok			= $_COOKIE[ "tok" ];
 
 		if( isset( $_COOKIE[ "sid" ]) && isset( $_COOKIE[ "tok" ] ) )
 		{
@@ -72,7 +72,11 @@ class session
 				LIMIT	1"
 			);
 				
-			$e = $sth->execute( array( ":sid" => $sid, ":tok" => $tok, ":ipv4" => $_SERVER[ "REMOTE_ADDR" ] ));
+			$e = $sth->execute( array(
+				":sid" 	=> $sid,
+				":tok" 	=> $tok,
+				":ipv4" => $_SERVER[ "REMOTE_ADDR" ] )
+			);
 				
 			if( $e )
 			{
@@ -84,10 +88,10 @@ class session
 					if(DEBUG) FB::send( "Challenge: ". $chall . " Real: " . $tok, "Toks" );
 
 					$this->set_session( array(
-						"sid" => $sid,
-						"data" => json_decode( $row[ "data" ], true ),
-						"tok" => $tok,
-						"user_id" => $row[ "user_id" ] )
+						"sid" 		=> $sid,
+						"data" 		=> json_decode( $row[ "data" ], true ),
+						"tok" 		=> $tok,
+						"user_id" 	=> $row[ "user_id" ] )
 					);
 				}
 
