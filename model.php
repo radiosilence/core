@@ -9,15 +9,16 @@ abstract class model
 	# Array of loaded classes (to avoid double-include)
 	private static $loaded_classes = array();
 	
-	public $definition;
-	public $values;
-	public $model_name;
-	public $nice_name;
-	public $primary_table;
-	public $primary_key;
-	public $id;
-	public $fields_to_save = array();
-	public $db;
+	private $db;
+	
+	public $_definition;
+	public $_values;
+	public $_model_name;
+	public $_nice_name;
+	public $_primary_table;
+	public $_primary_key;
+	public $_id;
+	public $_fields_to_save = array();
 
 	abstract public function __construct();	
 	abstract public function default_form();
@@ -45,7 +46,7 @@ abstract class model
 	 */	
 	public function __set( $member, $value )
 	{
-		$this->values[ $member ] = $value;
+		$this->_values[ $member ] = $value;
 	}
 
 	/**
@@ -53,7 +54,7 @@ abstract class model
 	 */	
 	public function __get( $member )
 	{
-		return $this->values[ $member ];
+		return $this->_values[ $member ];
 	}
 
 	/**
@@ -75,14 +76,14 @@ abstract class model
 		
 		# Check to see if id exists..
 		$sth = $db->prepare( "
-			SELECT 	" . $t->primary_key . "
-			FROM	" . $t->primary_table . "
-			WHERE	" . $t->primary_key . " = :id
+			SELECT 	" . $t->_primary_key . "
+			FROM	" . $t->_primary_table . "
+			WHERE	" . $t->_primary_key . " = :id
 			LIMIT	1
 		" );
 		
 		$binds = array( 
-			":id"	=> $t->id
+			":id"	=> $t->_id
 		);
 		
 		$sth->execute( $binds );
@@ -92,7 +93,7 @@ abstract class model
 		
 		if( $updating )
 		{
-			foreach( $t->definition[ "tables" ] as $table_name => $table )
+			foreach( $t->_definition[ "tables" ] as $table_name => $table )
 			{
 				# Update query
 				$sql = "UPDATE " . $table_name . " SET ";
@@ -100,7 +101,7 @@ abstract class model
 				foreach( $table as $field => $date )
 				{
 					$fields[]	= $field . " = :" . $field;
-					$binds[ ":" . $field ]	= $t->values[ $field ];
+					$binds[ ":" . $field ]	= $t->_values[ $field ];
 				}
 				
 				$sql .= implode( ", ", $fields );
@@ -113,7 +114,7 @@ abstract class model
 		}
 		else
 		{
-			foreach( $t->definition[ "tables" ] as $table_name => $table )
+			foreach( $t->_definition[ "tables" ] as $table_name => $table )
 			{
 				# Update query
 				$sql = "INSERT INTO " . $table_name . " VALUES ( ";
@@ -121,7 +122,7 @@ abstract class model
 				foreach( $table as $field => $date )
 				{
 					$fields[]		= ":" . $field;
-					$binds[ ":" . $field ]	= $t->values[ $field ] ? $t->values[ $field ] : "NULL";
+					$binds[ ":" . $field ]	= $t->_values[ $field ] ? $t->_values[ $field ] : "NULL";
 				}
 				
 				$sql .= implode( ", ", $fields );
@@ -144,7 +145,7 @@ abstract class model
 		$t = $this;
 		$db = $this->db;
 		# Cycle through the fields, pulling them into a flat array $fields
-		foreach( $t->definition[ "tables" ] as $table_name => $table )
+		foreach( $t->_definition[ "tables" ] as $table_name => $table )
 		{
 			foreach( $table as $field_name => $field )
 			{
@@ -154,7 +155,7 @@ abstract class model
 					. "." . $field_name
 					. " as "
 					. (
-						$table_name != $t->primary_table ?
+						$table_name != $t->_primary_table ?
 						$table_name . "." :
 						null
 					)
@@ -165,7 +166,7 @@ abstract class model
 		# Get the data for this id we're loading
 		if( is_array( $joins ) )
 		{
-			foreach( $t->definition[ "joins" ] as $join )
+			foreach( $t->_definition[ "joins" ] as $join )
 			{
 				$b = explode( ".", $join[ 1 ] );
 				$joins .= "LEFT JOIN " . $b[ 0 ] . "
@@ -179,15 +180,15 @@ abstract class model
 		
 		$sth = $db->prepare( "
 			SELECT 	" . implode( ", ", $fields ) . "
-			FROM	" . $t->primary_table . "
+			FROM	" . $t->_primary_table . "
 			" . $joins . "
-			WHERE " . $t->primary_key . " = :id
+			WHERE " . $t->_primary_key . " = :id
 			LIMIT 1
 		" );
 		
 		$sth->execute( $binds );
-		$t->values 	= $sth->fetch( PDO::FETCH_ASSOC );
-		$t->id 		= $id;
+		$t->_values 	= $sth->fetch( PDO::FETCH_ASSOC );
+		$t->_id 		= $id;
 	}
 	
 	public function set_fields_to_save( $input )
@@ -202,11 +203,11 @@ abstract class model
 		else
 		{
 			$inputs = explode( ".", $input );
-			$table = count( $inputs ) == 2 ? $inputs[ 0 ] : $this->primary_table;
+			$table = count( $inputs ) == 2 ? $inputs[ 0 ] : $this->_primary_table;
 			$field = count( $inputs ) == 2 ? $inputs[ 1 ] : $inputs[ 0 ];
-			if( is_array( $this->definition[ "tables" ][ $table ][ $field ] ))
+			if( is_array( $this->_definition[ "tables" ][ $table ][ $field ] ))
 			{
-				$this->fields_to_save[] = $input;
+				$this->_fields_to_save[] = $input;
 			}
 		}
 	}
@@ -223,12 +224,12 @@ abstract class model
 	
 	protected function table( $name, $data )
 	{
-		$this->definition[ "tables" ][ $name ] = $data;
+		$this->_definition[ "tables" ][ $name ] = $data;
 	}
 	
 	protected function join( $a, $b )
 	{
-		$this->definition[ "joins" ][] = array( $a, $b );
+		$this->_definition[ "joins" ][] = array( $a, $b );
 	}
 	
 	/* Field definitions */
