@@ -54,9 +54,9 @@ class session
 
 		$this->keyphrase 	= $config_auth[ 'keyphrase' ];
 		$this->base_salt 	= $config_auth[ 'base_salt' ];
-		$this->db 			= $db;
-		$sid 				= $_COOKIE['sid'];
-		$tok				= $_COOKIE['tok'];
+		$this->db 		= $db;
+		$sid 			= $_COOKIE['sid'];
+		$tok			= $_COOKIE['tok'];
 
 		if( isset( $_COOKIE[ "sid" ]) && isset( $_COOKIE[ "tok" ] ) )
 		{
