@@ -58,7 +58,7 @@ class session
 		$sid 			= $_COOKIE[ "sid" ];
 		$tok			= $_COOKIE[ "tok" ];
 
-		if( isset( $_COOKIE[ "sid" ]) && isset( $_COOKIE[ "tok" ] ) )
+		if( isset( $_COOKIE[ "sid" ] ) && isset( $_COOKIE[ "tok" ] ) )
 		{
 			if(DEBUG) FB::log( "Attempting to load supposed session [" . $sid . "] ..." );
 
@@ -69,19 +69,19 @@ class session
 				WHERE	sid 	= :sid
 				AND	tok 	= :tok
 				AND	ipv4 	= :ipv4
-				LIMIT	1"
-			);
+				LIMIT	1
+			" );
 				
 			$e = $sth->execute( array(
 				":sid" 	=> $sid,
 				":tok" 	=> $tok,
-				":ipv4" => $_SERVER[ "REMOTE_ADDR" ] )
-			);
+				":ipv4" => $_SERVER[ "REMOTE_ADDR" ]
+			));
 				
 			if( $e )
 			{
-				$row = $sth->fetch();
-				$chall = $this->create_token( $sid );
+				$row 	= $sth->fetch();
+				$chall 	= $this->create_token( $sid );
 				# would a recreation of this from this host be the same as the real thing?
 				if( $chall == $tok )
 				{
@@ -241,7 +241,7 @@ class session
 			WHERE		sid 	= :sid
 			AND		ipv4 	= :ipv4
 			AND		tok 	= :tok
-		");
+		" );
 		
 		$sth->execute( array(
 			":sid"	=> $this->session,
