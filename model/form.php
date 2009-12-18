@@ -157,7 +157,7 @@ class model_form
 					}
 					else
 					{
-						$foreign = MODEL::create( $field[ "foreign_key" ] );
+						$foreign = new model_{ $field[ "foreign_key" ] };
 						$this->c_field[ "choices" ] = $foreign->get_list();
 						return $this->select_field();
 					}
