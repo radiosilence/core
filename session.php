@@ -213,7 +213,7 @@ class session
 		$res = $sth2->execute( array(
 			":sid" 		=> $sid,
 			":tok"		=> $tok,
-			":ipv4"		=> $_SERVER[ "REMOTE_ADDR" ],
+			":ipv4"		=> @getenv( "HTTP_X_FORWARDED_FOR" ),
 			":user_id"	=> $user_id 
 		));
 		
@@ -245,7 +245,7 @@ class session
 		
 		$sth->execute( array(
 			":sid"	=> $this->session,
-			":ipv4"	=> $_SERVER[ "REMOTE_ADDR" ]
+			":ipv4"	=> @getenv( "HTTP_X_FORWARDED_FOR" )
 		));
 		
 		setcookie( "sid", "DEAD", time()-1, WWW_PATH . "/", null, false, true );
@@ -297,7 +297,7 @@ class session
 	private function create_token( $sid )
 	{
 		# Token generation code.
-		$hash = sha1( $this->keyphrase . $_SERVER[ 'REMOTE_ADDR' ] . $sid );
+		$hash = sha1( $this->keyphrase . @getenv( "HTTP_X_FORWARDED_FOR" ) . $sid );
 		return $hash;
 	}
 
@@ -307,7 +307,7 @@ class session
 	 */
 	private function create_sid()
 	{
-		return sha1( microtime() . $_SERVER[ 'REMOTE_ADDR' ]);
+		return sha1( microtime() . @getenv( "HTTP_X_FORWARDED_FOR" ) );
 	}
 }
 ?>
