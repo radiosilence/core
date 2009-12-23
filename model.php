@@ -4,34 +4,76 @@
  */
 abstract class model
 {
-	# Database
+	/**
+	 * Static database.
+	 */
 	private static $sdb;
-	# Array of loaded classes (to avoid double-include)
-	private static $loaded_classes = array();
-	
-	private $db;
-	
-	public $_definition;
-	public $_values;
-	public $_model_name;
-	public $_nice_name;
-	public $_primary_table;
-	public $_primary_key;
-	public $_id;
-	public $_fields_to_save = array();
 
+	/**
+	 * Model's database.
+	 */
+	private $db;
+		
+	/**
+	 * ID Of model currently being worked with.
+	 */
+	private	$_id;
+	
+	/**
+	 * Fields we're saving.
+	 */
+	private $_fields_to_save = array();
+	
+	/**
+	 * Where model metadata is stored.
+	 */
+	public 	$_definition;
+	
+	/**
+	 * Simple, flat array of fields and values.
+	 */
+	public 	$_values;
+	
+	/**
+	 * Name of the model.
+	 */
+	public 	$_model_name;
+	
+	/**
+	 * Capitalised or otherwise "nice" name for the model.
+	 */
+	public 	$_nice_name;
+	
+	/**
+	 * Model's primary table.
+	 */
+	public 	$_primary_table;
+	
+	/**
+	 * The primary key for the model.
+	 */
+	public 	$_primary_key;
+
+	/**
+	 * All models must have a constructor.
+	 */
 	abstract public function __construct();	
+	
+	/**
+	 * Default form layout as an array.
+	 */
 	abstract public function default_form();
+	
 	/**
 	 * The define function is where all we need to know about the model
 	 * is defined. This is like metadata and allows the model class to
 	 * seamlessly interact with the database and "know" the model.
 	 * Things that are pretty much necessary include:
-	 *	* name - the model's name
-	 *	* nice_name - a nice version (capitalised, etc) of name
-	 * 	* primary_table - the main table that the model is based
+	 *	* _model_name - the model's name
+	 *	* _nice_name - a nice version (capitalised, etc) of name
+	 * 	* _primary_table - the main table that the model is based
 	 *		around
-	 *	* primary_key - The field that holds the primary key.
+	 *	* _primary_key - The field that holds the primary key.
 	 *
 	 * Because the system is designed for working with existing schema,
 	 * models have to be defined on a table by table basis. This although
@@ -100,7 +142,7 @@ abstract class model
 
 				foreach( $table as $field => $date )
 				{
-					$fields[]	= $field . " = :" . $field;
+					$fields[]		= $field . " = :" . $field;
 					$binds[ ":" . $field ]	= $t->_values[ $field ];
 				}
 				
@@ -168,7 +210,7 @@ abstract class model
 		{
 			foreach( $t->_definition[ "joins" ] as $join )
 			{
-				$b = explode( ".", $join[ 1 ] );
+				$b 	= explode( ".", $join[ 1 ] );
 				$joins .= "LEFT JOIN " . $b[ 0 ] . "
 					ON " . $join[ 0 ] . " = " . $join[ 1 ] . "\n";
 			}
@@ -179,16 +221,16 @@ abstract class model
 		);
 		
 		$sth = $db->prepare( "
-			SELECT 	" . implode( ", ", $fields ) . "
-			FROM	" . $t->_primary_table . "
-			" . $joins . "
-			WHERE " . $t->_primary_key . " = :id
+			SELECT 	" 	. implode( ", ", $fields ) . "
+			FROM	" 	. $t->_primary_table . "
+			" . $joins 	. "
+			WHERE " 	. $t->_primary_key . " = :id
 			LIMIT 1
 		" );
 		
 		$sth->execute( $binds );
 		$t->_values 	= $sth->fetch( PDO::FETCH_ASSOC );
-		$t->_id 		= $id;
+		$t->_id 	= $id;
 	}
 	
 	public function set_fields_to_save( $input )
@@ -203,8 +245,9 @@ abstract class model
 		else
 		{
 			$inputs = explode( ".", $input );
-			$table = count( $inputs ) == 2 ? $inputs[ 0 ] : $this->_primary_table;
-			$field = count( $inputs ) == 2 ? $inputs[ 1 ] : $inputs[ 0 ];
+			$table 	= count( $inputs ) == 2 ? $inputs[ 0 ] : $this->_primary_table;
+			$field 	= count( $inputs ) == 2 ? $inputs[ 1 ] : $inputs[ 0 ];
+			
 			if( is_array( $this->_definition[ "tables" ][ $table ][ $field ] ))
 			{
 				$this->_fields_to_save[] = $input;
@@ -237,26 +280,26 @@ abstract class model
 	protected function primary_key()
 	{
 		return array(
-			"type" => "int",
-			"arg" => 11,
-			"primary_key" => 1,
-			"auto_increment" => 1,
+			"type" 		=> "int",
+			"arg" 		=> 11,
+			"primary_key" 	=> 1,
+			"auto_inc" 	=> 1,
 		);
 	}
 	
 	protected function foreign_key( $title, $model, $type, $args = array() )
 	{
 		$return = array(
-			"type" => "int",
-			"title" => $title,
-			"arg" => 11,
-			"foreign_key" => $model,
-			"field_type" => $type,
+			"type" 		=> "int",
+			"title" 	=> $title,
+			"arg" 		=> 11,
+			"foreign_key" 	=> $model,
+			"field_type" 	=> $type,
 		);
 		
 		foreach( $args as $a => $v )
 		{
-			$return[ $a ] = $v;
+			$return[ $a ] 	= $v;
 		}
 		
 		return $return;
@@ -269,23 +312,23 @@ abstract class model
 	protected function link_key( $field )
 	{
 		return array(
-			"type" => "int",
-			"title" => $title,
-			"link_key" => $field,
-			"arg" => isset( $extra[ "length" ] ) ? $extra[ "length" ] : 11,
+			"type" 		=> "int",
+			"title" 	=> $title,
+			"link_key" 	=> $field,
+			"arg" 		=> isset( $extra[ "length" ] ) ? $extra[ "length" ] : 11,
 		);
 	}
 	protected function char_field( $title, $args = array() )
 	{
 		$return = array(
-			"type" => "varchar",
-			"title" => $title,
-			"arg" => isset( $extra[ "length" ] ) ? $extra[ "length" ] : 255,
+			"type" 		=> "varchar",
+			"title" 	=> $title,
+			"arg" 		=> isset( $extra[ "length" ] ) ? $extra[ "length" ] : 255,
 		);
 		
 		foreach( $args as $a => $v )
 		{
-			$return[ $a ] = $v;
+			$return[ $a ] 	= $v;
 		}
 		
 		return $return;
@@ -294,13 +337,13 @@ abstract class model
 	protected function text_field( $title, $args = array() )
 	{
 		$return = array(
-			"type" => "text",
-			"title" => $title,
+			"type" 		=> "text",
+			"title" 	=> $title,
 		);
 		
 		foreach( $args as $a => $v )
 		{
-			$return[ $a ] = $v;
+			$return[ $a ] 	= $v;
 		}
 		return $return;
 	}
@@ -308,15 +351,15 @@ abstract class model
 	protected function integer_field( $title, $args = array() )
 	{
 		$return = array(
-			"type" => "int",
-			"title" => $title,
-			"val_class" => "numeric",
-			"arg" => isset( $args[ "length" ] ) ? $args[ "length" ] : 11,
+			"type" 		=> "int",
+			"title" 	=> $title,
+			"val_class" 	=> "numeric",
+			"arg" 		=> isset( $args[ "length" ] ) ? $args[ "length" ] : 11,
 		);
 		
 		foreach( $args as $a => $v )
 		{
-			$return[ $a ] = $v;
+			$return[ $a ] 	= $v;
 		}
 		
 		return $return;		
@@ -325,14 +368,14 @@ abstract class model
 	protected function tinyinteger_field( $title, $args = array() )
 	{
 		$return = array(
-			"type" => "tinyint",
-			"title" => $title,
-			"arg" => isset( $args[ "length" ] ) ? $args[ "length" ] : 4,
+			"type" 		=> "tinyint",
+			"title" 	=> $title,
+			"arg" 		=> isset( $args[ "length" ] ) ? $args[ "length" ] : 4,
 		);
 		
 		foreach( $args as $a => $v )
 		{
-			$return[ $a ] = $v;
+			$return[ $a ] 	= $v;
 		}
 		
 		return $return;	
@@ -342,14 +385,14 @@ abstract class model
 	protected function smallinteger_field( $title, $args = array() )
 	{
 		$return = array(
-			"type" => "smallint",
-			"title" => $title,
-			"arg" => isset( $extra[ "length" ] ) ? $extra[ "length" ] : 6,
+			"type" 		=> "smallint",
+			"title" 	=> $title,
+			"arg" 		=> isset( $extra[ "length" ] ) ? $extra[ "length" ] : 6,
 		);
 		
 		foreach( $args as $a => $v )
 		{
-			$return[ $a ] = $v;
+			$return[ $a ] 	= $v;
 		}
 		
 		return $return;	
@@ -358,25 +401,25 @@ abstract class model
 	protected function boolean_field( $title, $args = array() )
 	{
 		return array(
-			"type" => "tinyint",
-			"title" => $title,
-			"arg" => 1,
-			"boolean" => 1,
+			"type" 		=> "tinyint",
+			"title" 	=> $title,
+			"arg" 		=> 1,
+			"boolean" 	=> 1,
 		);
 	}
 	
 	protected function decimal_field( $title, $args = array() )
 	{
 		$return = array(
-			"type" => "decimal",
-			"title" => $title,
-			"arg" => ( isset( $extra[ "precision" ] ) ? $extra[ "precision" ] : 30 ) . "," 
+			"type" 		=> "decimal",
+			"title" 	=> $title,
+			"arg" 		=> ( isset( $extra[ "precision" ] ) ? $extra[ "precision" ] : 30 ) . "," 
 				. ( isset( $extra[ "scale" ] ) ? $extra[ "scale" ] : 2 ),
 		);
 		
 		foreach( $args as $a => $v )
 		{
-			$return[ $a ] = $v;
+			$return[ $a ] 	= $v;
 		}
 		
 		return $return;	
@@ -385,13 +428,13 @@ abstract class model
 	protected function datetime_field( $title, $args = array() )
 	{
 		$return = array(
-			"type" => "datetime",
-			"title" => $title,
+			"type" 		=> "datetime",
+			"title" 	=> $title,
 		);
 		
 		foreach( $args as $a => $v )
 		{
-			$return[ $a ] = $v;
+			$return[ $a ] 	= $v;
 		}
 		
 		return $return;	

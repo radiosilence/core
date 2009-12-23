@@ -21,10 +21,10 @@ class model_form
 		include( SITE_PATH . DIRSEP . "res" . DIRSEP . "form.php" );
 		$this->model = $model;
 		$this->form_output = array(
-			"title" => $model->_nice_name,
-			"name" => $model->name,
-			"method" => "POST",
-			"action" => $action,
+			"title" 	=> $model->_nice_name,
+			"name" 		=> $model->name,
+			"method" 	=> "POST",
+			"action" 	=> $action,
 		);
 		
 		if( is_array( $custom ))
@@ -74,11 +74,11 @@ class model_form
 			$v = explode( ".", $v );
 
 			# Discern which table/field it is based on whether it is blah.blah or just blah
-			$table = count( $v ) > 1 ? $v[ 0 ] : $m->_primary_table;
-			$name = count( $v ) > 1 ? $v[ 1 ] : $v[ 0 ];
-			$tablename = count( $v ) > 1 ? $table . "." . $name : $name;
-			$field = $m->_definition[ "tables" ][ $table ][ $name ];
-			$field[ "form_title" ] = $t;
+			$table 			= count( $v ) > 1 ? $v[ 0 ] : $m->_primary_table;
+			$name 			= count( $v ) > 1 ? $v[ 1 ] : $v[ 0 ];
+			$tablename 		= count( $v ) > 1 ? $table . "." . $name : $name;
+			$field 			= $m->_definition[ "tables" ][ $table ][ $name ];
+			$field[ "form_title" ] 	= $t;
 
 			# because PHP is a retarded piece of shit and converts . in GET/POST to _ FFS.
 			$php_broken_name =  str_replace( ".", "_", $tablename );
@@ -145,6 +145,7 @@ class model_form
 				return $this->char_field();
 				break;
 			case "int":
+				
 				if( isset( $field[ "primary_key" ] ) || isset( $field[ "link_key" ] ) )
 				{
 					return $this->hidden_field();
@@ -166,10 +167,14 @@ class model_form
 				{
 					return $this->number_field();
 				}
+				
 				break;
 			case "tinyint":
 				if( $field[ "boolean" ] == 1 )
+				{
 					return $this->tick_field();
+				}
+				
 				return $this->number_field();
 				break;
 			case "smallint":
@@ -188,7 +193,8 @@ class model_form
 				return $this->text_field();
 				break;
 			default:
-				return "UNKNOWN FIELD TYPE\n";
+				trigger_error( $this->c_name . " is unknown field type.", E_USER_WARNING );
+				return false;
 				break;
 		}
 	}
@@ -206,6 +212,7 @@ class model_form
 			$this->c_name,
 			$this->c_field[ "value" ] );
 	}
+	
 	private function char_field()
 	{
 		return sprintf( RES_FORM_FIELD_CHAR,
@@ -214,6 +221,7 @@ class model_form
 			$this->c_field[ "value" ],
 			$this->c_field[ "form_title" ] == 1 ? RES_FORM_CLASS_TITLE : null );
 	}
+	
 	private function number_field()
 	{
 		return sprintf( RES_FORM_FIELD_NUMBER,
@@ -222,6 +230,7 @@ class model_form
 			$this->c_field[ "value" ],
 			$this->c_field[ "form_title" ] == 1 ? RES_FORM_CLASS_TITLE : null );
 	}
+	
 	private function datetime_field()
 	{
 		return sprintf( RES_FORM_FIELD_DATETIME,
@@ -229,6 +238,7 @@ class model_form
 			$this->c_field[ "title" ],
 			$this->c_field[ "value" ] );
 	}
+	
 	private function text_field()
 	{	
 		return sprintf( RES_FORM_FIELD_TEXT,
@@ -237,6 +247,7 @@ class model_form
 			$this->c_field[ "value" ],
 			$this->c_field[ "form_title" ] == 1 ? RES_FORM_CLASS_TITLE : null );
 	}
+	
 	private function password_field()
 	{
 		return sprintf( RES_FORM_FIELD_PASSWORD,
@@ -244,6 +255,7 @@ class model_form
 			$this->c_field[ "title" ],
 			$this->c_field[ "form_title" ] == 1 ? RES_FORM_CLASS_TITLE : null );
 	}
+	
 	private function tick_field()
 	{
 		return sprintf( RES_FORM_FIELD_TICK,
@@ -252,6 +264,7 @@ class model_form
 			$this->c_field[ "value" ] == 1 ? RES_FORM_FIELD_TICK_CHECKED : RES_FORM_FIELD_TICK_UNCHECKED,
 			$this->c_field[ "form_title" ] == 1 ? RES_FORM_CLASS_TITLE : null );
 	}
+	
 	private function select_field( $use_keys = 0 )
 	{
 		$options = null;
@@ -292,6 +305,7 @@ class model_form
 			implode( "\n", $options ),
 			$this->c_field[ "form_title" ] == 1 ? RES_FORM_CLASS_TITLE : null );
 	}
+	
 	private function ajaj_search_field()
 	{
 		return sprintf( RES_FORM_FIELD_AJAJ,		
