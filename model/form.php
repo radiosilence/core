@@ -21,7 +21,7 @@ class model_form
 		include( SITE_PATH . DIRSEP . "res" . DIRSEP . "form.php" );
 		$this->model = $model;
 		$this->form_output = array(
-			"title" => $model->nice_name,
+			"title" => $model->_nice_name,
 			"name" => $model->name,
 			"method" => "POST",
 			"action" => $action,
@@ -74,10 +74,10 @@ class model_form
 			$v = explode( ".", $v );
 
 			# Discern which table/field it is based on whether it is blah.blah or just blah
-			$table = count( $v ) > 1 ? $v[ 0 ] : $m->primary_table;
+			$table = count( $v ) > 1 ? $v[ 0 ] : $m->_primary_table;
 			$name = count( $v ) > 1 ? $v[ 1 ] : $v[ 0 ];
 			$tablename = count( $v ) > 1 ? $table . "." . $name : $name;
-			$field = $m->definition[ "tables" ][ $table ][ $name ];
+			$field = $m->_definition[ "tables" ][ $table ][ $name ];
 			$field[ "form_title" ] = $t;
 
 			# because PHP is a retarded piece of shit and converts . in GET/POST to _ FFS.
@@ -90,7 +90,7 @@ class model_form
 			}
 			else
 			{
-				$field[ "value" ] = $m->values[ $tablename ];
+				$field[ "value" ] = $m->_values[ $tablename ];
 			}	
 					
 			$this->form_output[ "fieldsets" ][ $parent ][ "fields" ][ $name ] = $this->element_get( $tablename, $field );
@@ -157,7 +157,7 @@ class model_form
 					}
 					else
 					{
-						$foreign = MODEL::create( $field[ "foreign_key" ] );
+						$foreign = new model_{ $field[ "foreign_key" ] };
 						$this->c_field[ "choices" ] = $foreign->get_list();
 						return $this->select_field();
 					}
