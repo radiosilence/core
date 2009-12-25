@@ -52,8 +52,8 @@ class session
 	{
 		require( SITE_PATH . "configuration/auth.php" );
 
-		$this->keyphrase 	= $config_auth[ 'keyphrase' ];
-		$this->base_salt 	= $config_auth[ 'base_salt' ];
+		$this->keyphrase 	= $config_auth[ "keyphrase" ];
+		$this->base_salt 	= $config_auth[ "base_salt" ];
 		$this->db 		= $db;
 		$sid 			= $_COOKIE[ "sid" ];
 		$tok			= $_COOKIE[ "tok" ];
@@ -272,10 +272,10 @@ class session
 	public function set_session( $s )
 	{
 		if(DEBUG) FB::send( $s, "Setting Session" );
-		$this->session 	= $s[ 'sid'  ];
-		$this->user_id 	= $s[ 'user_id'  ];
-		$this->data	= $s[ 'data' ];
-		$this->tok	= $s[ 'tok'  ];
+		$this->session 	= $s[ "sid"  ];
+		$this->user_id 	= $s[ "user_id"  ];
+		$this->data	= $s[ "data" ];
+		$this->tok	= $s[ "tok"  ];
 	}
 
 	/**
