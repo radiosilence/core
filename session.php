@@ -52,8 +52,8 @@ class session
 	{
 		require( SITE_PATH . "configuration/auth.php" );
 
-		$this->keyphrase 	= $config_auth[ 'keyphrase' ];
-		$this->base_salt 	= $config_auth[ 'base_salt' ];
+		$this->keyphrase 	= $config_auth[ "keyphrase" ];
+		$this->base_salt 	= $config_auth[ "base_salt" ];
 		$this->db 		= $db;
 		$sid 			= $_COOKIE[ "sid" ];
 		$tok			= $_COOKIE[ "tok" ];
@@ -213,7 +213,7 @@ class session
 		$res = $sth2->execute( array(
 			":sid" 		=> $sid,
 			":tok"		=> $tok,
-			":ipv4"		=> $_SERVER[ "REMOTE_ADDR" ],
+			":ipv4"		=> $_SERVER[ "HTTP_X_FORWARDED_FOR" ],
 			":user_id"	=> $user_id 
 		));
 		
@@ -245,7 +245,7 @@ class session
 		
 		$sth->execute( array(
 			":sid"	=> $this->session,
-			":ipv4"	=> $_SERVER[ "REMOTE_ADDR" ]
+			":ipv4"	=> $_SERVER[ "HTTP_X_FORWARDED_FOR" ]
 		));
 		
 		setcookie( "sid", "DEAD", time()-1, WWW_PATH . "/", null, false, true );
@@ -272,10 +272,10 @@ class session
 	public function set_session( $s )
 	{
 		if(DEBUG) FB::send( $s, "Setting Session" );
-		$this->session 	= $s[ 'sid'  ];
-		$this->user_id 	= $s[ 'user_id'  ];
-		$this->data	= $s[ 'data' ];
-		$this->tok	= $s[ 'tok'  ];
+		$this->session 	= $s[ "sid"  ];
+		$this->user_id 	= $s[ "user_id"  ];
+		$this->data	= $s[ "data" ];
+		$this->tok	= $s[ "tok"  ];
 	}
 
 	/**
@@ -297,7 +297,7 @@ class session
 	private function create_token( $sid )
 	{
 		# Token generation code.
-		$hash = sha1( $this->keyphrase . $_SERVER[ 'REMOTE_ADDR' ] . $sid );
+		$hash = sha1( $this->keyphrase . $_SERVER[ "HTTP_X_FORWARDED_FOR" ] . $sid );
 		return $hash;
 	}
 
@@ -307,7 +307,7 @@ class session
 	 */
 	private function create_sid()
 	{
-		return sha1( microtime() . $_SERVER[ 'REMOTE_ADDR' ]);
+		return sha1( microtime() . $_SERVER[ "HTTP_X_FORWARDED_FOR" ] );
 	}
 }
 ?>
