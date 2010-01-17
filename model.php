@@ -9,7 +9,7 @@ abstract class model
 	# Array of loaded classes (to avoid double-include)
 	private static $loaded_classes = array();
 	
-	private $db;
+	protected $db;
 	
 	public $_definition;
 	public $_values;
@@ -143,7 +143,8 @@ abstract class model
 	{
 		# Shortcuts
 		$t = $this;
-		$db = $this->db;
+		$db = $t->db;
+		
 		# Cycle through the fields, pulling them into a flat array $fields
 		foreach( $t->_definition[ "tables" ] as $table_name => $table )
 		{
