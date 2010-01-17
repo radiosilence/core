@@ -32,7 +32,6 @@ class router
 		}
 		
 		$this->get_controller( $file, $controller, $action, $args, $route );
-		
 		foreach( $args as $k => $v )
 		{
 			$x = explode( ':', $v );
@@ -65,6 +64,7 @@ class router
 			$action = "index";
 		}
 		# Run action
+		$args[ "_url" ] = $route;
 		$controller->$action( $args );
 	}
 
