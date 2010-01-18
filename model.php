@@ -8,15 +8,16 @@ abstract class model
 	 * Model's database.
 	 */
 	protected $db;
+	
 	/**
 	 * ID Of model currently being worked with.
 	 */
-	private	$_id;
+	public	$_id;
 	
 	/**
 	 * Fields we're saving.
 	 */
-	private $_fields_to_save = array();
+	protected $_fields_to_save = array();
 	
 	/**
 	 * Where model metadata is stored.
