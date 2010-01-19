@@ -181,7 +181,7 @@ abstract class model
 		# Shortcuts
 		$t 	= $this;
 		$db 	= $t->db;
-		echo "trying to load ".$t->_nice_name." id $id\n";
+		
 		# Cycle through the fields, pulling them into a flat array $fields
 		foreach( $t->_definition[ "tables" ] as $table_name => $table )
 		{
@@ -200,7 +200,7 @@ abstract class model
 					. "`" . $field_name . "`";
 			}
 		}
-		print_r( $fields );
+		
 		# Get the data for this id we're loading
 		if( is_array( $joins ) )
 		{
