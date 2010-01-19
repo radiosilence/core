@@ -137,7 +137,7 @@ abstract class model
 
 				foreach( $table as $field => $date )
 				{
-					$fields[]		= $field . " = :" . $field;
+					$fields[]		= "`" . $field . "` = :" . $field;
 					$binds[ ":" . $field ]	= $t->_values[ $field ];
 				}
 				
@@ -179,9 +179,9 @@ abstract class model
 	public function load( $id )
 	{
 		# Shortcuts
-		$t = $this;
-		$db = $t->db;
-		
+		$t 	= $this;
+		$db 	= $t->db;
+		echo "trying to load ".$t->_nice_name." id $id\n";
 		# Cycle through the fields, pulling them into a flat array $fields
 		foreach( $t->_definition[ "tables" ] as $table_name => $table )
 		{
@@ -189,18 +189,18 @@ abstract class model
 			{
 				# Making fieldnames in the format blah.blah or blah if it
 				# is part of the primary table.
-				$fields[] = $table_name
-					. "." . $field_name
+				$fields[] = "`" . $table_name . "`"
+					. ".`" . $field_name . "`"
 					. " as "
 					. (
 						$table_name != $t->_primary_table ?
-						$table_name . "." :
+						"`" . $table_name . "`." :
 						null
 					)
-					. $field_name . "";
+					. "`" . $field_name . "`";
 			}
 		}
-		
+		print_r( $fields );
 		# Get the data for this id we're loading
 		if( is_array( $joins ) )
 		{
@@ -225,6 +225,7 @@ abstract class model
 		" );
 		
 		$sth->execute( $binds );
+		
 		$t->_values 	= $sth->fetch( PDO::FETCH_ASSOC );
 		$t->_id 	= $id;
 	}
