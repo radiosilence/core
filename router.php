@@ -34,7 +34,7 @@ class router
 		$this->get_controller( $file, $controller, $action, $args, $route );
 		foreach( $args as $k => $v )
 		{
-			$x = explode( ':', $v );
+			$x = explode( ":", $v );
 			if( strlen( $x[ 1 ] ) > 0 )
 			{
 				$args[ $x[ 0 ] ] = $x[ 1 ];

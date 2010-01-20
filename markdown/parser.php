@@ -909,7 +909,7 @@ class markdown_parser {
 		{
 			# Replace marker with the appropriate whitespace indentation
 			$item = $leading_space . str_repeat(' ', strlen($marker_space)) . $item;
-			$item = $this->runBlockGamut($this->outdent($item)."\n");
+			$item = $this->runSpanGamut($this->outdent($item)."\n");
 		}
 		else {
 			# Recursion for sub-lists:
