@@ -59,26 +59,23 @@ abstract class model
 	 * All models must have a constructor.
 	 */
 	 
-	public function __construct( $db )
-	{
-		$this->db = $db;
-		$this->define();
-	}
-	
-	public function __construct( $db, $id )
+	public function __construct( $db, $id = false )
 	{
 		$this->db = $db;
 		$this->define();
 		
-		try
+		if( $id )
 		{
-			$this->load( $id )
-			$this->_loaded = true;
-		}
-		catch( Exception $e )
-		{
-			$this->_loaded = false;
-			trigger_error( "Tried to load object that was not in database.", E_USER_ERROR );
+			try
+			{
+				$this->load( $id );
+				$this->_loaded = true;
+			}
+			catch( Exception $e )
+			{
+				$this->_loaded = false;
+				trigger_error( "Tried to load object that was not in database.", E_USER_ERROR );
+			}		
 		}
 	}
 	
@@ -438,7 +435,7 @@ abstract class model
 		);
 	}
 	
-	protected function decimal_field( $title, $args = array() )
+	protected function float_field( $title, $args = array() )
 	{
 		$return = array(
 			"type" 		=> "decimal",
