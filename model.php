@@ -19,6 +19,12 @@ abstract class model
 	 */
 	protected $_fields_to_save = array();
 	
+	
+	/**
+	 * Whether we've loaded from db.
+	 */
+	protected $_loaded = false;
+	
 	/**
 	 * Where model metadata is stored.
 	 */
@@ -52,7 +58,29 @@ abstract class model
 	/**
 	 * All models must have a constructor.
 	 */
-	abstract public function __construct();	
+	 
+	public function __construct( $db )
+	{
+		$this->db = $db;
+		$this->define();
+	}
+	
+	public function __construct( $db, $id )
+	{
+		$this->db = $db;
+		$this->define();
+		
+		try
+		{
+			$this->load( $id )
+			$this->_loaded = true;
+		}
+		catch( Exception $e )
+		{
+			$this->_loaded = false;
+			trigger_error( "Tried to load object that was not in database.", E_USER_ERROR );
+		}
+	}
 	
 	/**
 	 * Default form layout as an array.
@@ -225,6 +253,11 @@ abstract class model
 		" );
 		
 		$sth->execute( $binds );
+		
+		if( $sth->rowCount() < 1 )
+		{
+			throw new Exception( "Instance ID not found in database." );
+		}
 		
 		$t->_values 	= $sth->fetch( PDO::FETCH_ASSOC );
 		$t->_id 	= $id;
