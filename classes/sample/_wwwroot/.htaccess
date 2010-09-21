@@ -1,0 +1,6 @@
+RewriteEngine on
+
+RewriteRule ^/?articles/([0-9]{1,9})/.*?(\.html)?$ index.php?route=article/view/id:$1
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.+?)(\.html)?$ index.php?route=$1
