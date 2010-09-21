@@ -4,7 +4,7 @@
  * @package auth
  * @subpackage core
  */
-class session
+class Session
 {
 	/**
 	 * Database

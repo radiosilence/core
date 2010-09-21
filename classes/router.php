@@ -6,37 +6,31 @@
  * @package core
  * @subpackage core
  */
-class router
+class Router
 {
 	private $registry;
 	private $path;
 	private $args = array();
 
-	public function set_path( $path )
-	{
+	public function set_path( $path ) {
 		$path .= DIRSEP;
-		if( is_dir( $path ) == false )
-		{
+		if( is_dir( $path ) == false ) {
 			throw new Exception( 'Invalid controller path: `' . $path . '`' );
 		}
 		$this->path = $path;
 	}
 
-	public function delegate( $route = 0 )
-	{
+	public function delegate( $route = 0 ) {
 		# Analyze route
 		
-		if( !$route )
-		{
+		if( !$route ) {
 			$route = ( empty( $_GET[ 'route' ] ) ) ? '' : $_GET[ 'route' ];
 		}
 		
 		$this->get_controller( $file, $controller, $action, $args, $route );
-		foreach( $args as $k => $v )
-		{
+		foreach( $args as $k => $v ) {
 			$x = explode( ":", $v );
-			if( strlen( $x[ 1 ] ) > 0 )
-			{
+			if( strlen( $x[ 1 ] ) > 0 ) {
 				$args[ $x[ 0 ] ] = $x[ 1 ];
 			}
 			unset( $args[ $k ] );
@@ -48,9 +42,8 @@ class router
 		$file = str_replace( $co, $cn, $file ); 
 
 		# File available?
-		if( is_readable( $file ) == false )
-		{
-			die( "404" );
+		if( is_readable( $file ) == false ) {
+			throw new Exception( "Controller: Page not found." );
 		}
 		# Include the file
 		include ( $file );

@@ -29,8 +29,8 @@ function __autoload( $class_name ) {
 	
 	if( file_exists( $class_path . DIRSEP . $filename )) {
 		include ( $class_path . DIRSEP . $filename );
-	} else	{
-		die( "Could not find " . $class_path . DIRSEP . $filename . "!\n" );
+	} else {
+		throw new Exception( "Could not find " . $class_path . DIRSEP . $filename . "!\n" );
 		return false;
 	}
 
