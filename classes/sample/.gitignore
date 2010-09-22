@@ -1,5 +1,0 @@
-*.sublime-project
-config/*.php
-!config/*sample.php
-core/*
-

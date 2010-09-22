@@ -7,33 +7,29 @@
  * @package database
  * @subpackage core
  */
-class db_mssql
-{
+class db_MSSQL {
+	
 	private $connection = 0;
 	public static $total_queries = 0;
 	public static $total_time = 0;
 	public $database = 0;
 	public $query;
 
-	public function __construct( $hostname, $username, $password, $database )
-	{
+	public function __construct( $hostname, $username, $password, $database ) {
 		$this->connection = mssql_connect( $hostname, $username, $password );
 
-		if( !$this->connection )
-		{
-			die( "Could not connect to database host [" . $hostname . "]." );
+		if( !$this->connection ) {
+			throw new Exception( "Could not connect to database host [" . $hostname . "]." );
 		}
-		if( !mssql_select_db( $database, $this->connection ) )
-		{
-			die( "Could not select database [" . $database . "].");
+		if( !mssql_select_db( $database, $this->connection ) ) {
+			throw new Exception( "Could not select database [" . $database . "].");
 		}
 
 		$this->database = $database;
 		return 1;
 	}
 
-	public function query( $query )
-	{
+	public function query( $query ) {
 		if(DEBUG) DB_MSSQL::$total_queries++;
 
 		if(DEBUG) $time_start = microtime(true);
@@ -49,22 +45,18 @@ class db_mssql
 		return $result;
 	}
 
-	public function build_query()
-	{
+	public function build_query() {
 		$this->query = new query( $this );
 		return $this->query;
 	}
 
-	public function run_query( &$result )
-	{
+	public function run_query( &$result ) {
 
-		if( $result = $this->query( $this->query ) )
-		{
+		if( $result = $this->query( $this->query ) ) {
 			unset( $this->query );
 			return 1;
 		}
-		else
-		{
+		else {
 			$this->print_query();
 			trigger_error('Query failure.' . $this->error, E_USER_ERROR);
 			unset( $this->query );
@@ -73,8 +65,7 @@ class db_mssql
 
 	}
 
-	public function real_escape_string( $string )
-	{
+	public function real_escape_string( $string ) {
 		# Not secure in any way ever.
 		if(is_numeric($data))
 		{
@@ -84,19 +75,11 @@ class db_mssql
 		return '0x' . $unpacked['hex'];
 	}
 
-	public function print_query( $query = 0 )
-	{
-		$query = $query == 0 ? $query : $this->query;
-		printf( "<pre>Query output:\n%s\n</pre>", $this->query );
-	}
-
-	public function fetch_assoc( $result )
-	{
+	public function fetch_assoc( $result ) {
 		return mssql_fetch_assoc( $result );
 	}
 	
-	public function num_rows( $result )
-	{
+	public function num_rows( $result ) {
 		return mssql_num_rows( $result );
 	}
 }
