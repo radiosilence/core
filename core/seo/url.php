@@ -8,16 +8,17 @@ class URL {
 		$i = $page["id"];
 		$this->url = sprintf("%d/%s.html", $i, $this->process_string($t));
 	}
+	public function __toString() {
+		return $this->url;
+	}
 	private function process_string($string) {
 		$a = array( 
-			" ", "?", "!", "&", "_", ":", "#",
+			" ", "_"
 		);
-		$b = array( 
-			"-", null, null, null, "-", null, null,
-		);
+		$b = "-";
 		
 		$string = str_replace($a, $b, strtolower($string));
-		return $string;
+		return preg_replace("/[^a-z0-9\-]/", "", $string);;
 	}
 }
 ?>
