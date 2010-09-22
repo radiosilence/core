@@ -26,7 +26,6 @@ class ImportError extends Exception {
 function import($module_name) {
 	global $imported_files;
 	global $include_paths;
-
 	$module = explode('.', $module_name);
 	$l = array_pop($module);
 
