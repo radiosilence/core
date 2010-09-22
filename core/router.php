@@ -10,6 +10,7 @@
 namespace Core;
 
 import('core.controller');
+import('core.exceptions');
 
 class Router {
     private $path;
@@ -27,14 +28,13 @@ class Router {
     private function set_path($path) {
         $path .= DIRSEP;
         if(is_dir($path) == false) {
-            throw new Exception('Invalid controller path: `' . $path . '`');
+            throw new InvalidControllerPathError($path);
         }
         $this->path = $path;
     }	
 
     private function delegate($route = 0) {
         # Analyze route
-        
         if(!$route) {
             $route = (empty($_GET['route'])) ? '' : $_GET['route'];
         }
@@ -55,8 +55,9 @@ class Router {
 
         # File available?
         if(is_readable($file) == false) {
-            throw new HTTPError("Controller: Page not found.", 404);
+            throw new HTTPError(404, $co);
         }
+
         # Include the file
         require($file);
         # Initiate the class.
@@ -116,6 +117,12 @@ class Router {
         
         $file = $this->path . $controller . '.php';
         $args = $parts;
+    }
+}
+
+class InvalidControllerPathError extendes \Exception {
+    public function __construct($path) {
+        trigger_error(sprintf("Invalid controller path '%s'.", $path), E_USER_ERROR);
     }
 }
 ?>
