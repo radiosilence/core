@@ -10,14 +10,13 @@ define("HOST", $_SERVER["HTTP_HOST"]);
 # If this is set to 1, searching will far faster but less det
 # -ailed. (Using mysql full text natural searching). This for
 # if there are many articles.
-define("QUICK_SEARCH", 0);
 
 $imported_files = array();
 $include_paths = array_merge(array(__DIR__), explode(':', ini_get('include_path')));
 
 ini_set('include_path', implode(':', $include_paths));
 
-class ImportError extends Exception {
+class ImportError extends \Exception {
 	public function __construct($class) {
 		trigger_error(sprintf('Class "%s" was not found in any of available paths.', $class), E_USER_ERROR);	
 	}

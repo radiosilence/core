@@ -82,7 +82,7 @@ class Session
                 ":sid" => $sid,
                 ":tok" => $tok,
                 ":ipv4" => $_SERVER["REMOTE_ADDR"]
-			));
+            ));
                 
             if($e) {
                 $row = $sth->fetch();
@@ -123,12 +123,12 @@ class Session
                 SET data = :data
                 WHERE sid = :sid
                 LIMIT 1"
-			);
+            );
             
             $sth->execute(array(
-		    	":data" => json_encode($this->data),
-		    	":sid" => $this->session
-			));
+                ":data" => json_encode($this->data),
+                ":sid" => $this->session
+            ));
 
             if($e) {
                 if(DEBUG) FB::log("✔ Saved session.");
@@ -230,7 +230,7 @@ class Session
         $sth->execute(array(
             ":sid" => $this->session,
             ":ipv4" => $_SERVER["HTTP_X_FORWARDED_FOR"]
-	));
+        ));
         
         setcookie("sid", "DEAD", time()-1, WWW_PATH . "/", null, false, true);
         setcookie("tok", "DEAD", time()-1, WWW_PATH . "/", null, false, true);
