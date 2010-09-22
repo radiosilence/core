@@ -9,6 +9,8 @@
 
 namespace Core;
 
+import('core.dependency');
+
 abstract class Controller {
 
     /**
@@ -17,7 +19,7 @@ abstract class Controller {
      * @return database database object
      */
     public function database($args = array()) {
-
+                
         if(!is_array($args)) {
             die("Arguments to controller::database must be passed as array.");
         }
@@ -41,12 +43,14 @@ abstract class Controller {
                 }
             }
         
-            if($type == "pdo" && class_exists("PDO")) {
+            if($type == "pdo") {
+                DEPENDENCY::require_classes('PDO');
                 $pdo_driver = $args["pdo_driver"] ? $args["pdo_driver"] : "mysql";
                 $string = $pdo_driver . ":dbname=" . $config_db["database"] . ";host=" . $config_db["hostname"];
                 $database = new PDO($string, $config_db["username"], $config_db["password"]);
-            } else {    
-                $class = "db_" . $type;    
+            } else {
+                import('core.database.' . strtolower($type));
+                $class = "Database\\" . $type;    
                 $database = new $class($config_db["hostname"],
                     $config_db["username"],
                     $config_db["password"],
@@ -64,7 +68,7 @@ abstract class Controller {
      * @return session session object.
      */
     public function session($db = false) {
-
+        import('core.session');
         if($db) {
             return new Session($db);
         } else {

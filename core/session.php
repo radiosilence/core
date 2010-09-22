@@ -4,6 +4,13 @@
  * @package auth
  * @subpackage core
  */
+
+namespace Core;
+
+import('core.dependency');
+
+DEPENDENCY::require_classes('PDO');
+
 class Session
 {
     /**
