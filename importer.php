@@ -38,7 +38,7 @@ class Importer {
 
     private $module_dir_parts = array();
     private $module_full_parts = array();
-    private $last_part;
+    private $module_last_part;
 
     public function __construct() {
         return $this;
@@ -69,11 +69,11 @@ class Importer {
     private function populate_properties($module_name){
         $this->module_parts = explode('.', $module_name);
         $this->module_directory_parts = $this->module_parts;
-        $this->last_part = array_pop($this->module_dir_parts);
+        array_pop($this->module_directory_parts);
     }
 
     private function try_path($include_path) {
-        if($this->last_part == '*') {
+        if(end($this->module_parts) == '*') {
             return $this->include_group($include_path . DIRSEP . implode(DIRSEP, $this->module_directory_parts));
         } else {
             return $this->include_module($include_path . DIRSEP . implode(DIRSEP, $this->module_parts) . '.php');

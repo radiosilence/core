@@ -39,6 +39,7 @@ define("HOST", $_SERVER["HTTP_HOST"]);
 require('importer.php');
 $importer = new Importer();
 $importer->set_include_paths();
+
 function import($module_name) {
 	global $importer;
 	$importer->import_module($module_name);
