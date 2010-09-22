@@ -9,16 +9,16 @@ For a boilerplate MVC site, see the sample dir. Not necessary.
 
 All you really need to do to use it is this:
 
-  include('wherever/core/core.php');
+    include('wherever/core/core.php');
 
 Then you can start importing modules, like:
 
-  import('core.session.php');
+    import('core.session.php');
 
-  import('core.router');
-  $router = new \Core\Router();
+    import('core.router');
+    $router = new \Core\Router();
 
-  import('code.db.*');
+    import('code.db.*');
 
 It seems kind of dumb to import using period and then use the namespacing backslash, but backslash escapes in strings and apparently this escaped the wonderous minds of the PHP team.
 
