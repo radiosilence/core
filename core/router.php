@@ -120,7 +120,7 @@ class Router {
     }
 }
 
-class InvalidControllerPathError extendes \Exception {
+class InvalidControllerPathError extends \Exception {
     public function __construct($path) {
         trigger_error(sprintf("Invalid controller path '%s'.", $path), E_USER_ERROR);
     }
