@@ -38,9 +38,9 @@ namespace Core\Database;
 
 import('core.dependency');
 
-\Core\DEPENDENCY::require_functions(
+\Core\DEPENDENCY::require_functions(array(
 	'mssql_connect', 'mssql_query'
-);
+));
 
 class MSSQL {
 	

@@ -11,7 +11,7 @@ permitted provided that the following conditions are met:
       of conditions and the following disclaimer in the documentation and/or other materials
       provided with the distribution.
 
-THIS SOFTWARE IS PROVIDED BY JAMES CLEVELAND "AS IS" AND ANY EXPRESS OR IMPLIED
+THIS SOFTWARE IS PROVIDED BY James Cleveland "AS IS" AND ANY EXPRESS OR IMPLIED
 WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
 FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL JAMES CLEVELAND OR
 CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
@@ -25,36 +25,11 @@ The views and conclusions contained in the software and documentation are those 
 authors and should not be interpreted as representing official policies, either expressed
 or implied, of James Cleveland. */
 
+
 /**
- * Depency testing.
+ * An attempt to make arrays into objects, I guess.
  */
-namespace Core;
-
-class DependencyError extends \Exception {
-    public function __construct($name, $type, $file) {
-        if(DEBUG) debug_print_backtrace();
-        trigger_error(sprintf("File '%s' requires %s '%s', which is not available.", $file, $type, $name), E_USER_ERROR);
-    }
-}
-
-class Dependency {
-    public static function require_functions() {
-        self::test(func_get_args(),'function');
-    }
-
-    public static function require_classes() {
-        self::test(func_get_args(),'class');
-    }
-
-    private function test(Array $inputs, $type){
-        foreach($inputs as $input) {
-            $f = $type . '_exists';
-            if(!$f($input)){
-                $backtrace = debug_backtrace();
-                throw new DependencyError($input, $type, $backtrace[1]['file']);
-            }
-        }
-        
-    }
+class List {
+    array $elements
 }
 ?>

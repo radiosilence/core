@@ -61,3 +61,5 @@ Because things aren't super mature yet...
 
 ## To-dos
 * Re-vamp the model system so that it abstracts the schema further, models can extend each other, etc. Idea of having "table" is kind of stupid.
+* Use interfaces for models.
+* 
