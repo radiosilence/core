@@ -40,9 +40,7 @@ class Importer {
     private $module_full_parts = array();
     private $last_part;
 
-    public function __construct() {
-        $this->include_paths = array_merge(array(__DIR__), explode(':', ini_get('include_path')));
-    }
+    public function __construct() {}
 
     public function import_module($module_name) {
         $this->populate_properties($module_name);
@@ -59,6 +57,7 @@ class Importer {
     }
 
     private function populate_properties($module_name){
+        $this->include_paths = array_merge(array(__DIR__), explode(':', ini_get('include_path')));
         $this->module_parts = explode('.', $module_name);
         $this->module_directory_parts = $this->module_parts;
         $this->last_part = array_pop($this->module_dir_parts);
