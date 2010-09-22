@@ -6,6 +6,11 @@
  * @package core
  * @subpackage core
  */
+
+import( core.)
+
+namespace Core;
+
 class Router {
     private $registry;
     private $path;
@@ -42,7 +47,7 @@ class Router {
 
         # File available?
         if(is_readable($file) == false) {
-            throw new Exception("Controller: Page not found.");
+            throw new HTTPException("Controller: Page not found.", 404);
         }
         # Include the file
         include ($file);

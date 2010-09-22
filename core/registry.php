@@ -5,7 +5,10 @@
  * @package core
  * @subpackage core
  */
-class registry{
+
+namespace Core;
+
+class Registry {
     private static $vars = array();
 
     public static function set($key, $var) {

@@ -4,6 +4,8 @@ My core modules that I work with things using.
 
 Includes hacked versions of smartypants and markdown that conform to the class naming specs of my codebase. May not be up to date.
 
+For a boilerplate MVC site, see the sample dir. Not necessary.
+
 ## Important Changes
 Because things aren't super mature yet...
 

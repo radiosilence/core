@@ -9,13 +9,13 @@
  */
 
 # Definitions
-define( "DEBUG", 0 );
+define("DEBUG", 0);
 
-require( "../core/include.php" );
+require("../core/core.php");
 
 # Load router
 $router = new router();
-REGISTRY::set( 'router', $router );
-$router->set_path( SITE_PATH . 'controllers' );
+REGISTRY::set('router', $router);
+$router->set_path(SITE_PATH . 'controllers');
 $router->delegate();
 ?>

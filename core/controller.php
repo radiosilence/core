@@ -6,6 +6,9 @@
  * @subpackage core
  * @abstract Extended by the actual controllers
  */
+
+namespace Core;
+
 abstract class Controller {
 
     /**
@@ -21,15 +24,15 @@ abstract class Controller {
         
         extract($args);
         
-        $type        = $type         ? $type        : "pdo";
-        $name        = $name        ? $name        : "db";
+        $type = $type ? $type : "pdo";
+        $name = $name ? $name : "db";
         $config_file = $config_file ? $config_file : "database";
         
-        if($args["name"] && REGISTRY::get($name))    {
+        if($args["name"] && REGISTRY::get($name)) {
             return REGISTRY::get($name);
         } else {
             if(!$config_db) {
-                $conf_path =  CONFIG_PATH . DIRSEP . $config_file . ".php";
+                $conf_path = CONFIG_PATH . DIRSEP . $config_file . ".php";
         
                 if(file_exists($conf_path)) {
                     include $conf_path;
