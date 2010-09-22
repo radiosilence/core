@@ -24,7 +24,7 @@ It seems kind of dumb to import using period and then use the namespacing backsl
 
 Included are 3rd party modules like reCAPTCHA and Markdown. They are easy to import:
  
-  import('3rdparty.markdown');
+    import('3rdparty.markdown');
 
 And they are accessible on the global namespace.
 
