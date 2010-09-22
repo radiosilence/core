@@ -35,66 +35,81 @@ namespace Core;
 import('core.dependency');
 
 DEPENDENCY::require_classes('PDO');
+DEPENDENCY::require_functions('setcookie');
 
 class Session
 {
     /**
-     * Database
-     * @var database
+     * PDO instance
      */
-    private $db;
+    private $pdo;
     /**
-     * Session sid.
-     * @var string
+     * Session sid
      */
     private $session = 0;
     /**
-     * Session token.
-     * @var string
+     * Session token
      */
     private $tok = 0;
     /**
-     * Session user id.
-     * @var int
+     * Session user id
      */
     public $user_id = 0;
     /**
-     * Session data.
-     * @var string
+     * Session data
      */
     private $data = array();
     /**
-     * Secret phrase.
-     * @var string
+     * Secret phrase
      */
     private $keyphrase;
     /**
-     * Secret phrase to salt passwords.
-     * @var string
+     * Secret phrase to salt passwords
      */
     private $base_salt;
 
+	public function attach_pdo(\PDO $pdo) {
+		$this->pdo = $pdo;
+		return $this;
+	}
+
+	public function read_cookie($sid, $tok) {
+		$this->cookie_sid = $sid;
+		$this->cookie_tok = $tok;
+		return $this;
+	}
+	
+	public function attach_auth_config($file=False) {
+		if(empty($file)){
+			$file = SITE_PATH . "config/auth.php";
+		}
+		if(!file_exists($file)) {
+			throw new FileNotFoundError($this->auth_file);	
+		}
+		require($file);
+        $this->keyphrase = $config_auth["keyphrase"];
+        $this->base_salt = $config_auth["base_salt"];
+		return $this;
+	}
+	
     /**
      * Starts it all off, gets the sid/tok provided by
      * the cookie, and authorises it/registers it as
      * valid depending on the result.
-     * @param database $db database object.
+     * @param database $pdo database object.
      */
-    public function __construct($db) {
-        require(SITE_PATH . "configuration/auth.php");
+	public function start() {
+        
+        $pdo = $this->pdo;
+		$sid = $this->cookie_sid;
+        $tok = $this->cookie_tok;
 
-        $this->keyphrase = $config_auth["keyphrase"];
-        $this->base_salt = $config_auth["base_salt"];
-        $this->db = $db;
-        $sid = $_COOKIE["sid"];
-        $tok = $_COOKIE["tok"];
-
-        if(isset($_COOKIE["sid"]) && isset($_COOKIE["tok"])) {
+        if(!empty($sid) && !empty($tok)) {
             
             if(DEBUG) FB::log("Attempting to load supposed session [" . $sid . "] ...");
 
             # Is it the right tok for sid and IP?
-            $sth = $db->prepare("
+            $sth = $pdo->prepare("
                 SELECT sid, data, user_id
                 FROM sessions
                 WHERE sid = :sid
@@ -126,7 +141,7 @@ class Session
                 }
 
             } else {
-                die($db->error);
+                die($pdo->error);
             }
         }
         if($this->session) {
@@ -134,16 +149,17 @@ class Session
         } else {
             if(DEBUG) FB::log("× Session not loaded because it doesn't exist.");
         }
-
-    }
+		
+		return $this;
+	}
 
     public function __destruct() {
 
         if($this->session) {
             if(DEBUG) FB::log($this, "Saving session [" . $this->session . "] ... ");
-            $db = $this->db;
+            $pdo = $this->pdo;
             
-            $sth = $db->prepare("
+            $sth = $pdo->prepare("
                 UPDATE sessions
                 SET data = :data
                 WHERE sid = :sid
@@ -203,9 +219,9 @@ class Session
     public function create_session($user_id) {
         $sid = $this->create_sid();
         $tok = $this->create_token($sid);
-        $db = $this->db;
+        $pdo = $this->pdo;
 
-        $sth = $db->prepare("
+        $sth = $pdo->prepare("
             DELETE
             FROM sessions
             WHERE user_id = :user_id
@@ -214,7 +230,7 @@ class Session
         $sth->execute(array("user_id" => $user_id, "ipv4" => $_SERVER["REMOTE_ADDR"]));
 
 
-        $sth2 = $db->prepare("
+        $sth2 = $pdo->prepare("
             INSERT INTO sessions (
                 sid, tok, ipv4, user_id
            )
@@ -244,8 +260,8 @@ class Session
      * 
      */
     public function destroy_session() {
-        $db = $this->db;
-        $sth = $db->prepare("
+        $pdo = $this->pdo;
+        $sth = $pdo->prepare("
             DELETE FROM sessions
             WHERE sid = :sid
             AND ipv4 = :ipv4

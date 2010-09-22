@@ -39,4 +39,10 @@ class HTTPError extends \Exception {
         die();
     }
 }
+
+class FileNotFoundError extends \Exception {
+	public function __construct($filename) {
+		trigger_error(sprintf('Required file "%s" was not found.', $filename), E_USER_ERROR);
+	}
+}
 ?>

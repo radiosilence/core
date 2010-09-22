@@ -24,6 +24,10 @@ The views and conclusions contained in the software and documentation are those 
 authors and should not be interpreted as representing official policies, either expressed
 or implied, of James Cleveland. */
 
+if(phpversion() < 5.3) {
+	trigger_error(sprintf('Needs to use PHP at least version 5.3, you are using version %s.', phpversion()), E_USER_ERROR);
+}
+
 define("DIRSEP", DIRECTORY_SEPARATOR);
 define("LOCALE", "en_GB");
 define("SITE_PATH", realpath(dirname(__FILE__) . DIRSEP . '..' . DIRSEP) . DIRSEP);

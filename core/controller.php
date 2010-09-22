@@ -35,6 +35,7 @@ or implied, of James Cleveland. */
 
 namespace Core;
 
+import('core.registry');
 import('core.dependency');
 
 abstract class Controller {
@@ -47,7 +48,7 @@ abstract class Controller {
     public function database($args = array()) {
                 
         if(!is_array($args)) {
-            die("Arguments to controller::database must be passed as array.");
+            throw new Exception("Arguments to controller::database must be passed as array.");
         }
         
         extract($args);
@@ -62,18 +63,18 @@ abstract class Controller {
             if(!$config_db) {
                 $conf_path = CONFIG_PATH . DIRSEP . $config_file . ".php";
         
-                if(file_exists($conf_path)) {
-                    include $conf_path;
-                } else {
-                    die("Database requested but no database config available.");
-                }
+                if(!file_exists($conf_path)) {
+                    throw new FileNotFoundError($conf_path);
+				}	
+                require $conf_path;
+               
             }
         
             if($type == "pdo") {
                 DEPENDENCY::require_classes('PDO');
                 $pdo_driver = $args["pdo_driver"] ? $args["pdo_driver"] : "mysql";
                 $string = $pdo_driver . ":dbname=" . $config_db["database"] . ";host=" . $config_db["hostname"];
-                $database = new PDO($string, $config_db["username"], $config_db["password"]);
+                $database = new \PDO($string, $config_db["username"], $config_db["password"]);
             } else {
                 import('core.database.' . strtolower($type));
                 $class = "Database\\" . $type;    

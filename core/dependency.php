@@ -38,17 +38,14 @@ class DependencyError extends \Exception {
 
 class Dependency {
     public static function require_functions($functions) {
-        self::test($functions,'function');
+        self::test(func_get_args(),'function');
     }
 
     public static function require_classes($classes) {
-        self::test($classes,'class');
+        self::test(func_get_args(),'class');
     }
 
     private function test($inputs,$type){
-        if(!is_array($inputs)){
-            $inputs = array($inputs);
-        }
         foreach($inputs as $input) {
             $f = $type . '_exists';
             if(!$f($input)){
