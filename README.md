@@ -1,6 +1,6 @@
 # core
 
-My core modules that I work with things using. Features python-style coding, pythonic imports, actually using namespaces, modularity, MVC microframework for fast development, 3rd party ease of use, update script for use with cron or whatever.
+My core modules that I work with things using. Features python-style code [PEP 8](http://www.python.org/dev/peps/pep-0008/), pythonic imports, actually using namespaces, modularity, MVC microframework for fast development, 3rd party ease of use, update script for use with cron or whatever.
 
 Includes 3rd party modules.
 
