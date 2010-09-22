@@ -6,6 +6,7 @@ namespace Core;
 
 class DependencyError extends \Exception {
     public function __construct($name, $type, $file) {
+        if(DEBUG) debug_print_backtrace();
         trigger_error(sprintf("File '%s' requires %s '%s', which is not available.", $file, $type, $name), E_USER_ERROR);
     }
 }
@@ -17,12 +18,6 @@ class Dependency {
 
     public static function require_classes($classes) {
         self::test($classes,'class');
-        /*foreach($class as $class) {
-            if(!class_exists($class)){
-                $backtrace = debug_backtrace();
-                throw new DependencyError($class, 'class', $backtrace[0]['file']);
-            }
-        }*/
     }
 
     private function test($inputs,$type){
