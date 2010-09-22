@@ -16,7 +16,5 @@ require("../core/core.php");
 import('core.router');
 
 # Load router
-$router = new Router();
-$router->set_path(SITE_PATH . 'controllers');
-$router->delegate();
+$router = new \Core\Router();
 ?>
