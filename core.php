@@ -41,9 +41,7 @@ $importer = new Importer();
 $importer->set_include_paths();
 function import($module_name) {
 	global $importer;
-	if(!$importer->import_module($module_name)){
-		throw new ImportError($module_name);
-	}
+	$importer->import_module($module_name);
 }
 
 

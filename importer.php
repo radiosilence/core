@@ -26,8 +26,8 @@ authors and should not be interpreted as representing official policies, either 
 or implied, of James Cleveland. */
 
 class ImportError extends \Exception {
-    public function __construct($class) {
-        trigger_error(sprintf('Class "%s" was not found in any of available paths.', $class), E_USER_ERROR);    
+    public function __construct($module_name) {
+        trigger_error(sprintf('Module "%s" was not found in any of available paths.', $module_name), E_USER_ERROR);    
     }
 }
 
@@ -46,7 +46,9 @@ class Importer {
 
     public function import_module($module_name) {
         $this->populate_properties($module_name);
-        return $this->try_paths();
+        if(!$this->try_paths()) {
+            throw new ImportError($module_name);
+        }
     }
 
     public function set_include_paths($include_paths=False) {
