@@ -1,4 +1,5 @@
-<?php /* Copyright 2010 James Cleveland. All rights reserved.
+<?php
+/* Copyright 2010 James Cleveland. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are
 permitted provided that the following conditions are met:
@@ -37,9 +38,9 @@ namespace Core\Database;
 
 import('core.dependency');
 
-\Core\DEPENDENCY::require_functions(array(
+\Core\DEPENDENCY::require_functions(
 	'mssql_connect', 'mssql_query'
-));
+);
 
 class MSSQL {
 	
@@ -53,10 +54,10 @@ class MSSQL {
 		$this->connection = mssql_connect($hostname, $username, $password);
 
 		if(!$this->connection) {
-			throw new Exception("Could not connect to database host [" . $hostname . "].");
+			throw new MSSQLConnectionError("Could not connect to database host [" . $hostname . "].");
 		}
 		if(!mssql_select_db($database, $this->connection)) {
-			throw new Exception("Could not select database [" . $database . "].");
+			throw new MSSQLSelectDBError("Could not select database [" . $database . "].");
 		}
 
 		$this->database = $database;
@@ -64,15 +65,8 @@ class MSSQL {
 	}
 
 	public function query($query) {
-		if(DEBUG) DB_MSSQL::$total_queries++;
-
-		if(DEBUG) $time_start = microtime(true);
 
 		$result = mssql_query($query, $this->connection);
-
-		if(DEBUG) $time_end = microtime(true);
-		if(DEBUG) FB::send(sprintf("%s", $query), "» MSSQL Query [#" . DB_MSSQL::$total_queries . "]");
-		if(DEBUG) FB::send(round(($time_end - $time_start) * 1000, 2) . "ms", "» └ Time");
 
 		DB_MSSQL::$total_time += $time_end - $time_start;
 
@@ -117,4 +111,7 @@ class MSSQL {
 		return mssql_num_rows($result);
 	}
 }
+
+class MSSQLConnectionError extends \Core\Error {}
+class MSSQLSelectDBError extends \Core\Error {}
 ?>

@@ -1,4 +1,5 @@
-<?php /* Copyright 2010 James Cleveland. All rights reserved.
+<?php
+/* Copyright 2010 James Cleveland. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are
 permitted provided that the following conditions are met:
@@ -145,7 +146,7 @@ class Router {
     }
 }
 
-class InvalidControllerPathError extends \Exception {
+class InvalidControllerPathError extends Error {
     public function __construct($path) {
         trigger_error(sprintf("Invalid controller path '%s'.", $path), E_USER_ERROR);
     }

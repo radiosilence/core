@@ -1,4 +1,5 @@
-<?php /* Copyright 2010 James Cleveland. All rights reserved.
+<?php
+/* Copyright 2010 James Cleveland. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are
 permitted provided that the following conditions are met:
@@ -26,7 +27,9 @@ or implied, of James Cleveland. */
 
 namespace Core;
 
-class HTTPError extends \Exception {
+class Error extends \Exception {}
+
+class HTTPError extends Error {
     public $error_codes = array(
         404 => "HTTP/1.0 404 Not Found"
     );
@@ -40,7 +43,7 @@ class HTTPError extends \Exception {
     }
 }
 
-class FileNotFoundError extends \Exception {
+class FileNotFoundError extends Error {
 	public function __construct($filename) {
 		trigger_error(sprintf('Required file "%s" was not found.', $filename), E_USER_ERROR);
 	}

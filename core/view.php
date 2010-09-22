@@ -1,4 +1,5 @@
-<?php /* Copyright 2010 James Cleveland. All rights reserved.
+<?php
+/* Copyright 2010 James Cleveland. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are
 permitted provided that the following conditions are met:
@@ -61,7 +62,7 @@ class View {
     }
 }
 
-class TemplateNotFoundError extends \Exception {
+class TemplateNotFoundError extends Error {
     public function __construct($path){
         # We could do something other than trigger an error here, like display a default template or something.
         trigger_error(sprintf('Template "%s" cannot be found.', $path), E_USER_ERROR);
