@@ -11,11 +11,7 @@ namespace Core;
 class View {
     private $vars = array();
     
-    public function set($varname, $value, $overwrite = false) {
-        if(isset($this->vars[$varname]) == true and $overwrite == false) {
-            throw new Exception('Unable to set var "' . $varname . '". Already set, and overwrite not allowed.');
-            return false;
-        }
+    public function set($varname, $value) {
         $this->vars[$varname] = $value;
         return true;
     }
