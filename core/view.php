@@ -5,9 +5,10 @@
  * @package core
  * @subpackage core
  */
-class View
-{
-    private $registry;
+
+namespace Core;
+
+class View {
     private $vars = array();
     
     public function set($varname, $value, $overwrite = false) {
@@ -28,7 +29,7 @@ class View
         $path = SITE_PATH . 'views' . DIRSEP . $name . '.php';
 
         if(file_exists($path) == false) {
-            trigger_error('Template `' . $path . '` does not exist.', E_USER_NOTICE);
+            throw new TemplateNotFoundError($path);
             return false;
         }
         // Load variables
@@ -36,6 +37,13 @@ class View
             $$key = $value;
         }
         include ($path);
+    }
+}
+
+class TemplateNotFoundError extends \Exception {
+    public function __construct($path){
+        # We could do something other than trigger an error here, like display a default template or something.
+        trigger_error(sprintf('Template "%s" cannot be found.', $path), E_USER_ERROR);
     }
 }
 ?>

@@ -7,16 +7,24 @@
  * @subpackage core
  */
 
-import( core.)
-
 namespace Core;
 
+import('core.controller');
+
 class Router {
-    private $registry;
     private $path;
     private $args = array();
 
-    public function set_path($path) {
+    public function __construct($controller_path=false) {
+        if($controller_path){
+            $this->set_path($controller_path);
+        } else {
+            $this->set_path(SITE_PATH . 'controllers');            
+        }
+        $this->delegate();
+    }
+
+    private function set_path($path) {
         $path .= DIRSEP;
         if(is_dir($path) == false) {
             throw new Exception('Invalid controller path: `' . $path . '`');
@@ -24,7 +32,7 @@ class Router {
         $this->path = $path;
     }	
 
-    public function delegate($route = 0) {
+    private function delegate($route = 0) {
         # Analyze route
         
         if(!$route) {
@@ -47,13 +55,13 @@ class Router {
 
         # File available?
         if(is_readable($file) == false) {
-            throw new HTTPException("Controller: Page not found.", 404);
+            throw new HTTPError("Controller: Page not found.", 404);
         }
         # Include the file
-        include ($file);
+        require($file);
         # Initiate the class.
-        $class = str_replace("/", "_", 'controller_' . $controller);
-        $controller = new $class($this->registry);
+        $class = str_replace("/", "\\", '\\Controllers\\' . $controller);
+        $controller = new $class();
 
         # If it isn't the action, set the action as index
         if(!is_callable(array($controller, $action))) {
