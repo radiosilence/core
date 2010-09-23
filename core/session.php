@@ -195,117 +195,13 @@ class Session
     }
 
     /**
-     * Makes the session in the database have the current data.
-     */
-    private function update_session_in_db() {
-        $sth = $this->pdo->prepare("
-            UPDATE sessions
-            SET data = :data
-            WHERE sid = :sid
-        ");
-        $ok = $sth->execute(array(
-            "data" => json_encode($this->data),
-            "sid" => $this->sid
-        ));
-        if(!$ok) {
-            throw new SessionUpdateError();
-        }
-
-    }
-
-    /**
-     * Inserts a new session into the database.
-     * @param integer $user_id
-     * @return boolean success
-     */
-    private function insert_new_session_into_db(){
-        $sth = $this->pdo->prepare("
-            INSERT INTO sessions (
-                sid, tok, ipv4, data
-            )
-            VALUES (
-                :sid, :tok, :ipv4, :data
-            )
-        ");
-        $ok = $sth->execute(array(
-            "sid" => $this->sid,
-            "tok" => $this->tok,
-            "ipv4" => $this->remote_addr,
-            "data" => $this->data
-        ));
-
-        if(!$ok) {
-            throw new SessionInsertError();
-        }
-    }
-
-    /**
-     * Destroys sid in database
-     */
-    private function delete_current_session_from_db(){ 
-        $sth = $this->pdo->prepare("
-            DELETE FROM sessions
-            WHERE sid = :sid
-            AND ipv4 = :ipv4
-        ");
-        
-        $ok = $sth->execute(array(
-            "sid" => $this->sid,
-            "ipv4" => $this->remote_addr
-        ));
-        if(!$ok) {
-            throw new SessionDeleteError();
-        }
-    }
-
-    /**
-     * Destroys sid and tok cookies.
-     */
-    private function destroy_cookies() {
-        setcookie("sid", "DEAD", time()-1, WWW_PATH . "/", null, false, true);
-        setcookie("tok", "DEAD", time()-1, WWW_PATH . "/", null, false, true);
-    }
-
-    /**
-     * Find a matching sid/tok/IP in the database
-     */
-    private function find_session_in_db() {
-        $sth = $this->pdo->prepare("
-            SELECT sid, data
-            FROM sessions
-            WHERE sid = :sid
-            AND tok = :tok
-            AND ipv4 = :ipv4
-            LIMIT 1
-        ");
-        $ok = $sth->execute(array(
-            "sid" => $this->cookie_sid,
-            "tok" => $this->cookie_tok,
-            "ipv4" => $this->remote_addr
-        ));
-        if(!$ok) {
-            throw new SessionFindError();
-        }
-        $this->found_session = $sth->fetchObject();
-    }
-
-    /**
      * Sets the object's session to the right things.
      */
     private function set_session() {
         $this->sid = $this->cookie_sid;
-        $this->data = json_decode($this->found_session->data, true);
+        $this->data = $this->found_session->data, true);
         $this->tok = $this->cookie_tok;
     }
-
-    /**
-     * Sets the cookies, with httponly.
-     */
-    private function set_cookie() {
-        setcookie("sid", $this->sid, time()+(3600*24*65), null, null, false, true);
-        setcookie("tok", $this->tok, time()+(3600*24*65), null, null, false, true);
-    }
-
     /**
      * Generates a new auth token based on session ID.
      * @param string $passhash Password hash.
