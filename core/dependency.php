@@ -46,7 +46,7 @@ class Dependency {
         self::test(func_get_args(),'class');
     }
 
-    private function test(Array $inputs, $type){
+    private static function test(Array $inputs, $type){
         foreach($inputs as $input) {
             $f = $type . '_exists';
             if(!$f($input)){

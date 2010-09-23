@@ -34,9 +34,10 @@ or implied, of James Cleveland. */
 namespace Core;
 
 import('core.dependency');
+import('core.exceptions');
 
 DEPENDENCY::require_classes('PDO');
-DEPENDENCY::require_functions('setcookie');
+DEPENDENCY::require_functions('setcookie','json_decode');
 
 class Session
 {
@@ -47,15 +48,11 @@ class Session
     /**
      * Session sid
      */
-    private $session = 0;
+    public $sid;
     /**
      * Session token
      */
-    private $tok = 0;
-    /**
-     * Session user id
-     */
-    public $user_id = 0;
+    private $tok;
     /**
      * Session data
      */
@@ -68,26 +65,46 @@ class Session
      * Secret phrase to salt passwords
      */
     private $base_salt;
+    /**
+     * PDO statement for a correct sid and tok pair.
+     */
+    private $correct_session;
+    /**
+     * Session found in DB
+     */
+    private $found_session;
+    /**
+     * Remote address of client
+     */
+    private $remote_addr;
+    /**
+     * Attach a PDO. NECESSARY!
+     * @param \PDO $pdo
+     */
+    public function attach_pdo(\PDO $pdo) {
+        $this->pdo = $pdo;
+        SESSIONDBERROR::$pdo = $pdo;
+        return $this;
+    }
+    public function set_remote_addr($addr) {
+        $this->remote_addr = $addr;
+        return $this;
+    }
 
-	public function attach_pdo(\PDO $pdo) {
-		$this->pdo = $pdo;
-		return $this;
-	}
-
-	public function read_cookie($sid, $tok) {
-		$this->cookie_sid = $sid;
-		$this->cookie_tok = $tok;
+	public function read_cookie($cookie) {
+		$this->cookie_sid = $cookie['sid'];
+		$this->cookie_tok = $cookie['tok'];
 		return $this;
 	}
 	
 	public function attach_auth_config($file=False) {
 		if(empty($file)){
-			$file = SITE_PATH . "config/auth.php";
+			$file = SITE_PATH . "config" . DIRSEP . "auth.php";
 		}
 		if(!file_exists($file)) {
-			throw new FileNotFoundError($this->auth_file);	
+			throw new FileNotFoundError($file);	
 		}
-		require($file);
+		require_once($file);
         $this->keyphrase = $config_auth["keyphrase"];
         $this->base_salt = $config_auth["base_salt"];
 		return $this;
@@ -100,88 +117,60 @@ class Session
      * @param database $pdo database object.
      */
 	public function start() {
-        
-        $pdo = $this->pdo;
-		$sid = $this->cookie_sid;
-        $tok = $this->cookie_tok;
-
-        if(!empty($sid) && !empty($tok)) {
-            
-            if(DEBUG) FB::log("Attempting to load supposed session [" . $sid . "] ...");
-
-            # Is it the right tok for sid and IP?
-            $sth = $pdo->prepare("
-                SELECT sid, data, user_id
-                FROM sessions
-                WHERE sid = :sid
-                AND tok = :tok
-                AND ipv4 = :ipv4
-                LIMIT 1
-            ");
-                
-            $e = $sth->execute(array(
-                ":sid" => $sid,
-                ":tok" => $tok,
-                ":ipv4" => $_SERVER["REMOTE_ADDR"]
-            ));
-                
-            if($e) {
-                $row = $sth->fetch();
-                $chall = $this->create_token($sid);
-                # would a recreation of this from this host be the same as the real thing?
-                if($chall == $tok)
-                {
-                    if(DEBUG) FB::send("Challenge: ". $chall . " Real: " . $tok, "Toks");
-
-                    $this->set_session(array(
-                        "sid" => $sid,
-                        "data" => json_decode($row["data"], true),
-                        "tok" => $tok,
-                        "user_id" => $row["user_id"])
-                    );
-                }
-
-            } else {
-                die($pdo->error);
-            }
+        try {
+            $this->find_session_in_db();
+            $this->test_token();
+            $this->set_session();
+            return $this;
+        } catch(SessionFindError $e) {
+            echo "SESION NOT FND";
+            return False;
+        } catch(TokenMismatchError $e) {
+            $this->destroy_cookies();
+            return False;
         }
-        if($this->session) {
-            if(DEBUG) FB::log($this, "✔ Loaded session [" . $this->session . "]");
-        } else {
-            if(DEBUG) FB::log("× Session not loaded because it doesn't exist.");
-        }
-		
-		return $this;
 	}
 
-    public function __destruct() {
-
-        if($this->session) {
-            if(DEBUG) FB::log($this, "Saving session [" . $this->session . "] ... ");
-            $pdo = $this->pdo;
-            
-            $sth = $pdo->prepare("
-                UPDATE sessions
-                SET data = :data
-                WHERE sid = :sid
-                LIMIT 1"
-            );
-            
-            $sth->execute(array(
-                ":data" => json_encode($this->data),
-                ":sid" => $this->session
-            ));
-
-            if($e) {
-                if(DEBUG) FB::log("✔ Saved session.");
-            } else {
-                if(DEBUG) FB::error("× Could not write session.");
-            }
-
-        } else {
-            if(DEBUG) FB::log("× Not destroying session because it doesn't exist.");
+    /**
+     * Creates a session, puts it in the database,
+     * returns the ID.. Assumes login has succeeded.
+     * @param integer $user_id User ID
+     * @return array Either a fail or an array with $sid, $id, and $tok.
+     */
+    public function create($data=False) {
+        $this->sid = $this->create_sid();
+        $this->tok = $this->create_token($this->sid);
+        $this->data = $data;
+        try {
+            $this->insert_new_session_into_db();
+            $this->set_cookies();
         }
+        catch(SessionInsertError $e){
+            print $e->error_message;
+        }
+    }
 
+    /**
+     * Destroys the session, deletes from DB, unsets cookies.
+     * 
+     */
+    public function destroy() {
+        try {
+            $this->delete_current_session_from_db();        
+            $this->destroy_cookies();        
+        } catch(SessionDeleteError $e) {
+            echo $e->error_message;
+        }
+    }
+    
+    public function __destruct() {
+        if($this->sid) {
+            try {
+                $this->update_session_in_db();
+            } catch(SessionUpdateError $e) {
+                echo "Session failed to save: " . $e->error_message;
+            }
+        }
     }
 
     /**
@@ -190,7 +179,7 @@ class Session
      * @param $prop_value Property data
      * @return boolean
      */
-    function __get($prop_name) {
+    public function __get($prop_name) {
         if (isset($this->data[$prop_name])) {
             return $this->data[$prop_name];
         } else {
@@ -204,112 +193,135 @@ class Session
      * @param $prop_value Property data
      * @return boolean
      */
-    function __set($prop_name, $prop_value) {
+    public function __set($prop_name, $prop_value) {
         $this->data[$prop_name] = $prop_value;
         return true;
     }
 
+    public function var_dump() {
+        var_dump($this);
+    }
     /**
-     * Creates a session, puts it in the database,
-     * returns the ID.. Assumes login has succeeded.
-     * @param integer $user_id User ID
-     * @param string $passhash Hashed password.
-     * @param string $email User's email.
-     * @return array Either a fail or an array with $sid, $id, and $tok.
+     * Regenerate token and compare to the cookie.
      */
-    public function create_session($user_id) {
-        $sid = $this->create_sid();
-        $tok = $this->create_token($sid);
-        $pdo = $this->pdo;
-
-        $sth = $pdo->prepare("
-            DELETE
-            FROM sessions
-            WHERE user_id = :user_id
-            AND ipv4 = :ipv4"
-        );
-        $sth->execute(array("user_id" => $user_id, "ipv4" => $_SERVER["REMOTE_ADDR"]));
-
-
-        $sth2 = $pdo->prepare("
-            INSERT INTO sessions (
-                sid, tok, ipv4, user_id
-           )
-            VALUES (
-                :sid, :tok, :ipv4, :user_id
-           )
-        ");
-        
-        $res = $sth2->execute(array(
-            ":sid" => $sid,
-            ":tok" => $tok,
-            ":ipv4" => $_SERVER["HTTP_X_FORWARDED_FOR"],
-            ":user_id" => $user_id 
-        ));
-        
-        if($res) {
-            $return = array("sid" => $sid, "id" => $user_id, "tok" => $tok);
-        } else {
-            $return = 0;
+    private function test_token(){
+        $chall = $this->create_token($this->cookie_sid);
+        if($chall != $this->cookie_tok) {
+            throw new TokenMismatchError();
         }
-        
-        return $return;
     }
 
     /**
-     * Destroys the session, deletes from DB, unsets cookies.
-     * 
+     * Makes the session in the database have the current data.
      */
-    public function destroy_session() {
-        $pdo = $this->pdo;
-        $sth = $pdo->prepare("
+    private function update_session_in_db() {
+        $sth = $this->pdo->prepare("
+            UPDATE sessions
+            SET data = :data
+            WHERE sid = :sid
+        ");
+        $ok = $sth->execute(array(
+            "data" => json_encode($this->data),
+            "sid" => $this->sid
+        ));
+        if(!$ok) {
+            throw new SessionUpdateError();
+        }
+
+    }
+
+    /**
+     * Inserts a new session into the database.
+     * @param integer $user_id
+     * @return boolean success
+     */
+    private function insert_new_session_into_db(){
+        $sth = $this->pdo->prepare("
+            INSERT INTO sessions (
+                sid, tok, ipv4, data
+            )
+            VALUES (
+                :sid, :tok, :ipv4, :data
+            )
+        ");
+        echo $this->remote_addr;
+        $ok = $sth->execute(array(
+            "sid" => $this->sid,
+            "tok" => $this->tok,
+            "ipv4" => $this->remote_addr,
+            "data" => $this->data
+        ));
+
+        if(!$ok) {
+            throw new SessionInsertError();
+        }
+    }
+
+    /**
+     * Destroys sid in database
+     */
+    private function delete_current_session_from_db(){ 
+        $sth = $this->pdo->prepare("
             DELETE FROM sessions
             WHERE sid = :sid
             AND ipv4 = :ipv4
-            AND tok = :tok
         ");
         
-        $sth->execute(array(
-            ":sid" => $this->session,
-            ":ipv4" => $_SERVER["HTTP_X_FORWARDED_FOR"]
+        $ok = $sth->execute(array(
+            "sid" => $this->sid,
+            "ipv4" => $this->remote_addr
         ));
-        
+        if(!$ok) {
+            throw new SessionDeleteError();
+        }
+    }
+
+    /**
+     * Destroys sid and tok cookies.
+     */
+    private function destroy_cookies() {
         setcookie("sid", "DEAD", time()-1, WWW_PATH . "/", null, false, true);
         setcookie("tok", "DEAD", time()-1, WWW_PATH . "/", null, false, true);
-        return 1;
     }
-         
+
     /**
-     * Makes a hash from a password string.
-     * @param string $password unhashed password
-     * @return string password hash
+     * Find a matching sid/tok/IP in the database
      */
-    public function password_hash($password, $salt) {
-        $hash = hash("sha256", $password . sha1($salt . $this->base_salt));
-        return $hash;
+    private function find_session_in_db() {
+        $sth = $this->pdo->prepare("
+            SELECT sid, data
+            FROM sessions
+            WHERE sid = :sid
+            AND tok = :tok
+            AND ipv4 = :ipv4
+            LIMIT 1
+        ");
+        $ok = $sth->execute(array(
+            "sid" => $this->cookie_sid,
+            "tok" => $this->cookie_tok,
+            "ipv4" => $this->remote_addr
+        ));
+        if(!$ok) {
+            throw new SessionFindError();
+        }
+        $this->found_session = $sth->fetchObject();
     }
 
     /**
      * Sets the object's session to the right things.
-     * @param hash $sid
-     * @param integer $id
      */
-    public function set_session($s) {
-        if(DEBUG) FB::send($s, "Setting Session");
-        $this->session = $s["sid"];
-        $this->user_id = $s["user_id"];
-        $this->data = $s["data"];
-        $this->tok = $s["tok"];
+    private function set_session() {
+        $this->sid = $this->cookie_sid;
+        $this->data = json_decode($this->found_session->data, true);
+        $this->tok = $this->cookie_tok;
     }
 
     /**
      * Sets the cookies, with httponly.
-     * @param hash $tok
      */
-    public function set_cookie() {
-        setcookie("sid", $this->session, time()+(3600*24*65), WWW_PATH . "/", null, false, true);
-        setcookie("tok", $this->tok, time()+(3600*24*65), WWW_PATH . "/", null, false, true);
-        if(DEBUG) FB::log("Setting up cookies.");
+    private function set_cookies() {
+        setcookie("sid", $this->sid, time()+(3600*24*65), null, null, false, true);
+        setcookie("tok", $this->tok, time()+(3600*24*65), null, null, false, true);
     }
 
     /**
@@ -317,9 +329,9 @@ class Session
      * @param string $passhash Password hash.
      * @param string $email User's email.
      */
-    private function create_token($sid) {
+    private function create_token() {
         # Token generation code.
-        $hash = sha1($this->keyphrase . $_SERVER["HTTP_X_FORWARDED_FOR"] . $sid);
+        $hash = sha1($this->keyphrase . $this->remote_addr . $sid);
         return $hash;
     }
 
@@ -328,7 +340,26 @@ class Session
      * @return hash sid
      */
     private function create_sid() {
-        return sha1(microtime() . $_SERVER["HTTP_X_FORWARDED_FOR"]);
+        return sha1(microtime() . $this->remote_addr);
     }
 }
+
+class SessionDBError extends Error {
+    public static $pdo;
+    public $error_message;
+    public function __construct() {
+        $error_info = self::$pdo->errorInfo();
+        $this->error_message = $error_info[2];
+        parent::__construct();
+    }
+}
+
+class SessionUpdateError extends SessionDBError {}
+class SessionInsertError extends SessionDBError {}
+class SessionDeleteError extends SessionDBError {}
+class SessionCleanupError extends SessionDBError {}
+class SessionFindError extends SessionDBError {}
+class TokenMismatchError extends Error {}
+
+
 ?>
