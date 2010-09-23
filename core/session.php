@@ -123,7 +123,6 @@ class Session
             $this->set_session();
             return $this;
         } catch(SessionFindError $e) {
-            echo "SESION NOT FND";
             return False;
         } catch(TokenMismatchError $e) {
             $this->destroy_cookies();
@@ -159,7 +158,7 @@ class Session
             $this->delete_current_session_from_db();        
             $this->destroy_cookies();        
         } catch(SessionDeleteError $e) {
-            echo $e->error_message;
+            return False;
         }
     }
     
@@ -168,7 +167,7 @@ class Session
             try {
                 $this->update_session_in_db();
             } catch(SessionUpdateError $e) {
-                echo "Session failed to save: " . $e->error_message;
+                return False;
             }
         }
     }
@@ -244,7 +243,6 @@ class Session
                 :sid, :tok, :ipv4, :data
             )
         ");
-        echo $this->remote_addr;
         $ok = $sth->execute(array(
             "sid" => $this->sid,
             "tok" => $this->tok,
