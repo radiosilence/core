@@ -91,32 +91,32 @@ class Session
         return $this;
     }
 
-	public function read_cookie($cookie) {
-		$this->cookie_sid = $cookie['sid'];
-		$this->cookie_tok = $cookie['tok'];
-		return $this;
-	}
-	
-	public function attach_auth_config($file=False) {
-		if(empty($file)){
-			$file = SITE_PATH . "config" . DIRSEP . "auth.php";
-		}
-		if(!file_exists($file)) {
-			throw new FileNotFoundError($file);	
-		}
-		require_once($file);
+    public function read_cookie($cookie) {
+        $this->cookie_sid = $cookie['sid'];
+        $this->cookie_tok = $cookie['tok'];
+        return $this;
+    }
+    
+    public function attach_auth_config($file=False) {
+        if(empty($file)){
+            $file = SITE_PATH . "config" . DIRSEP . "auth.php";
+        }
+        if(!file_exists($file)) {
+            throw new FileNotFoundError($file);    
+        }
+        require_once($file);
         $this->keyphrase = $config_auth["keyphrase"];
         $this->base_salt = $config_auth["base_salt"];
-		return $this;
-	}
-	
+        return $this;
+    }
+    
     /**
      * Starts it all off, gets the sid/tok provided by
      * the cookie, and authorises it/registers it as
      * valid depending on the result.
      * @param database $pdo database object.
      */
-	public function start() {
+    public function start() {
         try {
             $this->find_session_in_db();
             $this->test_token();
@@ -129,7 +129,7 @@ class Session
             $this->destroy_cookies();
             return False;
         }
-	}
+    }
 
     /**
      * Creates a session, puts it in the database,
