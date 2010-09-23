@@ -1,29 +1,12 @@
 <?php
-/* Copyright 2010 James Cleveland. All rights reserved.
-
-Redistribution and use in source and binary forms, with or without modification, are
-permitted provided that the following conditions are met:
-
-   1. Redistributions of source code must retain the above copyright notice, this list of
-      conditions and the following disclaimer.
-
-   2. Redistributions in binary form must reproduce the above copyright notice, this list
-      of conditions and the following disclaimer in the documentation and/or other materials
-      provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY James Cleveland "AS IS" AND ANY EXPRESS OR IMPLIED
-WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
-FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL JAMES CLEVELAND OR
-CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
-ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-The views and conclusions contained in the software and documentation are those of the
-authors and should not be interpreted as representing official policies, either expressed
-or implied, of James Cleveland. */
+/*
+ * This file is part of the core framework.
+ *
+ * (c) James Cleveland <jamescleveland@gmail.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
 
 /**
  * Session management.
@@ -96,7 +79,7 @@ class Session
         $this->cookie_tok = $cookie['tok'];
         return $this;
     }
-    
+	
     public function attach_auth_config($file=False) {
         if(empty($file)){
             $file = SITE_PATH . "config" . DIRSEP . "auth.php";
@@ -142,7 +125,7 @@ class Session
         $this->data = $data;
         try {
             $this->insert_new_session_into_db();
-            $this->set_cookies();
+            $this->set_cookie();
         }
         catch(SessionInsertError $e){
             print $e->error_message;
@@ -317,7 +300,7 @@ class Session
     /**
      * Sets the cookies, with httponly.
      */
-    private function set_cookies() {
+    private function set_cookie() {
         setcookie("sid", $this->sid, time()+(3600*24*65), null, null, false, true);
         setcookie("tok", $this->tok, time()+(3600*24*65), null, null, false, true);
     }
