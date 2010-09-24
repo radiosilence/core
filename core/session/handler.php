@@ -45,6 +45,10 @@ class Handler {
      */
     private $local_storage;
     
+    /**
+     * Give it an IP.
+     * @param $addr IP Address
+     */
     public function set_remote_addr($addr) {
         $this->remote_addr = $addr;
         $this->remote_storage->set_remote_addr($addr);
@@ -62,17 +66,35 @@ class Handler {
         return $this;
     }
 
-    public function attach_auth_config($file=False) {
+    public function attach_crypto_config($file=False) {
         if(empty($file)) {
-            $file = SITE_PATH . 'config' . DIRSEP . 'auth.php';
+            $file = SITE_PATH . 'config' . DIRSEP . 'crypto.php';
         }
         if(!file_exists($file)) {
-            throw new FileNotFoundError($file);    
+            throw new \Core\FileNotFoundError($file);    
         }
         require_once($file);
         $this->keyphrase = $config_auth['keyphrase'];
         $this->base_salt = $config_auth['base_salt'];
         return $this;
+    }
+
+    /**
+     * Error checking thing to make sure the necessary things have been done.
+     */
+    private function check_setup() {
+        if(empty($this->remote_addr)) {
+            throw new SessionSetupIncompleteError("Remote address not set.");
+        }   
+        if(!is_object($this->local_storage)) {
+            throw new SessionSetupIncompleteError("Local storage not attached.");
+        }
+        if(!is_object($this->remote_storage)) {
+            throw new SessionSetupIncompleteError("Remote storage not attached.");
+        }
+        if(empty($this->keyphrase) || empty($this->base_salt)) {
+            throw new SessionSetupIncompleteError("Cryptographic configuration incomplete.");
+        }
     }
     
     /**
@@ -82,6 +104,7 @@ class Handler {
      */
     public function start() {
         try {
+            $this->check_setup();
             $this->detect_existing_session();
             $this->set_session();
             return $this;
@@ -213,17 +236,22 @@ class Handler {
 }
 
 class SessionRemoteStorageError extends \Core\Error {
-    public function __construct($e) {
-        parent::__construct(sprintf("Session error [Remote]: %s", $e));
+    public function __construct($message) {
+        parent::__construct(sprintf("Session error [Remote]: %s", $message));
     }
 }
 
 class SessionLocalStorageError extends \Core\Error {
-    public function __construct($e) {
-        parent::__construct(sprintf("Session error [Local]: %s", $e));
+    public function __construct($message) {
+        parent::__construct(sprintf("Session error [Local]: %s", $message));
     }
 }
 
 class TokenMismatchError extends \Core\Error {}
 
+class SessionSetupIncompleteError extends \Core\Error {
+    public function __construct($message) {
+        parent::__construct(sprintf("Session setup incomplete: %s", $message));
+    }
+}
 ?>
