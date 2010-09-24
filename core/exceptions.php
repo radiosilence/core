@@ -11,7 +11,24 @@
 
 namespace Core;
 
-class Error extends \Exception {}
+class Error extends \Exception {
+    /**
+     * TODO: Put this in a definitions file somwhere.
+     */
+    public function __construct($message) {
+        $sapi_type = php_sapi_name();
+        if (substr($sapi_type, 0, 3) != 'cli') {
+            echo "<h1>";
+            $text = "</h1><p>Unhandled core exception (this is very bad).</p><h2>Why?</h2><p>%s</p><h2>How?</h2><p><pre>%s</pre></p>This error was generated";
+        } else {
+            $text = "\n============\nUnhandled core exception (this is very bad).\n\nWhy?\n====\n%s\n\nHow?\n====\n%s\n\nThis error was generated";
+        }
+
+        trigger_error(sprintf($text, $message,
+            $this), E_USER_ERROR);
+        
+    }
+}
 
 class HTTPError extends Error {
     public $error_codes = array(
@@ -29,7 +46,7 @@ class HTTPError extends Error {
 
 class FileNotFoundError extends Error {
 	public function __construct($filename) {
-		trigger_error(sprintf('Required file "%s" was not found.', $filename), E_USER_ERROR);
+		parent::__construct(sprintf('Required file "%s" was not found.', $filename));
 	}
 }
 ?>
