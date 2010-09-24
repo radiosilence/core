@@ -13,14 +13,18 @@
 namespace Core\Session;
 
 interface RemoteStorage {
-	public function __set();
-	public function __get();
-	public function update($sid,$tok,$data,$remote_addr);
-	public function add();
-	public function find();
-	public function destroy();
+    public function __set($prop_name, $prop_value);
+    public function __get($prop_name);
+    public function save();
+    public function add($actual);
+    public function load($untrusted);
+    public function destroy();
 } 
 
 interface LocalStorage {
-	
+    public function get();
+    public function set($actual);
+    public function destroy();
 }
+
+?>

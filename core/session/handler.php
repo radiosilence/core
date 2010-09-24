@@ -13,16 +13,17 @@
 namespace Core\Session;
 
 import('core.session.interfaces');
+import('core.exceptions');
 
 class Handler {
     /**
-     * Session sid
+     * Untrusted session details.
      */
-    public $sid;
+    private $untrusted = array();
     /**
-     * Session token
+     * Actual trusted session details.
      */
-    private $tok;
+    private $actual = array();
     /**
      * Secret phrase
      */
@@ -32,57 +33,45 @@ class Handler {
      */
     private $base_salt;
     /**
-     * PDO statement for a correct sid and tok pair.
-     */
-    private $correct_session;
-    /**
-     * Session found in DB
-     */
-    private $found_session;
-    /**
      * Remote address of client
      */
     private $remote_addr;
-	/**
-	 * Remote storage.
-	 */
-	private $remote_storage;
-	/**
-	 * Local storage.
-	 */
-	private $local_storage;
-	
-    /**
-     * Attach a PDO. NECESSARY!
-     * @param \PDO $pdo
+    /** 
+     * Remote storage.
      */
+    private $remote_storage;
+    /**
+     * Local storage.
+     */
+    private $local_storage;
     
     public function set_remote_addr($addr) {
         $this->remote_addr = $addr;
+        $this->remote_storage->set_remote_addr($addr);
         return $this;
     }
-	
-	public function attach_local_storage($local_storage) {
-		$this->local_storage = $local_storage;
-		return $this;
-	}
-	
-	public function attach_remote_storage($remote_storage) {
-		$this->remote_storage = $remote_storage;
-		$this->remote_storage->set_remote_addr($this->remote_addr);
-		return $this;
-	}
+    
+    public function attach_local_storage($local_storage) {
+        $this->local_storage = $local_storage;
+        return $this;
+    }
+    
+    public function attach_remote_storage($remote_storage) {
+        $this->remote_storage = $remote_storage;
+        $this->remote_storage->set_remote_addr($this->remote_addr);
+        return $this;
+    }
 
     public function attach_auth_config($file=False) {
-        if(empty($file)){
-            $file = SITE_PATH . "config" . DIRSEP . "auth.php";
+        if(empty($file)) {
+            $file = SITE_PATH . 'config' . DIRSEP . 'auth.php';
         }
         if(!file_exists($file)) {
             throw new FileNotFoundError($file);    
         }
         require_once($file);
-        $this->keyphrase = $config_auth["keyphrase"];
-        $this->base_salt = $config_auth["base_salt"];
+        $this->keyphrase = $config_auth['keyphrase'];
+        $this->base_salt = $config_auth['base_salt'];
         return $this;
     }
     
@@ -90,19 +79,21 @@ class Handler {
      * Starts it all off, gets the sid/tok provided by
      * the cookie, and authorises it/registers it as
      * valid depending on the result.
-     * @param database $pdo database object.
      */
     public function start() {
         try {
-        	$remote_storage->find();
-            update_remote_storage();
-            $this->test_token();
+            $this->detect_existing_session();
             $this->set_session();
             return $this;
-        } catch(SessionFindError $e) {
+        } catch(SessionNotFoundError $e) {
+            echo "SESSION NOT FOUND ERROR";
+            //$this->local_storage->destroy();
+            return False;
+        } catch(CookieNotSetError $e) {
             return False;
         } catch(TokenMismatchError $e) {
-            $this->destroy_cookies();
+            echo "TOKEN MISMATCH";
+            $this->local_storage->destroy();
             return False;
         }
     }
@@ -113,37 +104,33 @@ class Handler {
      * @param integer $user_id User ID
      * @return array Either a fail or an array with $sid, $id, and $tok.
      */
-    public function create($data=False) {
-        $this->sid = $this->create_sid();
-        $this->tok = $this->create_token($this->sid);
-        $this->data = $data;
+    public function create() {
+        $this->generate_session();
         try {
-            $this->insert_new_session_into_db();
-            $this->set_cookie();
-        }
-        catch(SessionInsertError $e){
-            print $e->error_message;
+            $this->remote_storage->add($this->actual);
+            $this->local_storage->set($this->actual);
+        } catch(SessionRemoteStorageError $e) {
+            print $e->getMessage();
         }
     }
 
     /**
      * Destroys the session, deletes from DB, unsets cookies.
-     * 
      */
     public function destroy() {
         try {
-            $this->delete_current_session_from_db();        
-            $this->destroy_cookies();        
-        } catch(SessionDeleteError $e) {
+            $this->remote_storage->destroy();        
+            $this->local_storage->destroy();       
+        } catch(SessionRemoteStorageError $e) {
             return False;
         }
     }
     
     public function __destruct() {
-        if($this->sid) {
+        if(!empty($this->actual['sid'])) {
             try {
-                $this->update_session_in_db();
-            } catch(SessionUpdateError $e) {
+                $this->remote_storage->save();
+            } catch(SessionRemoteStorageError $e) {
                 return False;
             }
         }
@@ -151,13 +138,12 @@ class Handler {
 
     /**
      * Gets stuff from data, overloader.
-     * @param $prop_name Property
-     * @param $prop_value Property data
+     * @param $key Property
      * @return boolean
      */
-    public function __get($prop_name) {
-        if (isset($this->remote_storage->data[$prop_name])) {
-            return $this->remote_storage->data[$prop_name];
+    public function __get($key) {
+        if (isset($this->remote_storage->$key)) {
+            return $this->remote_storage->$key;
         } else {
             return false;
         }
@@ -165,61 +151,45 @@ class Handler {
 
     /**
      * Sets stuff to data, overloader.
-     * @param $prop_name Property
-     * @param $prop_value Property data
+     * @param $key Property
+     * @param $value Property data
      * @return boolean
      */
-    public function __set($prop_name, $prop_value) {
-        $this->remote_storage->[$prop_name] = $prop_value;
+    public function __set($key, $value) {
+        $this->remote_storage->$key = $value;
         return true;
     }
 
-    public function var_dump() {
-        var_dump($this);
+    private function detect_existing_session() {
+            $this->read_local_storage();
+            $this->remote_storage->load($this->untrusted);
+            $this->test_token();
     }
+
+    private function generate_session() {
+        $this->actual['sid'] = $this->create_sid();
+        $this->actual['tok'] = $this->create_token($this->actual['sid']);
+    }
+
     /**
      * Regenerate token and compare to the cookie.
      */
-    private function test_token(){
-        $chall = $this->create_token($this->cookie_sid);
-        if($chall != $this->cookie_tok) {
+    private function test_token() {
+        $chall = $this->create_token($this->untrusted['sid']);
+        if($chall != $this->untrusted['tok']) {
             throw new TokenMismatchError();
         }
     }
 
-    /**
-     * Makes the session in the database have the current data.
-     */
-    private function update_session_in_db() {
-        $sth = $this->pdo->prepare("
-            UPDATE sessions
-            SET data = :data
-            WHERE sid = :sid
-        ");
-        $ok = $sth->execute(array(
-            "data" => json_encode($this->data),
-            "sid" => $this->sid
-        ));
-        if(!$ok) {
-            throw new SessionUpdateError();
-        }
-
+    private function read_local_storage() {
+        $this->untrusted = $this->local_storage->get();
     }
 
     /**
      * Sets the object's session to the right things.
      */
     private function set_session() {
-        $this->sid = $this->cookie_sid;
-        $this->tok = $this->cookie_tok;
-    }
-
-    /**
-     * Sets the cookies, with httponly.
-     */
-    private function set_cookie() {
-        setcookie("sid", $this->sid, time()+(3600*24*65), null, null, false, true);
-        setcookie("tok", $this->tok, time()+(3600*24*65), null, null, false, true);
+        $this->actual = $this->untrusted;
     }
 
     /**
@@ -227,9 +197,9 @@ class Handler {
      * @param string $passhash Password hash.
      * @param string $email User's email.
      */
-    private function create_token() {
+    private function create_token($tok) {
         # Token generation code.
-        $hash = sha1($this->keyphrase . $this->remote_addr . $sid);
+        $hash = sha1($this->keyphrase . $this->remote_addr . $tok);
         return $hash;
     }
 
@@ -242,20 +212,18 @@ class Handler {
     }
 }
 
-class SessionRemoteError extends Error {
-    public $error_message;
-    public function __construct($message) {
-        $error_info = $message;
-        parent::__construct();
+class SessionRemoteStorageError extends \Core\Error {
+    public function __construct($e) {
+        parent::__construct(sprintf("Session error [Remote]: %s", $e));
     }
 }
 
-class SessionUpdateError extends SessionRemoteError {}
-class SessionInsertError extends SessionRemoteError {}
-class SessionDeleteError extends SessionRemoteError {}
-class SessionCleanupError extends SessionRemoteError {}
-class SessionFindError extends SessionRemoteError {}
-class SessionTokenMismatchError extends Error {}
+class SessionLocalStorageError extends \Core\Error {
+    public function __construct($e) {
+        parent::__construct(sprintf("Session error [Local]: %s", $e));
+    }
+}
 
+class TokenMismatchError extends \Core\Error {}
 
-
+?>

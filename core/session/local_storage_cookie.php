@@ -18,38 +18,55 @@ import('core.dependency');
 \Core\DEPENDENCY::require_functions('setcookie');
 
 class LocalStorageCookie implements LocalStorage {
-	private $sid;
-	private $tok;
-	
-	public function __construct() {
-        $this->cookie_sid = $_COOKIE['sid'];
-        $this->cookie_tok = $_COOKIE['tok'];
-	}
-	
-	public function __destruct() {
-        setcookie("sid", $this->sid, time()+(3600*24*65), null, null, false, true);
-        setcookie("tok", $this->tok, time()+(3600*24*65), null, null, false, true);
-	}
-	
-	public function read() {
-        return array(
-        	'sid' => $this->sid,
-        	'tok' => $this->tok
-        );
+    private $untrusted = array();
+    private $actual = array();
+    private $cookie;
+    
+    public function __construct($cookie=False) {
+        if(empty($cookie)) {
+            $cookie = $_COOKIE;
+        }
+        foreach(array('sid','tok') as $key) {
+            $this->untrusted[$key] = $cookie[$key];
+        }
     }
+    
+    public function get() {
+        if(empty($this->untrusted['sid']) || empty($this->untrusted['sid'])) {
+            throw new CookieNotSetError();
+        }
+
+        return $this->untrusted;
+    }
+
     /**
      * Sets the cookies, with httponly.
      */
-    private function save($sid,$tok) {
-    	$this->sid = $sid;
-		$this->tok = $tok;
+    public function set($actual) {
+        $this->actual = $actual;
     }
-	
+
+    public function __destruct() {
+        if(!is_array($this->actual)) {
+            return False;
+        }
+        foreach($this->actual as $key => $value) {
+            setcookie($key, $value, time()+(3600*24*65), null, null, false, true);
+        }
+    }
+    
     /**
      * Destroys sid and tok cookies.
      */
-    private function destroy() {
-    	$this->sid = null;
-		$this->tok = null;
+    public function destroy() {
+        $this->actual['sid'] = null;
+        $this->actual['tok'] = null;
     }
 }
+
+class CookieNotSetError extends SessionLocalStorageError {
+    public function __construct() {
+        parent::__construct("Cookie not set.");
+    }
+}
+?>
