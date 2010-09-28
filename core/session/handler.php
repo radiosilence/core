@@ -109,16 +109,15 @@ class Handler {
             $this->set_session();
             return $this;
         } catch(SessionNotFoundError $e) {
-            echo "SESSION NOT FOUND ERROR";
-            //$this->local_storage->destroy();
-            return False;
-        } catch(CookieNotSetError $e) {
-            return False;
-        } catch(TokenMismatchError $e) {
-            echo "TOKEN MISMATCH";
             $this->local_storage->destroy();
-            return False;
+        } catch(CookieNotSetError $e) {
+            // Don't care.
+        } catch(TokenMismatchError $e) {
+            // Delete incase of tampering.
+            $this->local_storage->destroy();
         }
+        $this->create();
+        return $this;
     }
 
     /**
@@ -145,7 +144,7 @@ class Handler {
             $this->remote_storage->destroy();        
             $this->local_storage->destroy();       
         } catch(SessionRemoteStorageError $e) {
-            return False;
+            return "FAILED TO DESTROY";
         }
     }
     
@@ -165,11 +164,7 @@ class Handler {
      * @return boolean
      */
     public function __get($key) {
-        if (isset($this->remote_storage->$key)) {
-            return $this->remote_storage->$key;
-        } else {
-            return false;
-        }
+        return $this->remote_storage->$key;
     }
 
     /**

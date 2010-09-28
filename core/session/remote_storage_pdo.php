@@ -85,7 +85,7 @@ class RemoteStoragePDO implements RemoteStorage {
               sid, tok, remote_addr, data, latest
             )
             VALUES (
-              :sid, :tok, :remote_addr, :data, current_timestamp
+              :sid, :tok, :remote_addr, :data, current_timestamp(2) + interval '23 hours'
             )
         ");
         $ok = $sth->execute(array(
@@ -99,7 +99,7 @@ class RemoteStoragePDO implements RemoteStorage {
         }
         $this->actual = $actual;
     }
-
+ 
     /**
      * Find a matching sid/tok/IP in the database
      */
@@ -116,7 +116,7 @@ class RemoteStoragePDO implements RemoteStorage {
         $sth = $this->pdo->prepare("
             UPDATE sessions
             SET data = :data,
-              latest = current_timestamp
+              latest = current_timestamp(2)
             WHERE sid = :sid
         ");
         $ok = $sth->execute(array(
@@ -140,7 +140,7 @@ class RemoteStoragePDO implements RemoteStorage {
         ");
         
         $ok = $sth->execute(array(
-            ":sid" => $this->sid,
+            ":sid" => $this->actual['sid'],
             ":remote_addr" => $this->remote_addr
         ));
         if(!$ok) {
@@ -165,10 +165,10 @@ class RemoteStoragePDO implements RemoteStorage {
         if(!$ok) {
             throw new PDOOperationError();
         }
-
         if ($sth->rowCount() < 1) {
-            throw new SessionNotFoundError();    
+            throw new SessionNotFoundError();
         }
+
         $this->found_session = $sth->fetchObject();
     }
 
