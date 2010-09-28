@@ -11,11 +11,18 @@
 
 namespace Core;
 
+/**
+ * TODO: Put this in a definitions file somwhere.
+ */
 class Error extends \Exception {
-    /**
-     * TODO: Put this in a definitions file somwhere.
-     */
+    protected $message;
+
     public function __construct($message) {
+        $this->message = $message;
+        parent::__construct($message);
+    }
+
+    public function show_error() {       
         $sapi_type = php_sapi_name();
         if (substr($sapi_type, 0, 3) != 'cli') {
             echo "<h1>";
@@ -24,9 +31,8 @@ class Error extends \Exception {
             $text = "\n============\nUnhandled core exception (this is very bad).\n\nWhy?\n====\n%s\n\nHow?\n====\n%s\n\nThis error was generated";
         }
 
-        trigger_error(sprintf($text, $message,
-            $this), E_USER_ERROR);
-        
+        trigger_error(sprintf($text, $this->message,
+            $this), E_USER_ERROR);        
     }
 }
 
