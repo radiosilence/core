@@ -16,7 +16,7 @@
  */
 
 
-namespace Core\Model
+namespace Core\Model;
 
 class Form
 {
