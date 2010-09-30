@@ -18,8 +18,7 @@ class ImportError extends \Exception {
 
 class Importer {
     private static $importer;
-    private $imported_files = array();
-    private $include_paths = array();
+    public $include_paths = array();
 
     private $module_dir_parts = array();
     private $module_full_parts = array();
@@ -37,9 +36,13 @@ class Importer {
         }
     }
 
+    public static function add_include_path($path) {
+        self::$importer->include_paths[] = $path;
+    }
+
     public function set_include_paths($include_paths=False) {
         if(!$include_paths) {
-            $include_paths = array_merge(array(__DIR__), explode(':', ini_get('include_path')));
+            $include_paths = array_merge(array(__DIR__), explode(PATH_SEPARATOR, ini_get('include_path')));
         }
         $this->include_paths = $include_paths;
     }
@@ -60,9 +63,9 @@ class Importer {
 
     private function try_path($include_path) {
         if(end($this->module_parts) == '*') {
-            return $this->include_group($include_path . DIRSEP . implode(DIRSEP, $this->module_directory_parts));
+            return $this->include_group($include_path . '/' . implode('/', $this->module_directory_parts));
         } else {
-            return $this->include_module($include_path . DIRSEP . implode(DIRSEP, $this->module_parts) . '.php');
+            return $this->include_module($include_path . '/' . implode('/', $this->module_parts) . '.php');
         }
     }
 
@@ -71,7 +74,7 @@ class Importer {
             return False;
         } else {
             foreach(glob($directory . '*.php') as $path) {
-                include_once($path);
+                require_once($path);
             }
             return True;
         }
@@ -79,7 +82,7 @@ class Importer {
 
     private function include_module($path) {
         if(file_exists($path)) {
-            include_once($path);
+            require_once($path);
             return True;
         } else {
             return False;
