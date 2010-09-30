@@ -16,7 +16,7 @@
 
 namespace Core;
 
-class Arr {
+class CoreList {
     private $elements = array();
 
     public function __construct() {

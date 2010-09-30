@@ -36,7 +36,7 @@ class Router {
     }
 
     private function set_path($path) {
-        $path .= DIRSEP;
+        $path .= '/';
         if(is_dir($path) == false) {
             throw new InvalidControllerPathError($path);
         }
@@ -60,7 +60,7 @@ class Router {
         }
     
         $co = $controller;
-        $cn = str_replace("_", DIRSEP, $controller);    
+        $cn = str_replace("_", '/', $controller);    
         $file = str_replace($co, $cn, $file); 
 
         # File available?
@@ -97,7 +97,7 @@ class Router {
             $fullpath = $cmd_path . $part;
             // Is there a dir with this path?
             if(is_dir($fullpath)) {
-                $cmd_path .= $part . DIRSEP;
+                $cmd_path .= $part . '/';
                 array_shift($parts);
                 $class_name[] = $part;
                 continue;

@@ -32,7 +32,7 @@ class View {
     }
 
     public function show($name) {
-        $path = SITE_PATH . 'views' . DIRSEP . $name . '.php';
+        $path = SITE_PATH . 'views/' . $name . '.php';
 
         if(file_exists($path) == false) {
             throw new TemplateNotFoundError($path);

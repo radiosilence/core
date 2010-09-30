@@ -13,9 +13,8 @@ if(phpversion() < 5.3) {
 	trigger_error(sprintf('Needs to use PHP at least version 5.3, you are using version %s.', phpversion()), E_USER_ERROR);
 }
 
-define("DIRSEP", DIRECTORY_SEPARATOR);
 define("LOCALE", "en_GB");
-define("SITE_PATH", realpath(dirname(__FILE__) . '/../') . '/');
+define("SITE_PATH", realpath(__DIR__ . '/../') . '/');
 define("BASE_HREF", preg_replace("/(.*?)\/index.php/", "$1", $_SERVER['PHP_SELF']));
 define("CONFIG_PATH", SITE_PATH . "config");
 define("HOST", $_SERVER["HTTP_HOST"]);

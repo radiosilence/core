@@ -136,7 +136,6 @@ abstract class Model {
      */
     public function save() {
         $t = $this;
-        if(DEBUG) FB::send($this, "Saving model");
         $db = self::$sdb;
         
         # Check to see if id exists..
