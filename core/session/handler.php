@@ -138,7 +138,7 @@ class Handler {
         try {
             $this->remote_storage->add($this->actual);
             $this->local_storage->set($this->actual);
-        } catch(SessionRemoteStorageError $e) {
+        } catch(RemoteStorage\Error $e) {
             print $e->getMessage();
         }
     }
@@ -159,7 +159,7 @@ class Handler {
         if(!empty($this->actual['sid'])) {
             try {
                 $this->remote_storage->save();
-            } catch(SessionRemoteStorageError $e) {
+            } catch(RemoteStorage\Error $e) {
                 return False;
             }
         }
