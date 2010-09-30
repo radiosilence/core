@@ -38,7 +38,7 @@ class Handler {
      * Checks if the remote storage is attached then calls any setter functions on it.
      */
     public function initialize_remote_storage() {
-        $attached = $this->remote_storage instanceof \Core\Session\RemoteStorage;
+        $attached = $this->remote_storage instanceof RemoteStorage;
         if(!$attached) {
             throw new RemoteStorageNotAttachedError();
         }
@@ -52,7 +52,7 @@ class Handler {
      * 
      * @param \Core\Session\LocalStorage $local_storage
      */ 
-    public function attach_local_storage($local_storage) {
+    public function attach_local_storage(LocalStorage $local_storage) {
         $this->local_storage = $local_storage;
         return $this;
     }
@@ -62,7 +62,7 @@ class Handler {
      * 
      * @param \Core\Session\RemoteStorage $remote_storage
      */ 
-    public function attach_remote_storage($remote_storage) {
+    public function attach_remote_storage(RemoteStorage $remote_storage) {
         $this->remote_storage = $remote_storage;
         return $this;
     }
@@ -155,10 +155,10 @@ class Handler {
         if(empty($this->remote_addr)) {
             throw new SetupIncompleteError("Remote address not set.");
         }   
-        if(!($this->local_storage instanceof \Core\Session\LocalStorage)) {
+        if(!($this->local_storage instanceof LocalStorage)) {
             throw new LocalStorageNotAttachedError();
         }
-        if(!($this->remote_storage instanceof \Core\Session\RemoteStorage)) {
+        if(!($this->remote_storage instanceof RemoteStorage)) {
             throw new RemoteStorageNotAttachedError();
         }
         if(empty($this->keyphrase) || empty($this->base_salt)) {
