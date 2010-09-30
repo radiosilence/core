@@ -152,5 +152,30 @@ class SessionTest extends PHPUnit_Framework_TestCase {
 
         self::$sh->start();
      }
+
+     /**
+      * get a variable from remote data cache
+      *
+      * @test
+      */
+     public function getData() {
+        self::$srp->expects($this->once())
+            ->method('__get')
+            ->with($this->equalTo('horses'))
+            ->will($this->returnValue('high'));
+        $this->assertEquals(self::$sh->horses, 'high');
+     }
+
+     /**
+      * Set a variable to remote data cache.
+      *
+      * @test
+      */
+    public function setData() {
+        self::$srp->expects($this->once())
+            ->method('__set')
+            ->with($this->equalTo('horses'),$this->equalTo('high'));
+        self::$sh->horses = 'high';
+    }
 }
 ?>
