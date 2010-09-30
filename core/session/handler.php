@@ -16,69 +16,64 @@ import('core.session.storage');
 import('core.exceptions');
 
 class Handler {
-    /**
-     * Actual and untrusted session details.
-     */
-    /**
-     * @var array
-     */
     private $untrusted = array();
-
-    /**
-     * @var array
-     */
     private $actual = array();
-
-    /**
-     * @var string
-     */
     private $keyphrase;
-
-    /**
-     * @var string
-     */
     private $base_salt;
-
-    /**
-     * @var string
-     */
     private $remote_addr;
-
-    /**
-     * @var \Core\Session\RemoteStorage
-     */
     private $remote_storage;
-
-    /**
-     * @var \Core\Session\LocalStorage
-     */
     private $local_storage;
     
+    /**
+     * Set the remote address.
+     * 
+     * @param string $addr
+     */
     public function set_remote_addr($addr) {
         $this->remote_addr = $addr;
         return $this;
     }
 
+    /**
+     * Checks if the remote storage is attached then calls any setter functions on it.
+     */
     public function initialize_remote_storage() {
         $attached = $this->remote_storage instanceof \Core\Session\RemoteStorage;
         if(!$attached) {
             throw new RemoteStorageNotAttachedError();
         }
-
+	
         $this->remote_storage->set_remote_addr($this->remote_addr);
         return $this;
     }
     
+    /**
+     * Attach a local storage instance.
+     * 
+     * @param \Core\Session\LocalStorage $local_storage
+     */ 
     public function attach_local_storage($local_storage) {
         $this->local_storage = $local_storage;
         return $this;
     }
     
+    /**
+     * Attach remote storage instance.
+     * 
+     * @param \Core\Session\RemoteStorage $remote_storage
+     */ 
     public function attach_remote_storage($remote_storage) {
         $this->remote_storage = $remote_storage;
         return $this;
     }
 
+    /**
+     * Attach and load a file with cryptographic information.
+     * 
+     * TODO: Make it not use a shitty array.
+     * 
+     * @param string $file
+     */
     public function attach_crypto_config($file=False) {
         if(!$file) {
             $file = SITE_PATH . 'config' . DIRSEP . 'crypto.php';
@@ -92,24 +87,6 @@ class Handler {
         return $this;
     }
 
-    /**
-     * Error checking thing to make sure the necessary things have been done.
-     */
-    private function check_setup() {
-        if(empty($this->remote_addr)) {
-            throw new SetupIncompleteError("Remote address not set.");
-        }   
-        if(!($this->local_storage instanceof \Core\Session\LocalStorage)) {
-            throw new LocalStorageNotAttachedError();
-        }
-        if(!($this->remote_storage instanceof \Core\Session\RemoteStorage)) {
-            throw new RemoteStorageNotAttachedError();
-        }
-        if(empty($this->keyphrase) || empty($this->base_salt)) {
-            throw new SetupIncompleteError("Cryptographic configuration incomplete.");
-        }
-    }
-    
     /**
      * Starts it all off, gets the sid/tok provided by
      * the cookie, and authorises it/registers it as
@@ -133,18 +110,8 @@ class Handler {
         return $this;
     }
 
-    public function create() {
-        $this->generate_session();
-        try {
-            $this->remote_storage->add($this->actual);
-            $this->local_storage->set($this->actual);
-        } catch(RemoteStorage\Error $e) {
-            print $e->getMessage();
-        }
-    }
-
     /**
-     * Destroys the session, deletes from DB, unsets cookies.
+     * Destroys the session, deletes from remote and local..
      */
     public function destroy() {
         try {
@@ -165,24 +132,38 @@ class Handler {
         }
     }
 
-    /**
-     * Gets stuff from data, overloader.
-     * @param $key Property
-     * @return boolean
-     */
     public function __get($key) {
         return $this->remote_storage->$key;
     }
 
-    /**
-     * Sets stuff to data, overloader.
-     * @param $key Property
-     * @param $value Property data
-     * @return boolean
-     */
     public function __set($key, $value) {
         $this->remote_storage->$key = $value;
         return true;
+    }
+
+    private function create() {
+        $this->generate_session();
+        try {
+            $this->remote_storage->add($this->actual);
+            $this->local_storage->set($this->actual);
+        } catch(RemoteStorage\Error $e) {
+            print $e->getMessage();
+        }
+    }
+    
+    private function check_setup() {
+        if(empty($this->remote_addr)) {
+            throw new SetupIncompleteError("Remote address not set.");
+        }   
+        if(!($this->local_storage instanceof \Core\Session\LocalStorage)) {
+            throw new LocalStorageNotAttachedError();
+        }
+        if(!($this->remote_storage instanceof \Core\Session\RemoteStorage)) {
+            throw new RemoteStorageNotAttachedError();
+        }
+        if(empty($this->keyphrase) || empty($this->base_salt)) {
+            throw new SetupIncompleteError("Cryptographic configuration incomplete.");
+        }
     }
 
     private function detect_existing_session() {
