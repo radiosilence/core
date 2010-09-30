@@ -21,12 +21,11 @@ define("CONFIG_PATH", SITE_PATH . "config");
 define("HOST", $_SERVER["HTTP_HOST"]);
 
 require('importer.php');
-$importer = new Importer();
-$importer->set_include_paths();
+
+IMPORTER::instantiate();
 
 function import($module_name) {
-	global $importer;
-	$importer->import_module($module_name);
+	IMPORTER::import_module($module_name);
 }
 
 

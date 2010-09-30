@@ -11,12 +11,13 @@
 
 class ImportError extends \Exception {
     public function __construct($module_name) {
-        trigger_error(sprintf('Module "%s" was not found in any of available paths.', $module_name), E_USER_ERROR);    
+        parent::__construct(sprintf('Module "%s" was not found in any of available paths.', $module_name));    
     }
 }
 
 
 class Importer {
+    private static $importer;
     private $imported_files = array();
     private $include_paths = array();
 
@@ -24,13 +25,14 @@ class Importer {
     private $module_full_parts = array();
     private $module_last_part;
 
-    public function __construct() {
-        return $this;
+    public static function instantiate() {
+        self::$importer = new Importer();
+        self::$importer->set_include_paths();
     }
 
-    public function import_module($module_name) {
-        $this->populate_properties($module_name);
-        if(!$this->try_paths()) {
+    public static function import_module($module_name) {
+        self::$importer->populate_properties($module_name);
+        if(!self::$importer->try_paths()) {
             throw new ImportError($module_name);
         }
     }
