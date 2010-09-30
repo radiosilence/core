@@ -237,7 +237,11 @@ class Handler {
     }
 }
 
-class TokenMismatchError extends \Core\Error {}
+class TokenMismatchError extends \Core\Error {
+    public function __construct() {
+        parent::__construct('Token mismatch error, deleting cookies.');
+    }
+}
 
 class SetupIncompleteError extends \Core\Error {
     public function __construct($message) {

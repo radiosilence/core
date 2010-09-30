@@ -24,4 +24,10 @@ class NotAttachedError extends \Core\Session\SetupIncompleteError {
         parent::__construct("Remote storage required but not attached.");
     }
 }
+
+class SessionNotFoundError extends Error {
+    public function __construct() {
+        parent::__construct('Session not found.');
+    }
+}
 ?>

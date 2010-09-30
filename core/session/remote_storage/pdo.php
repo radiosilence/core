@@ -166,10 +166,4 @@ class PDO implements \Core\Session\RemoteStorage {
     }
 }
 
-class SessionNotFoundError extends Error {
-    public function __construct() {
-        parent::__construct('Session not found in database.');
-    }
-}
-
 ?>
