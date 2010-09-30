@@ -8,6 +8,8 @@ require_once('core.php');
 require_once 'vfsStream/vfsStream.php';
 
 import('core.session.handler');
+import('core.session.remote_storage.exceptions');
+import('core.session.local_storage.exceptions');
 
 class SessionTest extends PHPUnit_Framework_TestCase {
 
@@ -101,12 +103,52 @@ class SessionTest extends PHPUnit_Framework_TestCase {
      public function loadRealSession() {
          
         self::$srp->expects($this->once())
-            ->method('load')
-            ->with(array('sid' => TEST_SID, 'tok' => TEST_TOK));
+            ->method('load');
         
         self::$slc->expects($this->any())
              ->method('get')
              ->will($this->returnValue(array('sid' => TEST_SID, 'tok' => TEST_TOK)));
+
+        self::$sh->start();
+     }
+
+    /**
+     * Load a session with bad tok
+     *
+     * @test
+     */
+     public function loadBadTokSession() {
+         
+        self::$srp->expects($this->once())
+            ->method('load');
+        
+        self::$slc->expects($this->any())
+             ->method('get')
+             ->will($this->returnValue(array('sid' => TEST_SID, 'tok' => '213')));
+        
+        self::$slc->expects($this->once())
+             ->method('destroy');
+
+        self::$sh->start();
+     }
+
+    /**
+     * Attempt to load non-existent session
+     *
+     * @test
+     */
+     public function loadNonExistSession() {
+         
+        self::$srp->expects($this->once())
+            ->method('load')
+            ->will($this->throwException(new \Core\Session\RemoteStorage\SessionNotFoundError()));
+        
+        self::$slc->expects($this->any())
+             ->method('get')
+             ->will($this->returnValue(array('sid' => 'abcd', 'tok' => '213')));
+        
+        self::$slc->expects($this->once())
+             ->method('destroy');
 
         self::$sh->start();
      }
