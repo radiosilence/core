@@ -19,7 +19,7 @@ import('core.dependency');
 \Core\DEPENDENCY::require_functions('json_encode','json_decode');
 
 
-class PDO extends \Core\Session\RemoteStorage {
+class PDO implements \Core\Session\RemoteStorage {
     /**
      * Untrusted session details.
      */
@@ -101,7 +101,8 @@ class PDO extends \Core\Session\RemoteStorage {
      * Find a matching sid/tok/IP in the database
      */
     public function load($untrusted) {
-        $this->find_session($untrusted);
+        $this->untrusted = $untrusted;
+        $this->find_session();
         $this->actual = $untrusted;
         $this->decode_found_data();
     }
@@ -138,7 +139,7 @@ class PDO extends \Core\Session\RemoteStorage {
         ));
     }
 
-    private function find_session($untrusted) {
+    private function find_session() {
          $sth = $this->pdo->prepare("
             SELECT sid, tok, data, remote_addr
             FROM sessions
@@ -148,8 +149,8 @@ class PDO extends \Core\Session\RemoteStorage {
             LIMIT 1
         ");
         $ok = $sth->execute(array(
-            ":sid" => $untrusted['sid'],
-            ":tok" => $untrusted['tok'],
+            ":sid" => $this->untrusted['sid'],
+            ":tok" => $this->untrusted['tok'],
             ":remote_addr" => $this->remote_addr
         ));
         if ($sth->rowCount() < 1) {

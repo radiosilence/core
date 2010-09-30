@@ -12,19 +12,20 @@
 
 namespace Core\Session;
 
-abstract class LocalStorage {
-    abstract public function get();
-    abstract public function set($actual);
-    abstract public function destroy();
+interface LocalStorage {
+    public function get();
+    public function set($actual);
+    public function destroy();
 }
 
-abstract class RemoteStorage {
-    abstract public function __set($prop_name, $prop_value);
-    abstract public function __get($prop_name);
-    abstract public function save();
-    abstract public function add($actual);
-    abstract public function load($untrusted);
-    abstract public function destroy();
+interface RemoteStorage {
+    public function __set($prop_name, $prop_value);
+    public function __get($prop_name);
+    public function save();
+    public function add($actual);
+    public function load($untrusted);
+    public function destroy();
+    public function set_remote_addr($remote_addr);
 }
 
 

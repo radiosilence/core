@@ -65,7 +65,7 @@ class Handler {
             throw new RemoteStorageNotAttachedError();
         }
 
-        $this->remote_storage->set_remote_addr($addr);
+        $this->remote_storage->set_remote_addr($this->remote_addr);
         return $this;
     }
     
@@ -80,13 +80,13 @@ class Handler {
     }
 
     public function attach_crypto_config($file=False) {
-        if(empty($file)) {
+        if(!$file) {
             $file = SITE_PATH . 'config' . DIRSEP . 'crypto.php';
         }
         if(!file_exists($file)) {
             throw new \Core\FileNotFoundError($file);    
         }
-        require_once($file);
+        require($file);
         $this->keyphrase = $config_auth['keyphrase'];
         $this->base_salt = $config_auth['base_salt'];
         return $this;
@@ -222,9 +222,9 @@ class Handler {
      * @param string $passhash Password hash.
      * @param string $email User's email.
      */
-    private function create_token($tok) {
+    private function create_token($sid) {
         # Token generation code.
-        $hash = sha1($this->keyphrase . $this->remote_addr . $tok);
+        $hash = sha1($this->keyphrase . $this->remote_addr . $sid);
         return $hash;
     }
 

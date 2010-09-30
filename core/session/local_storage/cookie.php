@@ -18,7 +18,7 @@ import('core.dependency');
 
 \Core\DEPENDENCY::require_functions('setcookie');
 
-class Cookie extends \Core\Session\LocalStorage {
+class Cookie implements \Core\Session\LocalStorage {
     private $untrusted = array();
     private $actual = array();
     private $cookie;
