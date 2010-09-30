@@ -1,6 +1,5 @@
 <?php
-
-require_once 'core.php';
+require_once __DIR__ . '/../core.php';
 require_once 'vfsStream/vfsStream.php';
 
 import('core.session.handler');
