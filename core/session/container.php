@@ -23,12 +23,12 @@ class Container {
     public function get_standard_session() {
 
         import('core.session.handler');
-        import('core.session.remote_storage_pdo');
-        import('core.session.local_storage_cookie');
+        import('core.session.remote_storage.pdo');
+        import('core.session.local_storage.cookie');
 
         $sh = new \Core\Session\Handler();
-        $srp = new \Core\Session\RemoteStoragePDO();
-        $slc = new \Core\Session\LocalStorageCookie();
+        $srp = new \Core\Session\RemoteStorage\PDO();
+        $slc = new \Core\Session\LocalStorage\Cookie();
 
         $srp->attach_pdo($this->parameters['pdo']);
 
@@ -37,6 +37,7 @@ class Container {
                 ->attach_local_storage($slc)
                 ->attach_crypto_config()
                 ->set_remote_addr(\Core\Utils\IPV4::get())
+                ->initialize_remote_storage()
                 ->start();
             return $sh;
         } catch(Core\Error $e) {

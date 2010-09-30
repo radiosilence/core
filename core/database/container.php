@@ -35,14 +35,14 @@ class Container {
             $driver = 'mysql';
         }
         if($driver == 'mysql') {
-            return new \PDO(sprintf('mysql:host=%s;dbname=%s',
+            $pdo = new \PDO(sprintf('mysql:host=%s;dbname=%s',
                     $host,
                     $database),
                 $user,
                 $password
             );
         } else {
-            return new \PDO(sprintf('%s:host=%s;dbname=%s;user=%s;password=%s',
+            $pdo = new \PDO(sprintf('%s:host=%s;dbname=%s;user=%s;password=%s',
                 $driver,
                 $host,
                 $database,
@@ -50,6 +50,8 @@ class Container {
                 $password
             ));
         }
+        $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+        return $pdo;
     }
     /**
      * Get a living MSSQL object.

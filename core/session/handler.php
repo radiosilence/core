@@ -12,45 +12,59 @@
 
 namespace Core\Session;
 
-import('core.session.interfaces');
+import('core.session.storage');
 import('core.exceptions');
 
 class Handler {
     /**
-     * Untrusted session details.
+     * Actual and untrusted session details.
+     */
+    /**
+     * @var array
      */
     private $untrusted = array();
+
     /**
-     * Actual trusted session details.
+     * @var array
      */
     private $actual = array();
+
     /**
-     * Secret phrase
+     * @var string
      */
     private $keyphrase;
+
     /**
-     * Secret phrase to salt passwords
+     * @var string
      */
     private $base_salt;
+
     /**
-     * Remote address of client
+     * @var string
      */
     private $remote_addr;
-    /** 
-     * Remote storage.
+
+    /**
+     * @var \Core\Session\RemoteStorage
      */
     private $remote_storage;
+
     /**
-     * Local storage.
+     * @var \Core\Session\LocalStorage
      */
     private $local_storage;
     
-    /**
-     * Give it an IP.
-     * @param $addr IP Address
-     */
     public function set_remote_addr($addr) {
         $this->remote_addr = $addr;
+        return $this;
+    }
+
+    public function initialize_remote_storage() {
+        $attached = $this->remote_storage instanceof \Core\Session\RemoteStorage;
+        if(!$attached) {
+            throw new RemoteStorageNotAttachedError();
+        }
+
         $this->remote_storage->set_remote_addr($addr);
         return $this;
     }
@@ -62,7 +76,6 @@ class Handler {
     
     public function attach_remote_storage($remote_storage) {
         $this->remote_storage = $remote_storage;
-        $this->remote_storage->set_remote_addr($this->remote_addr);
         return $this;
     }
 
@@ -84,16 +97,16 @@ class Handler {
      */
     private function check_setup() {
         if(empty($this->remote_addr)) {
-            throw new SessionSetupIncompleteError("Remote address not set.");
+            throw new SetupIncompleteError("Remote address not set.");
         }   
-        if(!is_object($this->local_storage)) {
-            throw new SessionSetupIncompleteError("Local storage not attached.");
+        if(!($this->local_storage instanceof \Core\Session\LocalStorage)) {
+            throw new LocalStorageNotAttachedError();
         }
-        if(!is_object($this->remote_storage)) {
-            throw new SessionSetupIncompleteError("Remote storage not attached.");
+        if(!($this->remote_storage instanceof \Core\Session\RemoteStorage)) {
+            throw new RemoteStorageNotAttachedError();
         }
         if(empty($this->keyphrase) || empty($this->base_salt)) {
-            throw new SessionSetupIncompleteError("Cryptographic configuration incomplete.");
+            throw new SetupIncompleteError("Cryptographic configuration incomplete.");
         }
     }
     
@@ -108,9 +121,9 @@ class Handler {
             $this->detect_existing_session();
             $this->set_session();
             return $this;
-        } catch(SessionNotFoundError $e) {
+        } catch(RemoteStorage\SessionNotFoundError $e) {
             $this->local_storage->destroy();
-        } catch(CookieNotSetError $e) {
+        } catch(LocalStorage\CookieNotSetError $e) {
             // Don't care.
         } catch(TokenMismatchError $e) {
             // Delete incase of tampering.
@@ -120,12 +133,6 @@ class Handler {
         return $this;
     }
 
-    /**
-     * Creates a session, puts it in the database,
-     * returns the ID.. Assumes login has succeeded.
-     * @param integer $user_id User ID
-     * @return array Either a fail or an array with $sid, $id, and $tok.
-     */
     public function create() {
         $this->generate_session();
         try {
@@ -230,23 +237,23 @@ class Handler {
     }
 }
 
-class SessionRemoteStorageError extends \Core\Error {
-    public function __construct($message) {
-        parent::__construct(sprintf("Session error [Remote]: %s", $message));
-    }
-}
-
-class SessionLocalStorageError extends \Core\Error {
-    public function __construct($message) {
-        parent::__construct(sprintf("Session error [Local]: %s", $message));
-    }
-}
-
 class TokenMismatchError extends \Core\Error {}
 
-class SessionSetupIncompleteError extends \Core\Error {
+class SetupIncompleteError extends \Core\Error {
     public function __construct($message) {
         parent::__construct(sprintf("Session setup incomplete: %s", $message));
+    }
+}
+
+class RemoteStorageNotAttachedError extends SetupIncompleteError {
+    public function __construct() {
+        parent::__construct("Remote storage required but not attached.");
+    }
+}
+
+class LocalStorageNotAttachedError extends SetupIncompleteError {
+    public function __construct() {
+        parent::__construct("Local storage required but not attached.");
     }
 }
 ?>
