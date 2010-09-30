@@ -172,7 +172,8 @@ class Form
 					}
 					else
 					{
-						$foreign = new model_{ $field["foreign_key"] };
+						$foreign_key = 'model_' . $field['foreign_key'];
+						$foreign = new $foreign_key_model;
 						$this->c_field["choices"] = $foreign->get_list();
 						return $this->select_field();
 					}
