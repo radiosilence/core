@@ -12,7 +12,7 @@
 
 namespace Core\Session;
 
-import('core.session.storage');
+import('core.session.interfaces');
 import('core.exceptions');
 
 class Handler {

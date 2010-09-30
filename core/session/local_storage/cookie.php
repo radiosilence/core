@@ -13,7 +13,7 @@
 namespace Core\Session\LocalStorage;
 
 import('core.session.local_storage.exceptions');
-import('core.session.storage');
+import('core.session.interfaces');
 import('core.dependency');
 
 \Core\DEPENDENCY::require_functions('setcookie');

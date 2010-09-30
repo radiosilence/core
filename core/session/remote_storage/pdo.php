@@ -12,7 +12,7 @@
 namespace Core\Session\RemoteStorage;
 
 import('core.session.remote_storage.exceptions');
-import('core.session.storage');
+import('core.session.interfaces');
 import('core.dependency');
 
 \Core\DEPENDENCY::require_classes('\PDO');
