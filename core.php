@@ -15,7 +15,7 @@ if(phpversion() < 5.3) {
 
 define("DIRSEP", DIRECTORY_SEPARATOR);
 define("LOCALE", "en_GB");
-define("SITE_PATH", realpath(dirname(__FILE__) . DIRSEP . '..' . DIRSEP) . DIRSEP);
+define("SITE_PATH", realpath(dirname(__FILE__) . '/../') . '/');
 define("BASE_HREF", preg_replace("/(.*?)\/index.php/", "$1", $_SERVER['PHP_SELF']));
 define("CONFIG_PATH", SITE_PATH . "config");
 define("HOST", $_SERVER["HTTP_HOST"]);
