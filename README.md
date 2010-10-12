@@ -1,5 +1,6 @@
 # core
 
+## License
 Copyright 2010 James Cleveland. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are
@@ -12,7 +13,7 @@ permitted provided that the following conditions are met:
       of conditions and the following disclaimer in the documentation and/or other materials
       provided with the distribution.
 
-THIS SOFTWARE IS PROVIDED BY James Cleveland "AS IS" AND ANY EXPRESS OR IMPLIED
+THIS SOFTWARE IS PROVIDED BY JAMES CLEVELAND "AS IS" AND ANY EXPRESS OR IMPLIED
 WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
 FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL JAMES CLEVELAND OR
 CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
@@ -25,6 +26,8 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 The views and conclusions contained in the software and documentation are those of the
 authors and should not be interpreted as representing official policies, either expressed
 or implied, of James Cleveland.
+
+# Readme
 
 My core modules that I work with things using. Features python-style code [PEP 8](http://www.python.org/dev/peps/pep-0008/), pythonic imports, actually using namespaces, modularity, MVC microframework for fast development, 3rd party ease of use, update script for use with cron or whatever.
 
