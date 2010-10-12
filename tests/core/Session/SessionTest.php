@@ -4,7 +4,7 @@ define('TEST_IP', '1.2.3.4');
 define('TEST_SID', 'zxyf666');
 define('TEST_TOK', '968acb2a163a6407c8aac6d45f63678ce3a61696');
 
-require_once('core.php');
+require_once __DIR__ . '/../../../core.php';
 require_once 'vfsStream/vfsStream.php';
 
 import('core.session.handler');
