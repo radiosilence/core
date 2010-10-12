@@ -30,7 +30,7 @@ class Router {
         if($controller_path){
             $this->set_path($controller_path);
         } else {
-            $this->set_path(SITE_PATH . 'controllers');            
+            $this->set_path(SITE_PATH . '/controllers');            
         }
         $this->delegate();
     }

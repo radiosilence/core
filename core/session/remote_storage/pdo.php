@@ -85,14 +85,17 @@ class PDO implements \Core\Session\RemoteStorage {
               sid, tok, remote_addr, data, latest
             )
             VALUES (
-              :sid, :tok, :remote_addr, :data, current_timestamp(2) + interval '23 hours'
+              :sid, :tok, :remote_addr, :data, :latest
+
             )
         ");
+        $current = new \DateTime();
         $ok = $sth->execute(array(
             ":sid" => $actual['sid'],
             ":tok" => $actual['tok'],
             ":remote_addr" => $this->remote_addr,
-            ":data" => json_encode($this->data)
+            ":data" => json_encode($this->data),
+            ":latest" => $current->Format('r')
         ));
         $this->actual = $actual;
     }
@@ -114,11 +117,13 @@ class PDO implements \Core\Session\RemoteStorage {
         $sth = $this->pdo->prepare("
             UPDATE sessions
             SET data = :data,
-              latest = current_timestamp(2)
+              latest = :latest
             WHERE sid = :sid
         ");
+        $current = new \DateTime();
         $ok = $sth->execute(array(
             ":data" => json_encode($this->data),
+            ":latest" => $current->Format('r'),
             ":sid" => $this->actual['sid']
         ));
     }

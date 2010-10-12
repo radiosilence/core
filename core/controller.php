@@ -25,7 +25,7 @@ import('core.dependency');
 abstract class Controller {
 
     public function load_locale($file) {
-        include SITE_PATH . DIRSEP . "languages" . DIRSEP . LOCALE . DIRSEP . $file . ".php";
+        include SITE_PATH . "/languages/" . LOCALE . '/' . $file . ".php";
     }
 
     /**

@@ -68,7 +68,7 @@ class Container {
     private function load_config() {
         if(!isset($this->parameters['config'])) {
             if(!isset($this->parameters['config_file'])) {
-                $this->parameters['config_file'] = CONFIG_PATH . DIRSEP . "database.php";
+                $this->parameters['config_file'] = CONFIG_PATH . "/database.php";
             }
             if(!file_exists($this->parameters['config_file'])) {
                 throw new \Core\FileNotFoundError($this->parameters['config_file']);

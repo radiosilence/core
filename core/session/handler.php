@@ -76,7 +76,7 @@ class Handler {
      */
     public function attach_crypto_config($file=False) {
         if(!$file) {
-            $file = SITE_PATH . 'config' . DIRSEP . 'crypto.php';
+            $file = CONFIG_PATH . '/crypto.php';
         }
         if(!file_exists($file)) {
             throw new \Core\FileNotFoundError($file);    
