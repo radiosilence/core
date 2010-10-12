@@ -29,7 +29,5 @@ class Cache {
     }
 }
 
-class CacheError extends Error {
-    
-}
+class CacheError extends Error {}
 ?>
