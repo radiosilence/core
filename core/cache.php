@@ -18,7 +18,6 @@ class Cache {
             $handle = fopen($this->get_path(), 'w');
             fwrite($handle, ob_get_contents());
             fclose($handle);
-            echo "GENERATED";
         }
     }
 
