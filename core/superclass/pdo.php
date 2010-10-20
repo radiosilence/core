@@ -43,7 +43,6 @@ abstract class PDOStored extends PDODependent {
         if(empty(static::$table)){
             throw new RequiredPropertyEmptyError('table');
         }
-        echo static::$table;
     }
    
     public function populate_cache($ids) {
