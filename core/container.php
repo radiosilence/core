@@ -15,7 +15,7 @@ import('core.exceptions');
 
 abstract class Container {
     protected $parameters = array();
-    public function __construct($parameters) {
+    public function __construct($parameters=False) {
         $this->parameters = $parameters;
     }
 

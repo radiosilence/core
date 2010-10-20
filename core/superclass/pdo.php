@@ -29,24 +29,37 @@ abstract class PDODependent extends \Core\Superclass\Data {
     }
 }
 
-abstract class PDOStored extends PDODependent {
+abstract class PDOStored {
 
     /**
      * Store for objects already read from database.
      */
     protected static $cache;
     protected static $table;
-     
+    protected static $pdo;
+    
+    protected $id;
+    protected $is_loaded = False;
+         
     public function __construct() {
-        parent::__construct();
         static::$cache = new \Core\Arr;
         if(empty(static::$table)){
             throw new RequiredPropertyEmptyError('table');
         }
     }
    
-    public function populate_cache($ids) {
-    
+    public static function attach_pdo(\PDO $pdo) {
+        static::$pdo = $pdo;
+    }
+   
+    public function populate_cache($ids=False) {
+        $sth = static::$pdo->prepare("
+            SELECT *
+            FROM :table" .
+            function($ids) {
+                
+            }
+        );
     }
     
     public function load($id) {
@@ -57,16 +70,33 @@ abstract class PDOStored extends PDODependent {
             $this->load_from_pdo();
             $this->store_in_cache($this->id, $this->data);
         }
+        $this->is_loaded = True;
+    }
+    
+    public function is_loaded() {
+        return $this->is_loaded;
     }
     
     private function load_from_cache() {
-        if(!isset(static::$cache->$this->id)) {
+        $id = $this->id;
+        if(!isset(static::$cache->$id)) {
             throw new NotFoundInCacheError();
         }
-        $this->data = static::$cache->$this->id;
+        $this->data = static::$cache->$id;
     }
     
-    abstract protected function load_from_pdo();
+    protected function load_from_pdo() {
+        $sth = static::$pdo->prepare( "
+            SELECT *
+            FROM " . static::$table . "
+            WHERE id = :id
+        ");
+
+        $sth->execute(array(
+            ':id' => $this->id
+        ));
+        $this->data = $sth->fetchObject();
+    }
     
     private function store_in_cache($id, $data) {
         static::$cache->$id = $data;
@@ -74,7 +104,11 @@ abstract class PDOStored extends PDODependent {
 
 }
 
-class NotFoundInCacheError extends \Core\Error {}
+class NotFoundInCacheError extends \Core\Error {
+    public function __construct() {
+        parent::__construct("Object not found in shared cache.");
+    }
+}
 class RequiredPropertyEmptyError extends \Core\Error {
     public function __construct($table) {
         parent::__construct(sprintf("Required property %s is empty.", $table));
