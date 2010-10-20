@@ -11,6 +11,8 @@
 
 namespace Core;
 
+import('core.types');
+
 abstract class DataClass {
     /**
      * Data storage.
@@ -18,7 +20,7 @@ abstract class DataClass {
     protected $data;
 
     public function __construct() {
-        $this->data = new \stdClass;
+        $this->data = new \Core\Arr;
     }
     public function __set($key, $value) {
         $this->data->$key = $value;
@@ -34,6 +36,10 @@ abstract class PDODependentClass extends DataClass {
      */
     protected $pdo;
     
+    /**
+     * Store for objects already read from database.
+     */
+    protected $cache;
     /**
      * Attach a PDO object. Necessary.
      */

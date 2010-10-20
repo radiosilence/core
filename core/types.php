@@ -16,32 +16,49 @@
 
 namespace Core;
 
-class CoreList {
-    private $elements = array();
+/**
+ * It's a bit like stdClass but better! Woo!
+ */
+class Arr {
+    private $data = array();
 
     public function __construct() {
         foreach( func_get_args() as $item ){
             $this->append( $item );
         }
     }
-
-    public function append($item) {
-        $this->elements[] = $item;
+    
+    public function __get($key) {
+        return $this->data[$key];
     }
-
-    public function extend($items) {
+    
+    public function __set($key, $value) {
+        $this->data[$key] = $value;
+    }
+    
+    public function append($item) {
         if(!is_array($items)) {
             $items = array($items);
         }
         foreach($items as $item){
-            $this->elements[] = $item;
+            $this->data[] = $item;
         }
+        return $this;
+    }
+    
+    public function extend($items) {
+        if(!is_array($items)) {
+            $items = array($items);
+        }
+        $this->data = array_merge($this->data, $items);
+        return $this;
     }
 
     public function insert($position,$item) {
-        $tail = array_splice($this->elements, $position);
-        $this->elements[] = $item;
-        $this->elements = array_merge($this->elements, $tail);
+        $tail = array_splice($this->data, $position);
+        $this->data[] = $item;
+        $this->data = array_merge($this->data, $tail);
+        return $this;
     }
 
     /**
@@ -49,12 +66,12 @@ class CoreList {
      * @return int
      */
     public function count($value) {
-        $counts = array_count_values($this->elements);
+        $counts = array_count_values($this->data);
         return $counts[$value];
     }
 
-    public function __toArray() {
-        return $this->elements;
+    public function to_array() {
+        return (array)$this->data;
     }
 }
 ?>
