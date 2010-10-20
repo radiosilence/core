@@ -15,11 +15,25 @@ import('core.dependency');
 import('core.exceptions');
 
 class Container {
+    private static $pdo;
+    
     private $parameters = array();
     public function __construct($parameters=False) {
         if($parameters) {
             $this->parameters = $parameters;        
         }
+    }
+    
+    public static function initiate_static_connection() {
+        $container = new Container();
+        static::$pdo = $container->get_pdo();
+    }
+    
+    public static function get_default_pdo() {
+        if(!(static::$pdo instanceof \PDO)){
+            static::initiate_static_connection();
+        }
+        return static::$pdo;
     }
     
     /**
@@ -68,12 +82,12 @@ class Container {
     private function load_config() {
         if(!isset($this->parameters['config'])) {
             if(!isset($this->parameters['config_file'])) {
-                $this->parameters['config_file'] = CONFIG_PATH . "/database.php";
+                $this->parameters['config_file'] = CONFIG_PATH . "database.php";
             }
             if(!file_exists($this->parameters['config_file'])) {
                 throw new \Core\FileNotFoundError($this->parameters['config_file']);
             }
-            require_once($this->parameters['config_file']);
+            require($this->parameters['config_file']);
             $this->parameters['config'] = $config_db;
         }
     }
@@ -82,7 +96,7 @@ class Container {
      * Make sure config is loaded.
      */
     private function check_config() {
-        if(empty($this->parameters['config'])) {
+        if(!isset($this->parameters['config'])) {
             throw new ConfigNotLoadedError();
         }
     }
