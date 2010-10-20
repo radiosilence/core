@@ -52,8 +52,8 @@ abstract class PDOStored {
         static::$pdo = $pdo;
     }
    
-    public function populate_cache($ids=False) {
-    
+    public static function populate_cache($ids=False) {
+        throw new \Exception();
         $id = function($ids) {
             return is_array($ids) ?
                 sprintf( " WHERE id IN('%s')",
@@ -66,7 +66,8 @@ abstract class PDOStored {
             FROM " . static::$table . $id($ids)
         );
         $sth->execute();
-        while( $object = $sth->fetchObject() ) {
+        $sth->setFetchMode(\PDO::FETCH_CLASS, __CLASS__);
+        while( $object = $sth->fetch(\PDO::FETCH_CLASS) ) {
             $id = $object->id;
             static::$cache->$id = $object;
         }
@@ -106,7 +107,8 @@ abstract class PDOStored {
         $sth->execute(array(
             ':id' => $this->id
         ));
-        $this->data = $sth->fetchObject();
+        $sth->setFetchMode(\PDO::FETCH_CLASS, get_class($this));
+        $this->data = $sth->fetch(\PDO::FETCH_CLASS)->data;
     }
     
     private function store_in_cache($id, $data) {
