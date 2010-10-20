@@ -30,11 +30,14 @@ class Container extends \Core\Container {
         $this->test_valid_parameter('pdo', '\PDO' );
 
         $srp->attach_pdo($this->parameters['pdo']);
+        if(!isset($this->parameters['crypto_config'])) {
+            $this->parameters['crypto_config'] = CONFIG_PATH . 'crypto.php';
+        }
 
         try{
             $sh->attach_remote_storage($srp)
                 ->attach_local_storage($slc)
-                ->attach_crypto_config()
+                ->attach_crypto_config($this->parameters['crypto_config'])
                 ->set_remote_addr(\Core\Utils\IPV4::get())
                 ->initialize_remote_storage()
                 ->start();

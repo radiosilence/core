@@ -74,14 +74,11 @@ class Handler {
      * 
      * @param string $file
      */
-    public function attach_crypto_config($file=False) {
-        if(!$file) {
-            $file = CONFIG_PATH . '/crypto.php';
-        }
+    public function attach_crypto_config($file) {
         if(!file_exists($file)) {
             throw new \Core\FileNotFoundError($file);    
         }
-        require($file);
+        require_once($file);
         $this->keyphrase = $config_auth['keyphrase'];
         $this->base_salt = $config_auth['base_salt'];
         return $this;
