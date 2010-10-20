@@ -18,8 +18,8 @@ define("LOCALE", "en_GB");
 define("CORE_PATH", realpath(__DIR__ . '/'));
 define("SITE_PATH", dirname($_SERVER["SCRIPT_FILENAME"]) . '/../' );
 define("BASE_HREF", preg_replace("/(.*?)\/index.php/", "$1", $_SERVER['PHP_SELF']));
-define("CONFIG_PATH", SITE_PATH . "/config");
-define("CACHE_PATH", SITE_PATH . "/.cache");
+define("CONFIG_PATH", SITE_PATH . "config/");
+define("CACHE_PATH", SITE_PATH . ".cache/");
 define("HOST", $_SERVER["HTTP_HOST"]);
 define("ROUTE", $_GET['route']);
 
