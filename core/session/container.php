@@ -13,12 +13,9 @@ namespace Core\Session;
 
 import('core.exceptions');
 import('core.utils.ipv4');
+import('core.container');
 
-class Container {
-    private $parameters = array();
-    public function __construct($parameters) {
-        $this->parameters = $parameters;
-    }
+class Container extends \Core\Container {
 
     public function get_standard_session() {
 
@@ -26,9 +23,11 @@ class Container {
         import('core.session.remote_storage.pdo');
         import('core.session.local_storage.cookie');
 
-        $sh = new \Core\Session\Handler();
-        $srp = new \Core\Session\RemoteStorage\PDO();
-        $slc = new \Core\Session\LocalStorage\Cookie();
+        $sh = new Handler();
+        $srp = new RemoteStorage\PDO();
+        $slc = new LocalStorage\Cookie();
+
+        $this->test_valid_parameter('pdo', '\PDO' );
 
         $srp->attach_pdo($this->parameters['pdo']);
 

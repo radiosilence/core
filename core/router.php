@@ -72,15 +72,15 @@ class Router {
         require($file);
         # Initiate the class.
         $class = str_replace("/", "\\", '\\Controllers\\' . $controller);
-        $controller = new $class();
-
+        # Run action
+        $args["_url"] = $route;
+ 
+        $controller = new $class($args);
         # If it isn't the action, set the action as index
         if(!is_callable(array($controller, $action))) {
             $action = "index";
         }
-        # Run action
-        $args["_url"] = $route;
-        $controller->$action($args);
+        $controller->$action();
     }
 
     private function get_controller(&$file, &$controller, &$action, &$args, $route = 0) {

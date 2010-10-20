@@ -10,8 +10,15 @@
  */
 
 class ImportError extends \Exception {
+    public static $include_paths;
+    private static $importer;
     public function __construct($module_name) {
-        parent::__construct(sprintf('Module "%s" was not found in any of available paths.', $module_name));    
+        parent::__construct(sprintf("Module \"%s\" was not found in any of available paths. Paths searched:\n%s\n",
+            $module_name, implode("\n",self::$importer->include_paths)));    
+    }
+
+    public function add_importer($importer) {
+        self::$importer = $importer;
     }
 }
 
@@ -27,6 +34,7 @@ class Importer {
     public static function instantiate() {
         self::$importer = new Importer();
         self::$importer->set_include_paths();
+        IMPORTERROR::add_importer(self::$importer);
     }
 
     public static function import_module($module_name) {
@@ -42,7 +50,16 @@ class Importer {
 
     public function set_include_paths($include_paths=False) {
         if(!$include_paths) {
-            $include_paths = array_merge(array(__DIR__), explode(PATH_SEPARATOR, ini_get('include_path')));
+            $include_paths = array_merge(
+                array(
+                    CORE_PATH,
+                    SITE_PATH
+                ),
+                explode(
+                    PATH_SEPARATOR,
+                    ini_get('include_path')
+                )
+            );
         }
         $this->include_paths = $include_paths;
     }

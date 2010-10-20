@@ -12,6 +12,7 @@
 namespace Core\Session\RemoteStorage;
 
 import('core.session.remote_storage.exceptions');
+import('core.superclasses');
 import('core.session.interfaces');
 import('core.dependency');
 
@@ -19,7 +20,7 @@ import('core.dependency');
 \Core\DEPENDENCY::require_functions('json_encode','json_decode');
 
 
-class PDO implements \Core\Session\RemoteStorage {
+class PDO extends \Core\PDODependentClass implements \Core\Session\RemoteStorage {
     /**
      * Untrusted session details.
      */
@@ -28,10 +29,6 @@ class PDO implements \Core\Session\RemoteStorage {
      * Actual trusted session details.
      */
     private $actual = array();
-    /**
-     * PDO instance
-     */
-    private $pdo;
     /**
      * Found session
      */
@@ -56,14 +53,6 @@ class PDO implements \Core\Session\RemoteStorage {
      */
     public function set_remote_addr($remote_addr) {
         $this->remote_addr = $remote_addr;
-        return $this;
-    }
-
-    /**
-     * Attach a PDO object. Necessary.
-     */
-    public function attach_pdo(\PDO $pdo) {
-        $this->pdo = $pdo;
         return $this;
     }
 

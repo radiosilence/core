@@ -23,15 +23,19 @@ namespace Core;
 import('core.dependency');
 
 abstract class Controller {
+    protected $args;
 
+    public function __construct($args) {
+        $this->args = $args;
+    }
     public function load_locale($file) {
         include SITE_PATH . "/languages/" . LOCALE . '/' . $file . ".php";
     }
-
     /**
      * All controllers need to have a default option.
      * @param string $args the arguments got from the URL
      */
-    abstract function index($args);
+    abstract function index();
+   
 }
 ?>
