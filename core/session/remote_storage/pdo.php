@@ -12,7 +12,7 @@
 namespace Core\Session\RemoteStorage;
 
 import('core.session.remote_storage.exceptions');
-import('core.superclasses');
+import('core.superclass.pdo');
 import('core.session.interfaces');
 import('core.dependency');
 
@@ -20,7 +20,7 @@ import('core.dependency');
 \Core\DEPENDENCY::require_functions('json_encode','json_decode');
 
 
-class PDO extends \Core\PDODependentClass implements \Core\Session\RemoteStorage {
+class PDO extends \Core\Superclass\PDODependent implements \Core\Session\RemoteStorage {
     /**
      * Untrusted session details.
      */
