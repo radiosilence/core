@@ -37,16 +37,14 @@ class Arr {
     }
     
     public function append($item) {
-        if(!is_array($items)) {
-            $items = array($items);
-        }
-        foreach($items as $item){
-            $this->data[] = $item;
-        }
+        $this->data[] = $item;
         return $this;
     }
     
     public function extend($items) {
+        if($items instanceof \Core\Arr) {
+            $items = $items->_to_array();
+        }
         if(!is_array($items)) {
             $items = array($items);
         }
@@ -70,7 +68,7 @@ class Arr {
         return $counts[$value];
     }
 
-    public function to_array() {
+    public function _to_array() {
         return (array)$this->data;
     }
 }
