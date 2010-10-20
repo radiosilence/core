@@ -39,10 +39,11 @@ abstract class PDOStored extends PDODependent {
      
     public function __construct() {
         parent::__construct();
-        self::$cache = new \Core\Arr;
-        if(empty(self::$table)){
+        static::$cache = new \Core\Arr;
+        if(empty(static::$table)){
             throw new RequiredPropertyEmptyError('table');
         }
+        echo static::$table;
     }
    
     public function populate_cache($ids) {
@@ -60,16 +61,16 @@ abstract class PDOStored extends PDODependent {
     }
     
     private function load_from_cache() {
-        if(!isset(self::$cache->$this->id)) {
+        if(!isset(static::$cache->$this->id)) {
             throw new NotFoundInCacheError();
         }
-        $this->data = self::$cache->$this->id;
+        $this->data = static::$cache->$this->id;
     }
     
     abstract protected function load_from_pdo();
     
     private function store_in_cache($id, $data) {
-        self::$cache->$id = $data;
+        static::$cache->$id = $data;
     }
 
 }
