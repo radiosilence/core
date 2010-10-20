@@ -53,13 +53,24 @@ abstract class PDOStored {
     }
    
     public function populate_cache($ids=False) {
+    
+        $id = function($ids) {
+            return is_array($ids) ?
+                sprintf( " WHERE id IN('%s')",
+                    implode("','", $ids)) :
+                null;
+        };
+        
         $sth = static::$pdo->prepare("
             SELECT *
-            FROM :table" .
-            function($ids) {
-                
-            }
+            FROM " . static::$table . $id($ids)
         );
+        $sth->execute();
+        while( $object = $sth->fetchObject() ) {
+            $id = $object->id;
+            static::$cache->$id = $object;
+        }
+        var_dump(static::$cache);
     }
     
     public function load($id) {
@@ -76,7 +87,7 @@ abstract class PDOStored {
     public function is_loaded() {
         return $this->is_loaded;
     }
-    
+        
     private function load_from_cache() {
         $id = $this->id;
         if(!isset(static::$cache->$id)) {
