@@ -11,7 +11,24 @@
 
 namespace Core;
 
-abstract class PDODependentClass {
+abstract class DataClass {
+    /**
+     * Data storage.
+     */
+    protected $data;
+
+    public function __construct() {
+        $this->data = new \stdClass;
+    }
+    public function __set($key, $value) {
+        $this->data->$key = $value;
+    }   
+    public function __get($key) {
+        return $this->data->$key;
+    }
+}
+
+abstract class PDODependentClass extends DataClass {
     /**
      * PDO instance
      */
@@ -25,4 +42,5 @@ abstract class PDODependentClass {
         return $this;
     }
 }
+
 ?>

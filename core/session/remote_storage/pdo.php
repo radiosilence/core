@@ -38,15 +38,6 @@ class PDO extends \Core\PDODependentClass implements \Core\Session\RemoteStorage
      * Remote address
      */
     private $remote_addr;
-    
-    /**
-     * This data
-     */
-    private $data;
-    
-    public function __construct() {
-        $this->data = new \stdClass();
-    }
 
     /**
      * Set remote address.
@@ -54,13 +45,6 @@ class PDO extends \Core\PDODependentClass implements \Core\Session\RemoteStorage
     public function set_remote_addr($remote_addr) {
         $this->remote_addr = $remote_addr;
         return $this;
-    }
-
-    public function __set($key, $value) {
-        $this->data->$key = $value;
-    }   
-    public function __get($key) {
-        return $this->data->$key;
     }
 
     /**
