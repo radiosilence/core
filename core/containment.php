@@ -28,7 +28,7 @@ abstract class Container {
     }
 }
     
-abstract class Contained extends Arr {   
+abstract class Contained extends Arr {
     public static function container($parameters=False) {
         return static::get_helper('Container', $parameters);
     }

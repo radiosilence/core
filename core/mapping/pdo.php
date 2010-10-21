@@ -23,8 +23,8 @@ abstract class PDOMapped extends \Core\Mapped {
 }
 
 abstract class PDOMapper extends \Core\Mapper {
-    private $_select;
-    private $_joins;
+    protected $_select;
+    protected $_joins;
     protected $pdo;
     
     public function attach_pdo($pdo=False) {

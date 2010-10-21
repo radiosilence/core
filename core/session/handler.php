@@ -99,7 +99,7 @@ class Handler extends \Core\Contained {
             // Delete incase of tampering.
             $this->local_storage->destroy();
         }
-        $this->create();
+        $this->initialise();
         return $this;
     }
 
@@ -134,7 +134,7 @@ class Handler extends \Core\Contained {
         return true;
     }
 
-    private function create() {
+    private function initialise() {
         $this->generate_session();
         try {
             $this->remote_storage->add($this->actual);

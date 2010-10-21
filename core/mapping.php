@@ -19,12 +19,6 @@ abstract class Mapper extends Arr {
 }
 
 abstract class Mapped extends Contained {
-    public function __construct($data=False) {
-        parent::__construct();
-        if($data) {
-            $this->data = $data;
-        }
-    }   
     public static function mapper($parameters=False) {
         return static::get_helper('Mapper', $parameters);
     }
