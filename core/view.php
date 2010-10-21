@@ -18,19 +18,9 @@
 
 namespace Core;
 
-class View {
-    private $vars = array();
-    
-    public function set($varname, $value) {
-        $this->vars[$varname] = $value;
-        return true;
-    }
+import('core.types');
 
-    public function remove($varname) {
-        unset($this->vars[$varname]);
-        return true;
-    }
-
+class View extends Arr {
     public function show($name) {
         $path = SITE_PATH . '/views/' . $name . '.php';
 
@@ -39,10 +29,10 @@ class View {
             return false;
         }
         // Load variables
-        foreach($this->vars as $key => $value) {
+        foreach($this->data as $key => $value) {
             $$key = $value;
         }
-        include ($path);
+        include($path);
     }
 }
 
