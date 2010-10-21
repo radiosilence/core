@@ -9,29 +9,23 @@
  * with this source code in the file LICENSE.
  */
 
-namespace Core\Superclass;
+namespace Core;
 
-import('core.superclass.pdo');
-import('core.superclass.standard');
+import('core.types');
+import('core.containment');
 
-abstract class Mapper extends \Core\Superclass\PDODependent {
-    private $_select;
-    private $_joins;
+abstract class Mapper extends Arr {
     abstract public function create_object($data);
 }
 
-abstract class Mapped extends \Core\Superclass\Data {
+abstract class Mapped extends Contained {
     public function __construct($data=False) {
         parent::__construct();
         if($data) {
             $this->data = $data;
         }
+    }   
+    public static function mapper($parameters=False) {
+        return static::get_helper('Mapper', $parameters);
     }
-    public static function mapper() {
-        $class = get_called_class() . 'Mapper';
-        $mapper = new $class();
-        $mapper->attach_pdo();
-        return $mapper;
-    }
-    
 }

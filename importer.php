@@ -52,8 +52,8 @@ class Importer {
         if(!$include_paths) {
             $include_paths = array_merge(
                 array(
-                    CORE_PATH,
-                    SITE_PATH
+                    SITE_PATH,
+                    CORE_PATH
                 ),
                 explode(
                     PATH_SEPARATOR,

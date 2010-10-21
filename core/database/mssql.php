@@ -21,6 +21,7 @@
 namespace Core\Database;
 
 import('core.dependency');
+import('core.containment');
 
 \Core\DEPENDENCY::require_functions(array(
 	'mssql_connect', 'mssql_query'
@@ -94,6 +95,18 @@ class MSSQL {
 	public function num_rows($result) {
 		return mssql_num_rows($result);
 	}
+}
+
+class MSSQLContainer extends \Core\ConfiguredContainer {
+
+    /**
+     * Get a living MSSQL object.
+     */
+    public function get_mssql() {
+        import('core.database.mssql');
+        $this->load_config();
+        $this->check_config();
+    }
 }
 
 class MSSQLConnectionError extends \Core\Error {}

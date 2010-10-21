@@ -23,7 +23,7 @@ class Arr {
     private $data = array();
 
     public function __construct() {
-        foreach( func_get_args() as $item ){
+        foreach(func_get_args() as $item){
             $this->append( $item );
         }
     }

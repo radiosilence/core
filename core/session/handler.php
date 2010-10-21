@@ -15,7 +15,7 @@ namespace Core\Session;
 import('core.session.interfaces');
 import('core.exceptions');
 
-class Handler {
+class Handler extends \Core\Contained {
     private $untrusted = array();
     private $actual = array();
     private $keyphrase;
@@ -74,13 +74,9 @@ class Handler {
      * 
      * @param string $file
      */
-    public function attach_crypto_config($file) {
-        if(!file_exists($file)) {
-            throw new \Core\FileNotFoundError($file);    
-        }
-        require_once($file);
-        $this->keyphrase = $config_auth['keyphrase'];
-        $this->base_salt = $config_auth['base_salt'];
+    public function attach_crypto_config($config) {
+        $this->keyphrase = $config['keyphrase'];
+        $this->base_salt = $config['base_salt'];
         return $this;
     }
 
@@ -212,6 +208,40 @@ class Handler {
      */
     private function create_sid() {
         return sha1(microtime() . $this->remote_addr);
+    }
+}
+
+class HandlerContainer extends \Core\ConfiguredContainer {
+
+    public function get_standard_session() {
+
+        import('core.session.handler');
+        import('core.session.remote_storage.pdo');
+        import('core.session.local_storage.cookie');
+        import('core.utils.ipv4');
+
+        $sh = new Handler();
+        $srp = new RemoteStorage\PDO();
+        $slc = new LocalStorage\Cookie();
+
+        $this->test_valid_parameter('pdo', '\PDO' );
+
+        $srp->attach_pdo($this->parameters['pdo']);
+        $this->load_config('crypto');
+
+        try{
+            $sh->attach_remote_storage($srp)
+                ->attach_local_storage($slc)
+                ->attach_crypto_config($this->parameters['config_crypto'])
+                ->set_remote_addr(\Core\Utils\IPV4::get())
+                ->initialize_remote_storage()
+                ->start();
+            return $sh;
+        } catch(Core\Error $e) {
+            echo "SERIOUSLY AN ERROR";
+            // Colossal failure.
+            return False;   
+        }
     }
 }
 

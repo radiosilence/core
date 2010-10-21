@@ -12,15 +12,16 @@
 namespace Core\Session\RemoteStorage;
 
 import('core.session.remote_storage.exceptions');
-import('core.superclass.pdo');
 import('core.session.interfaces');
+import('core.database.pdo');
 import('core.dependency');
+import('core.types');
 
-\Core\DEPENDENCY::require_classes('\PDO');
-\Core\DEPENDENCY::require_functions('json_encode','json_decode');
+\Core\Dependency::require_classes('\PDO');
+\Core\Dependency::require_functions('json_encode','json_decode');
 
 
-class PDO extends \Core\Superclass\PDODependent implements \Core\Session\RemoteStorage {
+class PDO extends \Core\Arr implements \Core\Session\RemoteStorage {
     /**
      * Untrusted session details.
      */
@@ -38,6 +39,13 @@ class PDO extends \Core\Superclass\PDODependent implements \Core\Session\RemoteS
      * Remote address
      */
     private $remote_addr;
+    
+    protected $pdo;
+    
+    
+    public function attach_pdo($pdo=False) {
+        $this->pdo = \Core\Database\PDOUtils::attach_pdo($pdo);
+    }    
 
     /**
      * Set remote address.
