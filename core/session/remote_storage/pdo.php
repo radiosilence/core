@@ -41,8 +41,8 @@ class PDO extends \Core\Arr implements \Core\Session\RemoteStorage {
     
     protected $pdo;
 
-    public function attach_pdo($pdo=False) {
-        $this->pdo = \Core\Provision\PDO::Provide($pdo);
+    public function attach_pdo(\PDO $pdo) {
+        $this->pdo = $pdo;
     }
     
     /**

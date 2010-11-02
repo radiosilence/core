@@ -23,7 +23,12 @@ abstract class Mapper extends Arr {
 }
 
 abstract class Mapped extends Contained {
+    public $mappers = array();
     public static function mapper($parameters=False) {
         return static::get_helper('Mapper', $parameters);
+    }
+
+    public function attach_mapper($type,$mapper) {
+        $this->mappers[$type] = $mapper;
     }
 }

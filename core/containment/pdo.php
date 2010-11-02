@@ -10,6 +10,9 @@
  */
 
 namespace Core\Containment;
+
+import('core.containment');
+
 class PDOContainer extends \Core\ConfiguredContainer {
 
     public function get_connection() {

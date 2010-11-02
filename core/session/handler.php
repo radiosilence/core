@@ -224,7 +224,7 @@ class HandlerContainer extends \Core\ConfiguredContainer {
         $srp = new RemoteStorage\PDO();
         $slc = new LocalStorage\Cookie();
 
-        $srp->attach_pdo($pdo);
+        $srp->attach_pdo($this->parameters['pdo']);
         $this->load_config('crypto');
 
         try{
