@@ -33,6 +33,10 @@ abstract class PDOMapper extends \Core\Mapper {
         $_default_update = "UPDATE %s SET",
         $_default_insert = "INSERT INTO %s";
 
+    public function __construct($parameters=False){
+        $this->pdo = \Core\Provision\PDO::Provide($parameters['pdo']);
+    }
+
     public function fetch_all() {
         $objects = array();
         $sth = $this->pdo->prepare(sprintf(
@@ -161,12 +165,6 @@ abstract class PDOMapper extends \Core\Mapper {
         array_shift($class);
         return strtolower(implode("\\", $class));
     }
-
-    public function attach_pdo($pdo) {
-        $this->pdo = $pdo;
-        return $this;
-    }
-
 }
 
 
