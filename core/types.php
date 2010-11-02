@@ -21,7 +21,8 @@ namespace Core;
  */
 class Arr {
     protected $data = array();
-    
+    protected $parameters;
+
     public static function create() {
         $type = get_called_class();
         $arr = new $type();
@@ -30,7 +31,7 @@ class Arr {
         }
         return $arr;
     }
-    
+
     public function __get($key) {
         return $this->data[$key];
     }
