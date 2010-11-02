@@ -41,12 +41,11 @@ class PDO extends \Core\Arr implements \Core\Session\RemoteStorage {
     private $remote_addr;
     
     protected $pdo;
-    
-    
-    public function attach_pdo($pdo=False) {
-        $this->pdo = \Core\Database\PDOUtils::attach_pdo($pdo);
-    }    
 
+    public function attach_pdo($pdo=False) {
+        $this->pdo = \Core\Provision\PDO::Provide($pdo);
+    }
+    
     /**
      * Set remote address.
      */
