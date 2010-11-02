@@ -13,34 +13,24 @@ namespace Core\Database;
 
 import('core.types');
 import('core.mapping');
+import('core.dependency');
 
 class PDOUtils extends \Core\Arr {
     /**
      * Attach a PDO object. Necessary.
      */
-    public function attach_pdo($pdo=False) {
-        if(!$pdo) {
-            import('core.database.pdo');
-            $pdo = \Core\Database\PDOContainer::get_default_pdo();
-        } $pdo;
-        return $pdo;
+    public function attach_pdo($pdo) {
+        $this->pdo = $pdo;
+        return $this;
+    }
+
+    public static function container($parameters=False) {
+        return new PDOContainer($parameters);
     }
 }
 
 class PDOContainer extends \Core\ConfiguredContainer {
     private static $pdo;
-    
-    public static function initiate_static_connection() {
-        $container = new PDOContainer();
-        static::$pdo = $container->get_pdo();
-    }
-    
-    public static function get_default_pdo() {
-        if(!(static::$pdo instanceof \Core\Database\PDO)){
-            static::initiate_static_connection();
-        }
-        return static::$pdo;
-    }
     
     /**
      * Get a PDO database.

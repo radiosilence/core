@@ -16,6 +16,10 @@ import('core.containment');
 
 abstract class Mapper extends Arr {
     abstract public function create_object($data);
+
+    protected function mapped_class_name() {
+        return substr(get_called_class(), 0, -6);
+    }
 }
 
 abstract class Mapped extends Contained {
