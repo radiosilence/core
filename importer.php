@@ -17,7 +17,7 @@ class ImportError extends \Exception {
             $module_name, implode("\n",self::$importer->include_paths)));    
     }
 
-    public function add_importer($importer) {
+    public static function add_importer($importer) {
         self::$importer = $importer;
     }
 }
@@ -34,7 +34,7 @@ class Importer {
     public static function instantiate() {
         self::$importer = new Importer();
         self::$importer->set_include_paths();
-        IMPORTERROR::add_importer(self::$importer);
+        ImportError::add_importer(self::$importer);
     }
 
     public static function import_module($module_name) {
