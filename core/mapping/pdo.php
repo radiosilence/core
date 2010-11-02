@@ -12,7 +12,6 @@
 namespace Core\Mapping;
 
 import('core.mapping');
-import('core.database.pdo');
 
 /**
  * Provides some basic mapping features that don't necessarily have to be used.

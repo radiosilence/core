@@ -13,7 +13,6 @@ namespace Core\Session\RemoteStorage;
 
 import('core.session.remote_storage.exceptions');
 import('core.session.interfaces');
-import('core.database.pdo');
 import('core.dependency');
 import('core.types');
 
