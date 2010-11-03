@@ -16,9 +16,9 @@ import('core.containment');
 class PDOContainer extends \Core\ConfiguredContainer {
 
     public function get_connection() {
-        $this->load_config('database');
+        $this->load_config();
         $this->check_config();
-        extract($this->parameters['config_database']);
+        extract($this->config['database']);
         if(!isset($driver)) {
             // Defaulting to MySQL for the driver as it is fairly common.
             $driver = 'mysql';
@@ -47,7 +47,7 @@ class PDOContainer extends \Core\ConfiguredContainer {
      * Make sure config is loaded.
      */
     private function check_config() {
-        if(!isset($this->parameters['config_database'])) {
+        if(empty($this->config)) {
             throw new ConfigNotLoadedError();
         }
     }

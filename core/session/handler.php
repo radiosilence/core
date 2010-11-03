@@ -225,12 +225,12 @@ class HandlerContainer extends \Core\ConfiguredContainer {
         $slc = new LocalStorage\Cookie();
 
         $srp->attach_pdo($this->parameters['pdo']);
-        $this->load_config('crypto');
+        $this->load_config();
 
         try{
             $sh->attach_remote_storage($srp)
                 ->attach_local_storage($slc)
-                ->attach_crypto_config($this->parameters['config_crypto'])
+                ->attach_crypto_config($this->config['crypto'])
                 ->set_remote_addr(\Core\Utils\IPV4::get())
                 ->initialize_remote_storage()
                 ->start();

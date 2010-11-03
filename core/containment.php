@@ -41,23 +41,29 @@ abstract class Contained extends Arr {
 }
 
 abstract class ConfiguredContainer extends Container {
+
+    protected static $loaded_files = array();
+
+    protected $config = array();
     /**
      * Load the configuration from a file if it is not set in the parameters.
      */
-    protected function load_config($config_name=False) {
-        if(empty($config_name)) {
-            $config_name = strtolower(get_called_class());
+    protected function load_config($config_file=Null) {
+        if(empty($config_file)) {
+            $config_file = SITE_PATH . '/config.php';
+        } else {
+            $config_file = SITE_PATH . '/config/' . $config_file . '.php';
         }
-        if(!isset($this->parameters['config_' . $config_name])) {
-            if(!isset($this->parameters['config_file'])) {
-                $this->parameters['config_file'] = CONFIG_PATH . $config_name . ".php";
-            }
-            if(!file_exists($this->parameters['config_file'])) {
-                throw new \Core\FileNotFoundError($this->parameters['config_file']);
-            }
-            require($this->parameters['config_file']);
-            $this->parameters['config_' . $config_name] = $c;
+
+        if(!file_exists($config_file)) {
+            throw new FileNotFoundError($config_file);
         }
+
+        if(!isset(self::$loaded_files[$config_file])) {
+            include($config_file);
+            self::$loaded_files[$config_file] = $cfg;
+        }
+        $this->config = self::$loaded_files[$config_file];
     }
 
 }

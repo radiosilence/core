@@ -73,9 +73,13 @@ class Arr {
      * Counts the values
      * @return int
      */
-    public function count($value) {
-        $counts = array_count_values($this->data);
-        return $counts[$value];
+    public function count($value=False) {
+        if($value) {
+            $counts = array_count_values($this->data);
+            return $counts[$value];    
+        } else {
+            return count($this->data);
+        }
     }
 
     public function _array() {
