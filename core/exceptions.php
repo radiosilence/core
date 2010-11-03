@@ -45,7 +45,7 @@ class HTTPError extends Error {
             throw new Exception("HTTP error with unknown error code.");
         }
         header($error_codes[$code]);
-        printf("Encountered error %s whilst trying to serve page: %s", $this->error_codes[$code], !empty($url) ? $url : 'unknown');
+        printf("<h1>%s</h1>Whilst trying to serve page: %s", $this->error_codes[$code], !empty($url) ? $url : 'unknown');
         die();
     }
 }
