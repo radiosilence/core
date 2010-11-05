@@ -11,7 +11,7 @@
  * Special thanks to the people at http://detectmobilebrowser.com/
  */
  
- namespace \Core\Utils;
+ namespace Core\Utils;
  
  import('core.dependency');
  
