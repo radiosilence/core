@@ -8,7 +8,7 @@
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  *
- * Special thanks to the people at http://is.gd/fwvZW
+ * Special thanks to the people at http://detectmobilebrowser.com/
  */
  
  namespace \Core\Utils;
