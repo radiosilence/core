@@ -81,12 +81,15 @@ abstract class PDOMapper extends \Core\Mapper {
     protected function _insert(Mapped $object) {
         $data = $this->_filter($object->_array());
         $sth = $this->pdo->prepare(sprintf(
-            "%s\n(%s)\nVALUES (%s)",
+            "%s\n(%s)\nVALUES (%s)
+	    RETURNING id",
             $this->_head('insert'),
             $this->_insert_fields($data),
             $this->_insert_fields($data,':')
         ));
         $sth->execute($this->_binds($data));
+	$inserted = $sth->fetch();
+	return $inserted['id'];
     }
 
     protected function _insert_fields($data, $prefix=False) {
