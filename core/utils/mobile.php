@@ -18,8 +18,8 @@
  \Core\Dependency::require_functions('preg_match');
  
  class Mobile {
-     public static function Detect($user_agent=False) {
-         if!($user_agent) {
+     public static function detect($user_agent=False) {
+         if(!$user_agent) {
              $user_agent=$_SERVER['HTTP_USER_AGENT'];
          }
          if(preg_match('/android|avantgo|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i',$user_agent) || 
