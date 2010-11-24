@@ -35,7 +35,9 @@ class Router extends Contained {
             throw new FileNotFoundError($routes_file);
         }
         require $routes_file;
-
+        if(!is_array($routes)) {
+            throw new RoutingError("No routes defined.");
+        }
         foreach($routes as $request => $destination) {
             $this->add_route($request, $destination);
         }
@@ -47,7 +49,7 @@ class Router extends Contained {
     public function route($request) {
         $route = $this->find_route($request);
         import('controllers.' . strtolower($route->class));
-        $class = sprintf('\Controllers\%s', $route->class);
+        $class = sprintf('\Controllers\%s', str_replace('.', '\\', $route->class));
         $controller = new $class($route->parameters);
         $method = $route->parameters['method'];
         if(!method_exists($controller,$method)) {
@@ -58,6 +60,7 @@ class Router extends Contained {
 
     private function find_route($request) {
         foreach($this->routes as $potential => $route) {
+            $potential = str_replace('/', '\/', $potential);
             if(preg_match('/' . $potential . '/', $request, $matches)) {
                 return $route->assign_vars($matches);
             }
@@ -103,5 +106,5 @@ class Route {
     }
 
 }
-
-class RouteNotFoundError extends Error {}
+class RoutingError extends Error{}
+class RouteNotFoundError extends RoutingError {}
