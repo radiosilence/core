@@ -46,8 +46,9 @@ class Router extends Contained {
         $this->routes[$request] = new Route($destination);
     }
 
-    public function route($request) {
-        $route = $this->find_route($request);
+    public function route($uri) {
+        $uri = $this->clean_uri($uri);
+        $route = $this->find_route($uri);
         import('controllers.' . strtolower($route->class));
         $class = sprintf('\Controllers\%s', str_replace('.', '\\', $route->class));
         $controller = new $class($route->parameters);
@@ -58,14 +59,21 @@ class Router extends Contained {
         $controller->$method();
     }
 
-    private function find_route($request) {
+    private function clean_uri($uri) {
+        if(substr($uri, 0, 1) == '/') {
+            $uri = substr($uri, 1);
+        }
+        return $uri;
+    }
+
+    private function find_route($uri) {
         foreach($this->routes as $potential => $route) {
             $potential = str_replace('/', '\/', $potential);
-            if(preg_match('/' . $potential . '/', $request, $matches)) {
+            if(preg_match('/\/?' . $potential . '/', $uri, $matches)) {
                 return $route->assign_vars($matches);
             }
         }
-        throw new HTTPError(404, $request);
+        throw new HTTPError(404, $uri);
     }
 }
 
