@@ -105,10 +105,9 @@ abstract class PDOMapper extends \Core\Mapper {
             $this->_insert_fields($data),
             $this->_insert_fields($data,':')
         ));
-        var_dump($sth);
         $sth->execute($this->_binds($data));
-	$inserted = $sth->fetch();
-	return $inserted['id'];
+	   $inserted = $sth->fetch();
+	   return $inserted['id'];
     }
 
     protected function _insert_fields($data, $prefix=False) {
