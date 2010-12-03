@@ -70,7 +70,25 @@ abstract class PDOMapper extends \Core\Mapper {
         return $this->create_object($result);
     }
 
-    public function save(Mapped $object) {
+        
+    public function find_by($field, $string) {
+        $sth = $this->pdo->prepare(sprintf(
+                "%s\nWHERE %s = :%s",
+                $this->_select,
+                $field,
+                $field
+        ));
+        $sth->execute(array(
+            ':' . $field => $string
+        ));
+        if($sth->rowCount() < 1) {
+            return False;
+        } else {
+            return $this->create_object($sth->fetch(\PDO::FETCH_ASSOC));            
+        }
+    }
+
+    public function save(\Core\Mapped $object) {
         if($object->id > 0) {
             $this->_update($object);
         } else {
@@ -78,7 +96,7 @@ abstract class PDOMapper extends \Core\Mapper {
         }
     }
 
-    protected function _insert(Mapped $object) {
+    protected function _insert(\Core\Mapped $object) {
         $data = $this->_filter($object->_array());
         $sth = $this->pdo->prepare(sprintf(
             "%s\n(%s)\nVALUES (%s)
@@ -87,6 +105,7 @@ abstract class PDOMapper extends \Core\Mapper {
             $this->_insert_fields($data),
             $this->_insert_fields($data,':')
         ));
+        var_dump($sth);
         $sth->execute($this->_binds($data));
 	$inserted = $sth->fetch();
 	return $inserted['id'];
@@ -105,7 +124,7 @@ abstract class PDOMapper extends \Core\Mapper {
         return implode(",", $sqls);
     }
 
-    protected function _update(Mapped $object) {
+    protected function _update(\Core\Mapped $object) {
         $data = $this->_filter($object->_array());
         $sth = $this->pdo->prepare(sprintf(
             "%s\n%s\nWHERE id = :id",
@@ -121,7 +140,7 @@ abstract class PDOMapper extends \Core\Mapper {
     protected function _update_fields($data) {
         $sqls = array();
         foreach($data as $key => $value) {
-            $sqls[] = sprintf('`%1$s` = :%1$s', $key);
+            $sqls[] = sprintf('%1$s = :%1$s', $key);
         }
         return implode(",\n", $sqls);
     }
@@ -158,8 +177,9 @@ abstract class PDOMapper extends \Core\Mapper {
     }
 
     protected function _head($type) {
-        if(strlen($this->$type) > 0) {
-            return $this->$type;
+        $var = '_' . $type;
+        if(strlen($this->$var) > 0) {
+            return $this->$var;
         } else {
             $var_name = '_default_' . $type;
             return sprintf($this->$var_name, $this->_default_table());

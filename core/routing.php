@@ -63,6 +63,9 @@ class Router extends Contained {
         if(substr($uri, 0, 1) == '/') {
             $uri = substr($uri, 1);
         }
+        if(substr($uri, -1) == '/') {
+            $uri = substr($uri, 0, -1);
+        }
         return $uri;
     }
 

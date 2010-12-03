@@ -33,13 +33,21 @@ class Arr {
     }
 
     public function __get($key) {
-        return $this->data[$key];
+        if(array_key_exists($key, $this->data)) {
+            return $this->data[$key];   
+        } else {
+            return False;
+        }
     }
     
     public function __set($key, $value) {
         $this->data[$key] = $value;
     }
-    
+
+    public function set_key($key, $subkey, $value) {
+        $this->data[$key][$subkey] = $value;
+    }
+
     public function map($function) {
         foreach($this->data as $value) {
             $function($value);
@@ -49,6 +57,18 @@ class Arr {
     public function append($item) {
         $this->data[] = $item;
         return $this;
+    }
+
+    public function update($array) {
+        foreach($array as $key => $value) {
+            if($parameters['exclude']) {
+                if(!in_array($key, $parameters['exclude'])) { 
+                    $this->data[$key] = $value;
+                }
+            } else {
+                $this->data[$key] = $value;
+            }
+        }
     }
         
     public function extend($items) {
@@ -67,6 +87,10 @@ class Arr {
         $this->data[] = $item;
         $this->data = array_merge($this->data, $tail);
         return $this;
+    }
+
+    public function remove($key) {
+        unset($this->data[$key]);
     }
 
     /**

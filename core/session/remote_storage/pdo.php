@@ -53,6 +53,10 @@ class PDO extends \Core\Arr implements \Core\Session\RemoteStorage {
         return $this;
     }
 
+    public function set_data($data) {
+        $this->data = $data;
+    }
+
     /**
      * Inserts a new session into the database.
      * @param integer $user_id
@@ -145,7 +149,7 @@ class PDO extends \Core\Arr implements \Core\Session\RemoteStorage {
     }
 
     private function decode_found_data() {
-        $this->found_session->data = json_decode($this->found_session->data);
+        $this->found_session->data = json_decode($this->found_session->data, true);
         $this->data = $this->found_session->data;
     }
 }
