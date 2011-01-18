@@ -27,3 +27,26 @@ abstract class Storage extends CoreDict {
         return $this->_class;
     }
 }
+
+class Filter {
+    public $field;
+    public $pattern;
+    public $operand;
+    public function __construct($field, $pattern, $operand='='){
+        $this->field = $field;
+        $this->pattern = $pattern;
+        $this->operand = $operand;
+    }
+    public function hash() {
+        return hash("crc32", $field . $pattern . $operand);
+    }
+}
+
+class Order {
+    public $field;
+    public $order;
+    public function __construct($field, $order='asc') {
+        $this->field = $field;
+        $this->order = $order;
+    }
+}

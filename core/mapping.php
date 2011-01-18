@@ -24,9 +24,14 @@ abstract class Mapper extends CoreDict {
 }
 
 abstract class Mapped extends Contained {
+    protected $_fields;
     public $mappers = array();
     public static function mapper($parameters=False) {
         return static::get_helper('Mapper', $parameters);
+    }
+
+    public function list_fields() {
+        return $this->_fields;
     }
 
     public function attach_mapper($type,$mapper) {

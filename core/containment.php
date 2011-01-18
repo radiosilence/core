@@ -35,7 +35,9 @@ abstract class Contained extends \Core\CoreDict {
     
     protected static function get_helper($type, $parameters) {
         $class = get_called_class() . $type;
-        echo $class;
+        if(!class_exists($class)) {
+            throw new \Core\Error("Class $class does not exist.");
+        }
         $helper = new $class($parameters);
         return $helper;
     }

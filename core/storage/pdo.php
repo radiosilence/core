@@ -19,14 +19,6 @@ import('core.storage');
 class PDO extends \Core\Storage {
     protected $pdo;
     protected
-        $_select,
-        $_delete,
-        $_insert,
-        $_update,
-        $_joins,
-        $_fields;
-
-    protected
         $_default_select = "SELECT * FROM %s",
         $_default_delete = "DELETE * FROM %s",
         $_default_update = "UPDATE %s SET",
@@ -36,8 +28,14 @@ class PDO extends \Core\Storage {
         $this->pdo = $pdo;
         return $this;
     }
-    public function fetch_all() {
+
+    /**
+     * TODO: Make this work based on the parameters.
+     */
+    public function fetch_many($parameters=False) {
+
         $objects = array();
+        print_r($parameters);
         $sth = $this->pdo->prepare(sprintf(
             "%s\n%s\n%s",
             $this->_head('select'), 
@@ -45,12 +43,7 @@ class PDO extends \Core\Storage {
             $this->_order
         ));
         $sth->execute();
-        $results = $sth->fetchAll(PDO::FETCH_ASSOC);
-
-        foreach($results as $result) {
-            $objects[] = $result;
-        }
-        return $objects;
+        return $sth->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     public function fetch($id) {
@@ -64,24 +57,6 @@ class PDO extends \Core\Storage {
         ));
         $result = $sth->fetch(\PDO::FETCH_ASSOC);
         return $result;
-    }
-
-        
-    public function find_by($field, $string, $criteria=False) {
-        $sth = $this->pdo->prepare(sprintf(
-                "%s\nWHERE %s = :%s",
-                $this->_select,
-                $field,
-                $field
-        ));
-        $sth->execute(array(
-            ':' . $field => $string
-        ));
-        if($sth->rowCount() < 1) {
-            return False;
-        } else {
-            return $sth->fetch(\PDO::FETCH_ASSOC);            
-        }
     }
 
     public function save(\Core\Mapped $object) {
@@ -120,7 +95,7 @@ class PDO extends \Core\Storage {
     }
 
     protected function _update(\Core\Mapped $object) {
-        $data = $this->_filter($object->_array());
+        $data = $this->_filter($object->_array(), $object->list_fields());
         $sth = $this->pdo->prepare(sprintf(
             "%s\n%s\nWHERE id = :id",
             $this->_head('update'),
@@ -152,10 +127,10 @@ class PDO extends \Core\Storage {
         return $binds;
     }
 
-    protected function _filter($data) {
+    protected function _filter($data, $fields) {
         $returns = array();
         foreach($data as $key => $value) {
-            if(in_array($key, $this->_fields)) {
+            if(in_array($key, $fields)) {
                 $returns[$key] = $value;
             }            
         }
@@ -183,5 +158,13 @@ class PDO extends \Core\Storage {
 
     protected function _default_table() {
         return strtolower($this->_class_name()) . 's';
+    }
+
+    protected function _filter_to_sql(\Core\Storage\Filter $filter) {
+        return sprintf("%s %s %s", $filter->field, $filter->operand, ':' . $filter->hash());
+    }
+
+    protected function _filter_to_bind(\Core\Storage\Filter $filter) {
+        return array(":" . $filter->has(), $filter->pattern );
     }
 }

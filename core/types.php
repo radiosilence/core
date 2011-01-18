@@ -105,7 +105,7 @@ class CoreDict {
         $arr = new $type();
         if(is_array($array)) {
             foreach($array as $k => $v) {
-                $arr[$k] = $v;
+                $arr->$k = $v;
             }
         }
         return $arr;
