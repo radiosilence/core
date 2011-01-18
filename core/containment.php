@@ -28,13 +28,14 @@ abstract class Container {
     }
 }
     
-abstract class Contained extends Arr {
+abstract class Contained extends \Core\CoreDict {
     public static function container($parameters=False) {
         return static::get_helper('Container', $parameters);
     }
     
     protected static function get_helper($type, $parameters) {
         $class = get_called_class() . $type;
+        echo $class;
         $helper = new $class($parameters);
         return $helper;
     }

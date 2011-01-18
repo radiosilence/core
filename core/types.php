@@ -19,8 +19,8 @@ namespace Core;
 /**
  * It's a bit like stdClass but better! Woo!
  */
-class Arr {
-    protected $data = array();
+class CoreList {
+    protected $_data = array();
     protected $parameters;
 
     public static function create() {
@@ -33,44 +33,31 @@ class Arr {
     }
 
     public function __get($key) {
-        if(array_key_exists($key, $this->data)) {
-            return $this->data[$key];   
+        if(array_key_exists($key, $this->_data)) {
+            return $this->_data[$key];   
         } else {
             return False;
         }
     }
     
     public function __set($key, $value) {
-        $this->data[$key] = $value;
-    }
-
-    public function set_key($key, $subkey, $value) {
-        $this->data[$key][$subkey] = $value;
+        if(!is_numeric($key)) {
+            throw new ListIsNotADictError();
+        }
+        $this->_data[$key] = $value;
     }
 
     public function map($function) {
-        foreach($this->data as $value) {
+        foreach($this->_data as $value) {
             $function($value);
         }
     }
     
     public function append($item) {
-        $this->data[] = $item;
+        $this->_data[] = $item;
         return $this;
     }
-
-    public function update($array) {
-        foreach($array as $key => $value) {
-            if($parameters['exclude']) {
-                if(!in_array($key, $parameters['exclude'])) { 
-                    $this->data[$key] = $value;
-                }
-            } else {
-                $this->data[$key] = $value;
-            }
-        }
-    }
-        
+ 
     public function extend($items) {
         if($items instanceof \Core\Arr) {
             $items = $items->_array();
@@ -78,19 +65,17 @@ class Arr {
         if(!is_array($items)) {
             $items = array($items);
         }
-        $this->data = array_merge($this->data, $items);
+        foreach($items as $item) {
+            $this->append($item);
+        }
         return $this;
     }
 
     public function insert($position,$item) {
-        $tail = array_splice($this->data, $position);
-        $this->data[] = $item;
-        $this->data = array_merge($this->data, $tail);
+        $tail = array_splice($this->_data, $position);
+        $this->_data[] = $item;
+        $this->_data = array_merge($this->_data, $tail);
         return $this;
-    }
-
-    public function remove($key) {
-        unset($this->data[$key]);
     }
 
     /**
@@ -99,19 +84,70 @@ class Arr {
      */
     public function count($value=False) {
         if($value) {
-            $counts = array_count_values($this->data);
+            $counts = array_count_values($this->_data);
             return $counts[$value];    
         } else {
-            return count($this->data);
+            return count($this->_data);
         }
     }
 
     public function _array() {
-        return $this->data;
+        return $this->_data;
     }
 }
 
-class Range extends Arr {
+class CoreDict {
+    protected $_data = array();
+    protected $parameters;
+
+    public static function create($array=False) {
+        $type = get_called_class();
+        $arr = new $type();
+        if(is_array($array)) {
+            foreach($array as $k => $v) {
+                $arr[$k] = $v;
+            }
+        }
+        return $arr;
+    }
+
+    public function remove($key) {
+        unset($this->_data[$key]);
+    }
+
+
+    public function update($array) {
+        foreach($array as $key => $value) {
+            if($parameters['exclude']) {
+                if(!in_array($key, $parameters['exclude'])) { 
+                    $this->_data[$key] = $value;
+                }
+            } else {
+                $this->_data[$key] = $value;
+            }
+        }
+    }
+       
+    public function __get($key) {
+        if(array_key_exists($key, $this->_data)) {
+            return $this->_data[$key];   
+        } else {
+            return False;
+        }
+    }
+    
+    public function __set($key, $value) {
+        $this->_data[$key] = $value;
+    }
+
+    public function _array() {
+        return $this->_data;
+    }
+}
+
+class ListIsNotADictError extends Error {}
+
+class Range extends CoreList {
     public static function create() {
         $type = get_called_class();
         $arr = new $type();

@@ -14,12 +14,13 @@ namespace Core;
 import('core.types');
 import('core.containment');
 
-abstract class Mapper extends Arr {
-    abstract public function create_object($data);
-
-    protected function mapped_class_name() {
-        return substr(get_called_class(), 0, -6);
+abstract class Mapper extends CoreDict {
+    protected $_storage;
+    public function attach_storage(\Core\Storage $storage) {
+        $this->_storage = $storage;
+        return $this;
     }
+    abstract public function create_object($data);
 }
 
 abstract class Mapped extends Contained {

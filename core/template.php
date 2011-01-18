@@ -20,9 +20,10 @@ namespace Core;
 
 import('core.types');
 
-class Template extends Arr {
+class Template extends CoreDict {
     protected $parent;
     protected $path;
+    protected $data = array();
     protected $sections = array();
     protected $current_section = null;
     public function render($name) {
