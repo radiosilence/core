@@ -13,16 +13,22 @@ namespace Core\Storage;
 
 import('core.storage');
 
+
+class PDOContainer extends \Core\ConfiguredContainer {
+    public function get_storage($type) {
+        return PDO::create($type)
+            ->attach_pdo(
+                \Core\Containment\PDOContainer::create($type)
+                    ->get_connection()
+            );
+    }
+}
+
 /**
  * Provides some basic mapping features that don't necessarily have to be used.
  */
 class PDO extends \Core\Storage {
     protected $pdo;
-    protected
-        $_default_select = "SELECT * FROM %s",
-        $_default_delete = "DELETE * FROM %s",
-        $_default_update = "UPDATE %s SET",
-        $_default_insert = "INSERT INTO %s";
 
     public function attach_pdo(\PDO $pdo) {
         $this->pdo = $pdo;
@@ -32,31 +38,31 @@ class PDO extends \Core\Storage {
     /**
      * TODO: Make this work based on the parameters.
      */
-    public function fetch_many($parameters=False) {
-
+    public function fetch(\Core\Dict $parameters=Null) {
         $objects = array();
-        print_r($parameters);
-        $sth = $this->pdo->prepare(sprintf(
-            "%s\n%s\n%s",
-            $this->_head('select'), 
-            $this->_joins,
-            $this->_order
-        ));
+        
+        $query = new PDOQuery(
+            PDOQuery::Select,
+            $this->_default_table(),
+            $parameters
+        );
+        $sth = $this->pdo->prepare($query->sql());
+        if($parameters->filters) {
+            foreach($parameters->filters->__array__() as $filter) {
+                if(is_int($filter->pattern)) {
+                    $type = \PDO::PARAM_INT;
+                } else {
+                    $type = \PDO::PARAM_STR;
+                }
+                $sth->bindValue(':' . $filter->hash, $filter->pattern, $type);
+            }            
+        }
         $sth->execute();
-        return $sth->fetchAll(\PDO::FETCH_ASSOC);
-    }
 
-    public function fetch($id) {
-        $sth = $this->pdo->prepare(sprintf(
-            "%s\n%s\nWHERE id = :id",
-            $this->_head('select'), 
-            $this->_joins
-        ));
-        $sth->execute(array(
-            ':id' => $id
-        ));
-        $result = $sth->fetch(\PDO::FETCH_ASSOC);
-        return $result;
+        $return = new \Core\Li();
+        
+        return $sth->fetchAll(\PDO::FETCH_ASSOC);
+ 
     }
 
     public function save(\Core\Mapped $object) {
@@ -74,11 +80,144 @@ class PDO extends \Core\Storage {
         RETURNING id",
             $this->_head('insert'),
             $this->_insert_fields($data),
-            $this->_insert_fields($data,':')
+            $this->_insert_fields($data, ':')
         ));
         $sth->execute($this->_binds($data));
        $inserted = $sth->fetch();
        return $inserted['id'];
+    }
+    
+    protected function _update(\Core\Mapped $object) {
+        $data = $this->_filter($object->_array(), $object->list_fields());
+        $sth = $this->pdo->prepare(sprintf(
+            "%s\n%s\nWHERE id = :id",
+            $this->_head('update'),
+            $this->_update_fields($data)
+        ));
+        $sth->execute($this->_binds(
+                $data,
+                $object->id
+        ));
+    }
+
+    protected function _filter($data, $fields) {
+        $returns = array();
+        foreach($data as $key => $value) {
+            if(in_array($key, $fields)) {
+                $returns[$key] = $value;
+            }            
+        }
+        return $returns;
+    }
+
+    public function delete($id) {
+/*        $sth = $this->pdo->prepare(
+            $this->_head('delete') . 
+            " WHERE id = :id");
+        $sth->execute(array(
+            ':id' => $id
+        ));
+*/
+    }
+    
+    public function get_table_name() {
+        return $this->_default_table();
+    }
+    
+    /**
+     * Create a table_name based on ClassName
+     * TODO: Proper grammatical plurals, ala Django or SQLAlchemy
+     */
+    protected function _default_table() {
+        return strtolower($this->_class_name()) . 's';
+    }
+
+    protected function _filter_to_bind(\Core\Storage\Filter $filter) {
+        return array(":" . $filter->has(), $filter->pattern );
+    }
+}
+
+class PDOQuery {
+
+	const Select = 'SELECT %1$s FROM %2$s';
+    const Delete = 'DELETE * FROM %s';
+    const Update = 'UPDATE %s SET';
+    const Insert = 'INSERT INTO %s';
+    
+    protected $_parameters;
+    protected $_table;
+    protected $_type;
+    
+    private $_filter_no = 0;
+    public function __construct($type, $table, $parameters) {
+        $this->_parameters = $parameters;
+        $this->_table = $table;
+        $this->_type = $type;
+    }
+
+    public function sql() {
+        return sprintf("%s %s %s %s",
+            $this->_head(),
+            $this->_joins(),
+            $this->_filters(),
+            $this->_orders()
+        );
+    }
+
+    protected function _head() {
+        if($this->_type == PDOQuery::Select) {
+            $fields = new \Core\Li($this->_table . '.*');
+            if($this->_parameters->joins){
+                $fields->extend($this->_join_fields());                
+            }
+            return sprintf($this->_type,
+                implode(', ', $fields->__array__()),
+                $this->_table
+            );
+        } else {
+            return sprintf($this->_type, $this->_table);            
+        }
+    }
+
+    protected function _get_lines($type) {
+        $string = "";
+        $types = "{$type}s";
+        
+        if(!$this->_parameters->$types) {
+            return False;
+        }
+        foreach ($this->_parameters->$types->__array__() as $item) {
+            $f = "_{$type}_to_sql";
+            $string .= ' ' . $this->$f($item);
+        }
+        return $string;
+    }
+    
+    protected function _joins() {
+        return $this->_get_lines('join');
+    }
+    
+    private function _join_to_sql(\Core\Join $join) {
+        return sprintf('LEFT JOIN %1$s %3$s on %2$s.%3$s = %3$s.id',
+            \Core\Storage\PDO::create($join->foreign)
+                ->get_table_name(),
+            $this->_table,
+            $join->local
+       );
+    }
+
+    private function _join_fields() {
+        $fields = new \Core\Li();
+        $this->_parameters->joins->map(function($join) use($fields) {
+            if($join->fields) {
+                $join->fields->map(function($field) use($fields, $join) {
+                    $fields->extend(sprintf('%1$s.%2$s as %1$s_%2$s',
+                    $join->local,
+                    $field));
+                });
+            }
+        });
+        return $fields;
     }
 
     protected function _insert_fields($data, $prefix=False) {
@@ -93,20 +232,7 @@ class PDO extends \Core\Storage {
         }
         return implode(",", $sqls);
     }
-
-    protected function _update(\Core\Mapped $object) {
-        $data = $this->_filter($object->_array(), $object->list_fields());
-        $sth = $this->pdo->prepare(sprintf(
-            "%s\n%s\nWHERE id = :id",
-            $this->_head('update'),
-            $this->_update_fields($data)
-        ));
-        $sth->execute($this->_binds(
-                $data,
-                $object->id
-        ));
-    }
-
+    
     protected function _update_fields($data) {
         $sqls = array();
         foreach($data as $key => $value) {
@@ -114,57 +240,35 @@ class PDO extends \Core\Storage {
         }
         return implode(",\n", $sqls);
     }
-
-    protected function _binds($data, $id=False) {
-        if($id) {
-            $binds = array(':id' => $id);        
-        } else {
-            $binds = array();
+    
+    protected function _filters() {
+        $i = 0;
+        $string = "";
+        if(!$this->_parameters->filters) {
+            return False;
         }
-        foreach($data as $key => $value) {
-            $binds[':' . $key] = $value;
+        foreach ($this->_parameters->filters->__array__() as $item) {
+            $string .= ($i > 0 ? ' AND ' : 'WHERE ') . $this->_filter_to_sql($item);
+            $i++;
         }
-        return $binds;
+        return $string;
     }
-
-    protected function _filter($data, $fields) {
-        $returns = array();
-        foreach($data as $key => $value) {
-            if(in_array($key, $fields)) {
-                $returns[$key] = $value;
-            }            
-        }
-        return $returns;
+    
+    public function _filter_to_sql(\Core\Filter $filter) {
+        $return = sprintf("%s %s %s",
+            $this->_table . '.' . $filter->field,
+            $filter->operand,
+            ':' . $filter->hash
+        );
+        return $return;
     }
-
-    public function delete($id) {
-        $sth = $this->pdo->prepare(
-            $this->_head('delete') . 
-            " WHERE id = :id");
-        $sth->execute(array(
-            ':id' => $id
-        ));
+    
+    protected function _orders() {
+        return $this->_get_lines('order');    
     }
-
-    protected function _head($type) {
-        $var = '_' . $type;
-        if(strlen($this->$var) > 0) {
-            return $this->$var;
-        } else {
-            $var_name = '_default_' . $type;
-            return sprintf($this->$var_name, $this->_default_table());
-        }
-    }
-
-    protected function _default_table() {
-        return strtolower($this->_class_name()) . 's';
-    }
-
-    protected function _filter_to_sql(\Core\Storage\Filter $filter) {
-        return sprintf("%s %s %s", $filter->field, $filter->operand, ':' . $filter->hash());
-    }
-
-    protected function _filter_to_bind(\Core\Storage\Filter $filter) {
-        return array(":" . $filter->has(), $filter->pattern );
+    public function _order_to_sql(\Core\Order $order) { 
+        //var_dump($order);
+    
     }
 }
+

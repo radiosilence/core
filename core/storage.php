@@ -11,7 +11,7 @@
 
 namespace Core;
 
-abstract class Storage extends CoreDict {
+abstract class Storage extends \Core\Contained {
     protected $_class;
 
     public static function create($class) {
@@ -28,17 +28,38 @@ abstract class Storage extends CoreDict {
     }
 }
 
+class StorageContainer extends \Core\ConfiguredContainer {
+    protected $_backend;
+    public function get_storage($type) {
+        $this->_load_config();
+        $this->_check_config();
+        $this->_backend = $this->_config['general']['backend'];
+
+        $storage_class = '\Core\Storage\\'. $this->_backend .'Container';
+        $storage_module = 'core.storage.' . strtolower($this->_backend);
+
+        import($storage_module);
+
+        return $storage_class::create()
+            ->get_storage($type);
+    }
+
+}
+
 class Filter {
     public $field;
     public $pattern;
     public $operand;
+    public $hash;
     public function __construct($field, $pattern, $operand='='){
         $this->field = $field;
         $this->pattern = $pattern;
         $this->operand = $operand;
+        $this->make_hash();
     }
-    public function hash() {
-        return hash("crc32", $field . $pattern . $operand);
+
+    private function make_hash() {
+        $this->hash = 'p' . hash("crc32", $this->field . $this->pattern . $this->operand);
     }
 }
 
@@ -48,5 +69,18 @@ class Order {
     public function __construct($field, $order='asc') {
         $this->field = $field;
         $this->order = $order;
+    }
+}
+
+class Join {
+    public $foreign;
+    public $local;
+    public $fields;
+    public function __construct($local, $foreign, $fields=False) {
+        $this->local = $local;
+        $this->foreign = $foreign;
+        if($fields instanceof \Core\Li) {
+            $this->fields = $fields;
+        }
     }
 }

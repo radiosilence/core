@@ -14,7 +14,7 @@ namespace Core;
 import('core.types');
 import('core.containment');
 
-abstract class Mapper extends CoreDict {
+abstract class Mapper extends Dict {
     protected $_storage;
     public function attach_storage(\Core\Storage $storage) {
         $this->_storage = $storage;

@@ -16,9 +16,9 @@ import('core.containment');
 class PDOContainer extends \Core\ConfiguredContainer {
 
     public function get_connection() {
-        $this->load_config();
-        $this->check_config();
-        extract($this->config['database']);
+        $this->_load_config();
+        $this->_check_config();
+        extract($this->_config['database']);
         if(!isset($driver)) {
             // Defaulting to MySQL for the driver as it is fairly common.
             $driver = 'mysql';
@@ -41,15 +41,6 @@ class PDOContainer extends \Core\ConfiguredContainer {
         }
         $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
         return $pdo;
-    }
-
-    /**
-     * Make sure config is loaded.
-     */
-    private function check_config() {
-        if(empty($this->config)) {
-            throw new ConfigNotLoadedError();
-        }
     }
 }
 

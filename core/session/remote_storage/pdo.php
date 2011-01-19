@@ -20,7 +20,7 @@ import('core.types');
 \Core\Dependency::require_functions('json_encode','json_decode');
 
 
-class PDO extends \Core\CoreDict implements \Core\Session\RemoteStorage {
+class PDO extends \Core\Dict implements \Core\Session\RemoteStorage {
     /**
      * Untrusted session details.
      */

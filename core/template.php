@@ -20,20 +20,19 @@ namespace Core;
 
 import('core.types');
 
-class Template extends CoreDict {
-    protected $parent;
-    protected $path;
-    protected $data = array();
-    protected $sections = array();
-    protected $current_section = null;
+class Template extends Dict {
+    protected $_parent;
+    protected $_path;
+    protected $_sections = array();
+    protected $_current_section = null;
     public function render($name) {
-        extract($this->data);
-        $this->path = sprintf("%s/templates/%s", SITE_PATH, $name);
-        if(file_exists($this->path) == false) {
+        extract($this->__data__);
+        $this->_path = sprintf("%s/templates/%s", SITE_PATH, $name);
+        if(file_exists($this->_path) == false) {
             throw new TemplateNotFoundError($path);
         }
         ob_start();
-        require($this->path);
+        require($this->_path);
         return ob_get_clean();
     }   
 }

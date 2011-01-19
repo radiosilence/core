@@ -19,22 +19,28 @@ namespace Core;
 /**
  * It's a bit like stdClass but better! Woo!
  */
-class CoreList {
-    protected $_data = array();
+class Li {
+    protected $__data__ = array();
     protected $parameters;
 
     public static function create() {
         $type = get_called_class();
-        $arr = new $type();
+        $li = new $type();
         foreach(func_get_args() as $item){
-            $arr->extend($item);
+            $li->extend($item);
         }
-        return $arr;
+        return $li;
+    }
+    
+    public function __construct() {
+        foreach(func_get_args() as $item){
+            $this->extend($item);
+        }
     }
 
     public function __get($key) {
-        if(array_key_exists($key, $this->_data)) {
-            return $this->_data[$key];   
+        if(array_key_exists($key, $this->__data__)) {
+            return $this->__data__[$key];   
         } else {
             return False;
         }
@@ -44,23 +50,23 @@ class CoreList {
         if(!is_numeric($key)) {
             throw new ListIsNotADictError();
         }
-        $this->_data[$key] = $value;
+        $this->__data__[$key] = $value;
     }
 
     public function map($function) {
-        foreach($this->_data as $value) {
+        foreach($this->__data__ as $value) {
             $function($value);
         }
     }
     
     public function append($item) {
-        $this->_data[] = $item;
+        $this->__data__[] = $item;
         return $this;
     }
  
     public function extend($items) {
-        if($items instanceof \Core\Arr) {
-            $items = $items->_array();
+        if($items instanceof \Core\Li) {
+            $items = $items->__array__();
         }
         if(!is_array($items)) {
             $items = array($items);
@@ -72,9 +78,9 @@ class CoreList {
     }
 
     public function insert($position,$item) {
-        $tail = array_splice($this->_data, $position);
-        $this->_data[] = $item;
-        $this->_data = array_merge($this->_data, $tail);
+        $tail = array_splice($this->__data__, $position);
+        $this->__data__[] = $item;
+        $this->__data__ = array_merge($this->__data__, $tail);
         return $this;
     }
 
@@ -84,70 +90,77 @@ class CoreList {
      */
     public function count($value=False) {
         if($value) {
-            $counts = array_count_values($this->_data);
+            $counts = array_count_values($this->__data__);
             return $counts[$value];    
         } else {
-            return count($this->_data);
+            return count($this->__data__);
         }
     }
 
-    public function _array() {
-        return $this->_data;
+    public function __array__() {
+        return $this->__data__;
     }
 }
 
-class CoreDict {
-    protected $_data = array();
+class Dict {
+    protected $__data__ = array();
     protected $parameters;
 
-    public static function create($array=False) {
-        $type = get_called_class();
-        $arr = new $type();
+    public function __construct($array=False) {
         if(is_array($array)) {
             foreach($array as $k => $v) {
-                $arr->$k = $v;
+                $this->__data__[$k] = $v;
             }
         }
-        return $arr;
+    }
+    public static function create($array=False) {
+        $type = get_called_class();
+        $dict = new $type($array);
+        return $dict;
     }
 
     public function remove($key) {
-        unset($this->_data[$key]);
+        unset($this->__data__[$key]);
     }
 
+    public function map($function) {
+        foreach($this->__data__ as $key => $value) {
+            $function($key, $value);
+        }
+    }
 
     public function update($array) {
         foreach($array as $key => $value) {
             if($parameters['exclude']) {
                 if(!in_array($key, $parameters['exclude'])) { 
-                    $this->_data[$key] = $value;
+                    $this->__data__[$key] = $value;
                 }
             } else {
-                $this->_data[$key] = $value;
+                $this->__data__[$key] = $value;
             }
         }
     }
        
     public function __get($key) {
-        if(array_key_exists($key, $this->_data)) {
-            return $this->_data[$key];   
+        if(array_key_exists($key, $this->__data__)) {
+            return $this->__data__[$key];   
         } else {
             return False;
         }
     }
     
     public function __set($key, $value) {
-        $this->_data[$key] = $value;
+        $this->__data__[$key] = $value;
     }
 
-    public function _array() {
-        return $this->_data;
+    public function __array__() {
+        return $this->__data__;
     }
 }
 
 class ListIsNotADictError extends Error {}
 
-class Range extends CoreList {
+class Range extends Li {
     public static function create() {
         $type = get_called_class();
         $arr = new $type();

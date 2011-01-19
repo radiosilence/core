@@ -181,7 +181,7 @@ class Handler extends \Core\Contained {
      */
     private function set_session() {
         $this->actual = $this->untrusted;
-        $this->data = $this->remote_storage->_array();
+        $this->data = $this->remote_storage->__array__();
     }
 
     /**
@@ -218,12 +218,12 @@ class HandlerContainer extends \Core\ConfiguredContainer {
         $slc = new LocalStorage\Cookie();
 
         $srp->attach_pdo($this->parameters['pdo']);
-        $this->load_config();
+        $this->_load_config();
 
         try{
             $sh->attach_remote_storage($srp)
                 ->attach_local_storage($slc)
-                ->attach_crypto_config($this->config['crypto'])
+                ->attach_crypto_config($this->_config['crypto'])
                 ->set_remote_addr(\Core\Utils\IPV4::get())
                 ->initialize_remote_storage()
                 ->start();
