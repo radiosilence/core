@@ -19,7 +19,7 @@ namespace Core;
 /**
  * It's a bit like stdClass but better! Woo!
  */
-class Li {
+class Li implements \Iterator, \ArrayAccess, \Countable, \Serializable {
     protected $__data__ = array();
     protected $parameters;
 
@@ -36,21 +36,7 @@ class Li {
         foreach(func_get_args() as $item){
             $this->extend($item);
         }
-    }
-
-    public function __get($key) {
-        if(array_key_exists($key, $this->__data__)) {
-            return $this->__data__[$key];   
-        } else {
-            return False;
-        }
-    }
-    
-    public function __set($key, $value) {
-        if(!is_numeric($key)) {
-            throw new ListIsNotADictError();
-        }
-        $this->__data__[$key] = $value;
+        $this->position = 0;
     }
 
     public function map($function) {
@@ -84,25 +70,60 @@ class Li {
         return $this;
     }
 
-    /**
-     * Counts the values
-     * @return int
-     */
-    public function count($value=False) {
-        if($value) {
-            $counts = array_count_values($this->__data__);
-            return $counts[$value];    
-        } else {
-            return count($this->__data__);
-        }
-    }
-
     public function __array__() {
         return $this->__data__;
     }
+
+    public function rewind() {
+            $this->position = 0;
+    }
+
+    public function current() {
+        return $this->__data__[$this->position];
+    }
+
+    public function key() {
+        return $this->position;
+    }
+
+    public function next() {
+        ++$this->position;
+    }
+
+    public function valid() {
+        return isset($this->__data__[$this->position]);
+    }
+    
+    public function offsetExists ($offset) {
+        return isset($this->__data__[$offset]);
+    }
+    
+    public function offsetGet ($offset) {
+        return $this->__data__[$offset];
+    }
+    
+    public function offsetSet ($offset, $value) {
+        $this->__data__[$offset] = $value;
+    }
+    
+    public function offsetUnset ($offset) {
+        unset($this->__data__[$offset]);
+    }
+
+    public function count() {
+        return count($this->__data__);
+    }
+
+    public function serialize() {
+        return serialize($this->__data__);
+    }
+
+    public function unserialize($data) {
+        $this->__data__ = unserialize($data);
+    }
 }
 
-class Dict {
+class Dict implements \Iterator, \ArrayAccess, \Countable, \Serializable {
     protected $__data__ = array();
     protected $parameters;
 
@@ -148,7 +169,7 @@ class Dict {
             return False;
         }
     }
-    
+
     public function __set($key, $value) {
         $this->__data__[$key] = $value;
     }
@@ -156,9 +177,61 @@ class Dict {
     public function __array__() {
         return $this->__data__;
     }
+
+    public function rewind() {
+            $this->position = 0;
+    }
+
+    public function current() {
+        return $this->__data__[$this->position];
+    }
+
+    public function key() {
+        return $this->position;
+    }
+
+    public function next() {
+        ++$this->position;
+    }
+
+    public function valid() {
+        return isset($this->__data__[$this->position]);
+    }
+
+    public function offsetExists ($offset) {
+        return isset($this->__data__[$offset]);
+    }
+    
+    public function offsetGet ($offset) {
+        return $this->__data__[$offset];
+    }
+    
+    public function offsetSet ($offset, $value) {
+        $this->__data__[$offset] = $value;
+    }
+    
+    public function offsetUnset ($offset) {
+        unset($this->__data__[$offset]);
+    }
+
+    public function count() {
+        return count($this->__data__);
+    }
+
+    public function serialize() {
+        return serialize($this->__data__);
+    }
+
+    public function unserialize($data) {
+        $this->__data__ = unserialize($data);
+    }
 }
 
-class ListIsNotADictError extends Error {}
+class ListIsNotADictError extends Error {
+    public function __construct() {
+        parent::__construct("List is not a dictionary.");
+    }
+}
 
 class Range extends Li {
     public static function create() {
