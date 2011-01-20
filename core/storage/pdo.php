@@ -17,9 +17,9 @@ import('core.storage');
 class PDOContainer extends \Core\ConfiguredContainer {
     public function get_storage($type) {
         return PDO::create($type)
-            ->attach_pdo(
-                \Core\Containment\PDOContainer::create($type)
-                    ->get_connection()
+            ->attach_backend(
+                \Core\Backend::container()
+                    ->get_backend()
             );
     }
 }
@@ -28,10 +28,13 @@ class PDOContainer extends \Core\ConfiguredContainer {
  * Provides some basic mapping features that don't necessarily have to be used.
  */
 class PDO extends \Core\Storage {
-    protected $pdo;
+    protected $_pdo;
 
-    public function attach_pdo(\PDO $pdo) {
-        $this->pdo = $pdo;
+    public function attach_backend($backend) {
+        if(!$backend instanceof \PDO) {
+            throw new \Core\Error("Incompatible backend");
+        }
+        $this->_pdo = $backend;
         return $this;
     }
 
@@ -46,7 +49,7 @@ class PDO extends \Core\Storage {
             $this->_default_table(),
             $parameters
         );
-        $sth = $this->pdo->prepare($query->sql());
+        $sth = $this->_pdo->prepare($query->sql());
         if($parameters->filters) {
             foreach($parameters->filters->__array__() as $filter) {
                 if(is_int($filter->pattern)) {
@@ -75,7 +78,7 @@ class PDO extends \Core\Storage {
 
     protected function _insert(\Core\Mapped $object) {
         $data = $this->_filter($object->_array());
-        $sth = $this->pdo->prepare(sprintf(
+        $sth = $this->_pdo->prepare(sprintf(
             "%s\n(%s)\nVALUES (%s)
         RETURNING id",
             $this->_head('insert'),
@@ -89,7 +92,7 @@ class PDO extends \Core\Storage {
     
     protected function _update(\Core\Mapped $object) {
         $data = $this->_filter($object->_array(), $object->list_fields());
-        $sth = $this->pdo->prepare(sprintf(
+        $sth = $this->_pdo->prepare(sprintf(
             "%s\n%s\nWHERE id = :id",
             $this->_head('update'),
             $this->_update_fields($data)
@@ -111,7 +114,7 @@ class PDO extends \Core\Storage {
     }
 
     public function delete($id) {
-/*        $sth = $this->pdo->prepare(
+/*        $sth = $this->_pdo->prepare(
             $this->_head('delete') . 
             " WHERE id = :id");
         $sth->execute(array(

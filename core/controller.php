@@ -21,8 +21,9 @@
 namespace Core;
 
 import('core.dependency');
+import('core.types');
 
-abstract class Controller {
+abstract class Controller extends \Core\Dict {
     protected $args;
 
     public function __construct($args) {

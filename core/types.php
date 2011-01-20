@@ -16,13 +16,72 @@
 
 namespace Core;
 
+import('core.exceptions');
+
+class SuperClass implements \Iterator, \ArrayAccess, \Countable, \Serializable {
+    protected $__data__ = array();
+    
+    protected function __name__() {
+        return array_pop(explode('\\', get_called_class()));
+    }
+    
+    protected function __fullname__() {
+        return '\\' . get_called_class();
+    }
+    
+    public function rewind() {
+            $this->position = 0;
+    }
+
+    public function current() {
+        return $this->__data__[$this->position];
+    }
+
+    public function key() {
+        return $this->position;
+    }
+
+    public function next() {
+        ++$this->position;
+    }
+
+    public function valid() {
+        return isset($this->__data__[$this->position]);
+    }
+    
+    public function offsetExists ($offset) {
+        return isset($this->__data__[$offset]);
+    }
+    
+    public function offsetGet ($offset) {
+        return $this->__data__[$offset];
+    }
+    
+    public function offsetSet ($offset, $value) {
+        $this->__data__[$offset] = $value;
+    }
+    
+    public function offsetUnset ($offset) {
+        unset($this->__data__[$offset]);
+    }
+
+    public function count() {
+        return count($this->__data__);
+    }
+
+    public function serialize() {
+        return serialize($this->__data__);
+    }
+
+    public function unserialize($data) {
+        $this->__data__ = unserialize($data);
+    }
+}
+
 /**
  * It's a bit like stdClass but better! Woo!
  */
-class Li implements \Iterator, \ArrayAccess, \Countable, \Serializable {
-    protected $__data__ = array();
-    protected $parameters;
-
+class Li extends SuperClass {
     public static function create() {
         $type = get_called_class();
         $li = new $type();
@@ -73,60 +132,9 @@ class Li implements \Iterator, \ArrayAccess, \Countable, \Serializable {
     public function __array__() {
         return $this->__data__;
     }
-
-    public function rewind() {
-            $this->position = 0;
-    }
-
-    public function current() {
-        return $this->__data__[$this->position];
-    }
-
-    public function key() {
-        return $this->position;
-    }
-
-    public function next() {
-        ++$this->position;
-    }
-
-    public function valid() {
-        return isset($this->__data__[$this->position]);
-    }
-    
-    public function offsetExists ($offset) {
-        return isset($this->__data__[$offset]);
-    }
-    
-    public function offsetGet ($offset) {
-        return $this->__data__[$offset];
-    }
-    
-    public function offsetSet ($offset, $value) {
-        $this->__data__[$offset] = $value;
-    }
-    
-    public function offsetUnset ($offset) {
-        unset($this->__data__[$offset]);
-    }
-
-    public function count() {
-        return count($this->__data__);
-    }
-
-    public function serialize() {
-        return serialize($this->__data__);
-    }
-
-    public function unserialize($data) {
-        $this->__data__ = unserialize($data);
-    }
 }
 
-class Dict implements \Iterator, \ArrayAccess, \Countable, \Serializable {
-    protected $__data__ = array();
-    protected $parameters;
-
+class Dict extends SuperClass {
     public function __construct($array=False) {
         if(is_array($array)) {
             foreach($array as $k => $v) {
@@ -150,7 +158,7 @@ class Dict implements \Iterator, \ArrayAccess, \Countable, \Serializable {
         }
     }
 
-    public function update($array) {
+    public function overwrite($array) {
         foreach($array as $key => $value) {
             if($parameters['exclude']) {
                 if(!in_array($key, $parameters['exclude'])) { 
@@ -178,56 +186,9 @@ class Dict implements \Iterator, \ArrayAccess, \Countable, \Serializable {
         return $this->__data__;
     }
 
-    public function rewind() {
-            $this->position = 0;
-    }
-
-    public function current() {
-        return $this->__data__[$this->position];
-    }
-
-    public function key() {
-        return $this->position;
-    }
-
-    public function next() {
-        ++$this->position;
-    }
-
-    public function valid() {
-        return isset($this->__data__[$this->position]);
-    }
-
-    public function offsetExists ($offset) {
-        return isset($this->__data__[$offset]);
-    }
-    
-    public function offsetGet ($offset) {
-        return $this->__data__[$offset];
-    }
-    
-    public function offsetSet ($offset, $value) {
-        $this->__data__[$offset] = $value;
-    }
-    
-    public function offsetUnset ($offset) {
-        unset($this->__data__[$offset]);
-    }
-
-    public function count() {
-        return count($this->__data__);
-    }
-
-    public function serialize() {
-        return serialize($this->__data__);
-    }
-
-    public function unserialize($data) {
-        $this->__data__ = unserialize($data);
-    }
 }
 
-class ListIsNotADictError extends Error {
+class ListIsNotADictError extends \Core\Error {
     public function __construct() {
         parent::__construct("List is not a dictionary.");
     }

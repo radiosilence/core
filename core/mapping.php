@@ -20,6 +20,20 @@ abstract class Mapper extends Dict {
         $this->_storage = $storage;
         return $this;
     }
+    
+    public function find_by($field, $pattern){
+        $result = $this->_storage->fetch(new \Core\Dict(array(
+                "filters" => new \Core\Li(
+                    new \Core\Filter($field, $pattern)
+                )
+        )));
+        return $this->create_object($result[0]);
+    }
+    
+    public function update($data) {
+        $validator = \Core\Validator::validator()
+            ->attach_mapper(get_called_class(), $mapper);
+    }
     abstract public function create_object($data);
 }
 

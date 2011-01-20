@@ -57,6 +57,20 @@ abstract class ConfiguredContainer extends Container {
     /**
      * Load the configuration from a file if it is not set in the parameters.
      */
+     
+    public function get_container() {
+        $this->_load_config();
+        $this->_check_config();
+        $this->_backend = $this->_config['general']['backend'];
+        
+        $class = '\\' . str_replace('Container', '\\', get_called_class());
+        $container_class = $class . $this->_backend .'Container';
+        $container_module = strtolower(str_replace('\\', '.', $class) . $this->_backend); 
+        
+        import($container_module);
+
+        return $container_class::create();
+    }
     protected function _load_config($config_file=Null) {
         if(empty($config_file)) {
             $config_file = SITE_PATH . '/config.php';

@@ -31,19 +31,9 @@ abstract class Storage extends \Core\Contained {
 class StorageContainer extends \Core\ConfiguredContainer {
     protected $_backend;
     public function get_storage($type) {
-        $this->_load_config();
-        $this->_check_config();
-        $this->_backend = $this->_config['general']['backend'];
-
-        $storage_class = '\Core\Storage\\'. $this->_backend .'Container';
-        $storage_module = 'core.storage.' . strtolower($this->_backend);
-
-        import($storage_module);
-
-        return $storage_class::create()
+        return $this->get_container()
             ->get_storage($type);
     }
-
 }
 
 class Filter {
