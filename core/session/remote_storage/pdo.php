@@ -54,7 +54,7 @@ class PDO extends \Core\Dict implements \Core\Session\RemoteStorage {
     }
 
     public function set_data($data) {
-        $this->data = $data;
+        $this->__data__ = $data;
     }
 
     /**
@@ -77,7 +77,7 @@ class PDO extends \Core\Dict implements \Core\Session\RemoteStorage {
             ":sid" => $actual['sid'],
             ":tok" => $actual['tok'],
             ":remote_addr" => $this->remote_addr,
-            ":data" => json_encode($this->data),
+            ":data" => json_encode($this->__data__),
             ":latest" => $current->Format('r')
         ));
         $this->actual = $actual;
@@ -105,7 +105,7 @@ class PDO extends \Core\Dict implements \Core\Session\RemoteStorage {
         ");
         $current = new \DateTime();
         $ok = $sth->execute(array(
-            ":data" => json_encode($this->data),
+            ":data" => json_encode($this->__data__),
             ":latest" => $current->Format('r'),
             ":sid" => $this->actual['sid']
         ));
@@ -145,12 +145,12 @@ class PDO extends \Core\Dict implements \Core\Session\RemoteStorage {
             throw new SessionNotFoundError();
         }
 
-        $this->found_session = $sth->fetchObject();
+        $this->found_session = $sth->fetch(\PDO::FETCH_ASSOC);
     }
 
     private function decode_found_data() {
-        $this->found_session->data = json_decode($this->found_session->data, true);
-        $this->data = $this->found_session->data;
+        $this->found_session['data'] = json_decode($this->found_session['data'], True);
+        $this->__data__ = $this->found_session['data'];
     }
 }
 

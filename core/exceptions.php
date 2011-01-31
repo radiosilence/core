@@ -38,14 +38,18 @@ class Error extends \Exception {
 
 class HTTPError extends Error {
     public $error_codes = array(
-        404 => "HTTP/1.0 404 Not Found"
+        401 => "%s 401 Unauthorized",
+        404 => "%s 404 Not Found"
     );
-    public function __construct($code,$url=False){
+    public function __construct($code, $url=False){
         if(!isset($this->error_codes[$code])){
             throw new Exception("HTTP error with unknown error code.");
         }
-        header($error_codes[$code]);
-        printf("<h1>%s</h1>Whilst trying to serve page: %s", $this->error_codes[$code], !empty($url) ? $url : 'unknown');
+        $error = sprintf($this->error_codes[$code], $_SERVER['SERVER_PROTOCOL']);
+        header($error);
+        printf("<h1>%s</h1>Whilst trying to serve page: %s",
+            $error,
+            !empty($url) ? $url : 'unknown');
         die();
     }
 }

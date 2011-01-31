@@ -49,7 +49,7 @@ class Cookie implements \Core\Session\LocalStorage {
             return False;
         }
         foreach($this->actual as $key => $value) {
-            setcookie($key, $value, time()+(3600*24*65), null, null, false, true);
+            setcookie($key, $value, time()+(3600*24*65), "/", null, false, true);
         }
     }
 

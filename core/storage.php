@@ -13,15 +13,22 @@ namespace Core;
 
 abstract class Storage extends \Core\Contained {
     protected $_class;
-
+    protected $_backend;
+    
     public static function create($class) {
         $cls = get_called_class();
         return new $cls($class);
     }
+    
 
     public function __construct($class) {
         $this->_class = $class;
     }
+   
+    public function attach_backend($backend) {
+        $this->_backend = $backend;
+        return $this;
+    }   
 
     protected function _class_name() {
         return $this->_class;

@@ -118,7 +118,7 @@ class Handler extends \Core\Contained {
     public function __destruct() {
         if(!empty($this->actual['sid'])) {
             try {
-                $this->remote_storage->set_data($this->data);
+                $this->remote_storage->set_data($this->__data__);
                 $this->remote_storage->save();
             } catch(RemoteStorage\Error $e) {
                 return False;
@@ -181,7 +181,7 @@ class Handler extends \Core\Contained {
      */
     private function set_session() {
         $this->actual = $this->untrusted;
-        $this->data = $this->remote_storage->__array__();
+        $this->__data__ = $this->remote_storage->__array__();
     }
 
     /**

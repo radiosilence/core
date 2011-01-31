@@ -28,13 +28,9 @@ class PDOContainer extends \Core\ConfiguredContainer {
  * Provides some basic mapping features that don't necessarily have to be used.
  */
 class PDO extends \Core\Storage {
-    protected $_pdo;
 
     public function attach_backend($backend) {
-        if(!$backend instanceof \PDO) {
-            throw new \Core\Error("Incompatible backend");
-        }
-        $this->_pdo = $backend;
+        $this->_backend = $backend;
         return $this;
     }
 
@@ -49,7 +45,7 @@ class PDO extends \Core\Storage {
             $this->_default_table(),
             $parameters
         );
-        $sth = $this->_pdo->prepare($query->sql());
+        $sth = $this->_backend->prepare($query->sql());
         if($parameters->filters) {
             foreach($parameters->filters->__array__() as $filter) {
                 if(is_int($filter->pattern)) {
@@ -78,7 +74,7 @@ class PDO extends \Core\Storage {
 
     protected function _insert(\Core\Mapped $object) {
         $data = $this->_filter($object->_array());
-        $sth = $this->_pdo->prepare(sprintf(
+        $sth = $this->_backend->prepare(sprintf(
             "%s\n(%s)\nVALUES (%s)
         RETURNING id",
             $this->_head('insert'),
@@ -92,7 +88,7 @@ class PDO extends \Core\Storage {
     
     protected function _update(\Core\Mapped $object) {
         $data = $this->_filter($object->_array(), $object->list_fields());
-        $sth = $this->_pdo->prepare(sprintf(
+        $sth = $this->_backend->prepare(sprintf(
             "%s\n%s\nWHERE id = :id",
             $this->_head('update'),
             $this->_update_fields($data)
@@ -114,7 +110,7 @@ class PDO extends \Core\Storage {
     }
 
     public function delete($id) {
-/*        $sth = $this->_pdo->prepare(
+/*        $sth = $this->_backend->prepare(
             $this->_head('delete') . 
             " WHERE id = :id");
         $sth->execute(array(

@@ -70,9 +70,14 @@ class Router extends Contained {
     }
 
     private function find_route($uri) {
+        $xsrf_pattern = '/\/?xsrf:([0-9]+)/';
+        preg_match($xsrf_pattern, $uri, $reqid);    
+        $uri = preg_replace($xsrf_pattern, '', $uri);
+        $reqid = array_pop($reqid);
         foreach($this->routes as $potential => $route) {
             $potential = str_replace('/', '\/', $potential);
             if(preg_match('/\/?' . $potential . '/', $uri, $matches)) {
+                $route->__antixsrf_reqid__ = $reqid;
                 return $route->assign_vars($matches);
             }
         }
@@ -80,7 +85,7 @@ class Router extends Contained {
     }
 }
 
-class Route {
+class Route extends Dict {
     public $class;
     public $method;
     public $parameters = array();
@@ -113,6 +118,11 @@ class Route {
             $replacements,
             $this->parameters
         );
+
+        foreach($this->__data__ as $k => $v) {
+            $this->parameters[$k] = $v;
+        }
+
         return $this;
     }
 
