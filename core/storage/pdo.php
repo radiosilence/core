@@ -132,7 +132,7 @@ class PDO extends \Core\Storage {
     }
 
     protected function _filter_to_bind(\Core\Storage\Filter $filter) {
-        return array(":" . $filter->has(), $filter->pattern );
+        return array(":" . $filter->hash(), $filter->pattern );
     }
 }
 
