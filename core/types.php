@@ -18,8 +18,11 @@ namespace Core;
 
 import('core.exceptions');
 
-class SuperClass implements \Iterator, \ArrayAccess, \Countable, \Serializable {
+abstract class SuperClass implements \Iterator, \ArrayAccess, \Countable, \Serializable {
     protected $__data__ = array();
+    
+    public function __construct() {
+    }
     
     protected function __name__() {
         return array_pop(explode('\\', get_called_class()));
@@ -27,26 +30,6 @@ class SuperClass implements \Iterator, \ArrayAccess, \Countable, \Serializable {
     
     protected function __fullname__() {
         return '\\' . get_called_class();
-    }
-    
-    public function rewind() {
-            $this->position = 0;
-    }
-
-    public function current() {
-        return $this->__data__[$this->position];
-    }
-
-    public function key() {
-        return $this->position;
-    }
-
-    public function next() {
-        ++$this->position;
-    }
-
-    public function valid() {
-        return isset($this->__data__[$this->position]);
     }
     
     public function offsetExists ($offset) {
@@ -76,12 +59,16 @@ class SuperClass implements \Iterator, \ArrayAccess, \Countable, \Serializable {
     public function unserialize($data) {
         $this->__data__ = unserialize($data);
     }
-}
+    public function getData() {
+        return $this->data;
+    }
+}   
 
 /**
  * It's a bit like stdClass but better! Woo!
  */
 class Li extends SuperClass {
+    protected $_position = 0;
     public static function create() {
         $type = get_called_class();
         $li = new $type();
@@ -95,7 +82,7 @@ class Li extends SuperClass {
         foreach(func_get_args() as $item){
             $this->extend($item);
         }
-        $this->position = 0;
+        parent::__construct();
     }
 
     public function map($function) {
@@ -132,19 +119,41 @@ class Li extends SuperClass {
     public function __array__() {
         return $this->__data__;
     }
+
+    
+    public function rewind() {
+        $this->_position = 0;
+    }
+
+    public function current() {
+        return $this->__data__[$this->_position];
+    }
+
+    public function key() {
+        return $this->_position;
+    }
+
+    public function next() {
+        ++$this->_position;
+    }
+
+    public function valid() {
+        return isset($this->__data__[$this->_position]);
+    }
 }
 
 class Dict extends SuperClass {
-    public function __construct($array=False) {
-        if(is_array($array)) {
-            foreach($array as $k => $v) {
+    public function __construct($init=False) {
+        if(is_array($init) or $init instanceof Dict) {        
+            foreach($init as $k => $v) {
                 $this->__data__[$k] = $v;
             }
         }
+        parent::__construct();
     }
-    public static function create($array=False) {
+    public static function create($init=False) {
         $type = get_called_class();
-        $dict = new $type($array);
+        $dict = new $type($init);
         return $dict;
     }
 
@@ -184,6 +193,26 @@ class Dict extends SuperClass {
 
     public function __array__() {
         return $this->__data__;
+    }
+    
+    public function rewind() {
+        return \reset($this->__data__);
+    }
+
+    public function current() {
+        return \current($this->__data__);
+    }
+
+    public function key() {
+        return \key($this->__data__);
+    }
+
+    public function next() {
+        return \next($this->__data__);
+    }
+
+    public function valid() {
+        return \key($this->__data__) !== null;
     }
 
 }
