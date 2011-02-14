@@ -32,17 +32,4 @@ class ArticleMapper extends \Core\Mapper {
         $data->preview = substr(strip_tags($data->body), 0, 140);
         return Article::create($data);
     }
-
-    public function get_list(\Core\Dict $parameters) {
-        if(!$order) {
-            $order = $_default_order;
-        }
-
-        $results = $this->_storage->fetch($parameters);
-        $articles = new \Core\Li();
-        foreach($results as $result) {
-            $articles->append($this->create_object($result));            
-        }
-        return $articles;
-    }
 }
