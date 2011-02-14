@@ -57,11 +57,11 @@ class PDO extends \Core\Storage {
             }            
         }
         $sth->execute();
-
-        $return = new \Core\Li();
-        
-        return $sth->fetchAll(\PDO::FETCH_ASSOC);
- 
+        $items = new \Core\Li();
+        foreach($sth->fetchAll(\PDO::FETCH_ASSOC) as $item) {
+            $items->append($item);
+        }
+        return $items   ;
     }
 
     public function save(\Core\Mapped $object) {
@@ -181,7 +181,11 @@ class PDOQuery {
     protected function _get_lines($type) {
         $string = "";
         $types = "{$type}s";
-        
+        if($this->_parameters->$type) {
+            $this->_parameters->$types = new \Core\Li(
+                $this->_parameters->$type
+            );
+        }
         if(!$this->_parameters->$types) {
             return False;
         }
@@ -265,9 +269,10 @@ class PDOQuery {
     protected function _orders() {
         return $this->_get_lines('order');    
     }
-    public function _order_to_sql(\Core\Order $order) { 
-        //var_dump($order);
-    
+    public function _order_to_sql(\Core\Order $order) {
+        return sprintf("ORDER BY %s %s",
+            $order->field, $order->order
+        );
     }
 }
 

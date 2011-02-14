@@ -21,13 +21,13 @@ abstract class Mapper extends Dict {
         return $this;
     }
     
-    public function find_by($field, $pattern){
-        $result = $this->_storage->fetch(new \Core\Dict(array(
-                "filters" => new \Core\Li(
-                    new \Core\Filter($field, $pattern)
-                )
-        )));
-        return $this->create_object($result[0]);
+    public function get_list(\Core\Dict $parameters) {
+        $results = $this->_storage->fetch($parameters);
+        $items = new \Core\Li();
+        foreach($results as $result) {
+            $items->append($this->create_object($result));            
+        }
+        return $items;
     }
     
     public function update($data) {
