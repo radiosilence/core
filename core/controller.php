@@ -24,10 +24,10 @@ import('core.dependency');
 import('core.types');
 
 abstract class Controller extends \Core\Dict {
-    protected $args;
+    protected $_args;
 
     public function __construct($args) {
-        $this->args = $args;
+        $this->_args = $args;
     }
     public function load_locale($file) {
         include SITE_PATH . "/languages/" . LOCALE . '/' . $file . ".php";

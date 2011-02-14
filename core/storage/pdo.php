@@ -109,7 +109,7 @@ class PDO extends \Core\Storage {
         return $returns;
     }
 
-    public function delete($id) {
+    public function delete(\Core\Dict $parameters=Null) {
 /*        $sth = $this->_backend->prepare(
             $this->_head('delete') . 
             " WHERE id = :id");

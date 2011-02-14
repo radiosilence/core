@@ -33,6 +33,11 @@ abstract class Storage extends \Core\Contained {
     protected function _class_name() {
         return $this->_class;
     }
+
+    abstract public function fetch(\Core\Dict $parameters=Null);
+    abstract public function save(\Core\Mapped $object);
+    abstract public function delete(\Core\Dict $parameters=Null);
+    abstract public function get_table_name();
 }
 
 class StorageContainer extends \Core\ConfiguredContainer {
