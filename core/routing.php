@@ -59,16 +59,23 @@ class Router extends Contained {
         $route = $this->_find_route($uri);
 
         $mc = new \Core\Backend\MemcachedContainer();
-        $m = $mc->get_backend();
-        if($route->parameters['__cache__'] == 'on') {
-            $key = "page:route={$uri}";    
-        } else if($route->parameters['__cache__'] == 'ip') {
-            $key = "page:route={$uri};ip=" . \Core\Utils\IPV4::get();
-        }
+        try {
+            $m = $mc->get_backend();        
+            if($route->parameters['__cache__'] == 'on') {
+                $key = "page:route={$uri}";    
+            } else if($route->parameters['__cache__'] == 'ip') {
+                $key = "page:route={$uri};ip=" . \Core\Utils\IPV4::get();
+            }
 
-        if($route->parameters['__cache__'] && $page = $m->get($key)) {
-            echo $page;
-            return True;
+            if($route->parameters['__cache__'] && $page = $m->get($key)) {
+                echo $page;
+                return True;
+            }
+            $m_enable = True;
+        } catch(\Core\FileNotFoundError $e) {
+            trigger_error("Disabling route cache due to no config file.", \E_USER_WARNING);
+        } catch(\Core\Error $e) {
+            trigger_error("Disabling route cache due to no memcached section in config.", \E_USER_WARNING);
         }
         import('controllers.' . strtolower($route->class));
         $class = sprintf('\Controllers\%s', str_replace('.', '\\', $route->class));
@@ -81,7 +88,9 @@ class Router extends Contained {
         ob_start();
         $controller->$method();
         $page = ob_get_contents();
-        $m->set($key, $page, time()+60);
+        if($m_enable) {
+            $m->set($key, $page, time()+60);        
+        }
     }
 
     private function _clean_uri($uri) {
