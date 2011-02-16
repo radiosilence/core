@@ -54,6 +54,12 @@ class Router extends Contained {
         $this->_routes[$request] = new Route($destination);
     }
 
+    protected function _get_site_name() {
+        $site_name = explode('/', $_SERVER['SCRIPT_FILENAME']);
+        array_pop($site_name);
+        array_pop($site_name);
+        return array_pop($site_name);
+    }
     public function route($uri) {
         $uri = $this->_clean_uri($uri);
         $route = $this->_find_route($uri);
@@ -64,15 +70,20 @@ class Router extends Contained {
             }
             $mc = new \Core\Backend\MemcachedContainer();
             $m = $mc->get_backend();
+            $m->setOption(\Memcached::OPT_COMPRESSION, False);
             if($route->parameters['__cache__'] == 'on') {
-                $key = "page:route={$uri}";    
-            } else if($route->parameters['__cache__'] == 'ip') {
-                $key = "page:route={$uri};ip=" . \Core\Utils\IPV4::get();
+                $site_name = $this->_get_site_name();
+                $key = sprintf("site:%s:uri:%s", $site_name, $_SERVER['REQUEST_URI']);
             }
 
             if($route->parameters['__cache__'] && $page = $m->get($key)) {
-                echo $page;
-                return True;
+                var_dump('<pre>',$_SERVER);
+                if(!($p = $m->get($key))) {
+                    echo "KEY DEAD";
+                } else {
+                    echo "KEY HIT";
+                }
+                die("Shouldn't be here. {$key}");
             }
             $m_enable = True;
         } catch(\Core\FileNotFoundError $e) {
