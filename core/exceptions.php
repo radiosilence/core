@@ -59,4 +59,10 @@ class FileNotFoundError extends Error {
 		parent::__construct(sprintf('Required file "%s" was not found.', $filename));
 	}
 }
+
+class SkipException extends \Exception {
+    public function __construct() {
+        parent::__construct("Uncaught SkipException.");
+    }
+}
 ?>
