@@ -77,13 +77,7 @@ class Router extends Contained {
             }
 
             if($route->parameters['__cache__'] && $page = $m->get($key)) {
-                var_dump('<pre>',$_SERVER);
-                if(!($p = $m->get($key))) {
-                    echo "KEY DEAD";
-                } else {
-                    echo "KEY HIT";
-                }
-                die("Shouldn't be here. {$key}");
+                trigger_error("Cache hit but not used by proxy server.", \E_USER_WARNING);
             }
             $m_enable = True;
         } catch(\Core\FileNotFoundError $e) {
