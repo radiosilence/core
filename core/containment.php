@@ -93,7 +93,7 @@ abstract class ConfiguredContainer extends Container {
      */
     protected function _check_config() {
         if(empty($this->_config)) {
-            throw new ConfigNotLoadedError();
+            throw new \Core\Error("Container config not loaded: " . get_called_class());
         }
     }
 
