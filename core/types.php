@@ -109,7 +109,7 @@ class Li extends SuperClass {
         return $this;
     }
 
-    public function insert($position,$item) {
+    public function insert($position, $item) {
         $tail = array_splice($this->__data__, $position);
         $this->__data__[] = $item;
         $this->__data__ = array_merge($this->__data__, $tail);
@@ -120,7 +120,21 @@ class Li extends SuperClass {
         return $this->__data__;
     }
 
+    public function __get($key) {
+        if(!is_numeric($key)) {
+            throw new ListIsNotADictError();
+        }
+        return $this->__data__[$key];
+    }
     
+    public function __set($key, $value) {
+        if(!is_numeric($key)) {
+            throw new ListIsNotADictError();
+        }
+        $this->__data__[$key] = $value;
+        return $this->__data__[$key];
+    }
+
     public function rewind() {
         $this->_position = 0;
     }
