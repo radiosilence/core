@@ -31,6 +31,8 @@ or implied, of James Cleveland.
 
 My core modules that I work with things using. Features python-style code [PEP 8](http://www.python.org/dev/peps/pep-0008/), pythonic imports, actually using namespaces, modularity, MVC microframework for fast development, 3rd party ease of use, update script for use with cron or whatever.
 
+Honestly it is more of a set of libraries than a framework, but can be used as a framework if one wishes.
+
 Includes 3rd party modules.
 
 
@@ -63,6 +65,9 @@ Because things aren't super mature yet...
 * LOADS of things have changed, old code probably won't work, nobody uses it anyway so I don't care.
 
 ## To-dos
-* Re-vamp the model system so that it abstracts the schema further, models can extend each other, etc. Idea of having "table" is kind of stupid.
-* Use interfaces for models.
-* 
+* Refactor session management to use the standard storage class.
+* Increase memcached caching across the board.
+* Sessions in memcached 'cause fuck hitting the DB for every damn request.
+* Better cache invalidation. Perhaps cache based on user ID?
+* Clean up the shit I started and forgot about.
+
