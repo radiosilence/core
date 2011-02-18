@@ -47,7 +47,7 @@ class PDO extends \Core\Storage {
         );
         $sth = $this->_backend->prepare($query->sql());
         if($parameters->filters) {
-            foreach($parameters->filters->__array__() as $filter) {
+            foreach($parameters->filters as $filter) {
                 if(is_int($filter->pattern)) {
                     $type = \PDO::PARAM_INT;
                 } else {
@@ -61,7 +61,7 @@ class PDO extends \Core\Storage {
         foreach($sth->fetchAll(\PDO::FETCH_ASSOC) as $item) {
             $items->append($item);
         }
-        return $items   ;
+        return $items;
     }
 
     public function save(\Core\Mapped $object) {
