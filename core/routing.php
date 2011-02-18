@@ -76,7 +76,7 @@ class Router extends Contained {
                 $key = sprintf("site:%s:uri:%s", $site_name, $_SERVER['REQUEST_URI']);
             }
 
-            if($route->parameters['__cache__'] && $page = $m->get($key)) {
+            if($route->parameters['__cache__'] && $page = $m->get($key) && count($_POST) == 0) {
                 trigger_error("Cache hit but not used by proxy server.", \E_USER_WARNING);
             }
             $m_enable = True;
@@ -164,6 +164,7 @@ class Route extends Dict {
         foreach($this->__data__ as $k => $v) {
             $this->parameters[$k] = $v;
         }
+        $this->parameters['__uri__'] = $_SERVER['REQUEST_URI'];
         return $this;
     }
 

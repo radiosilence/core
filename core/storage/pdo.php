@@ -57,11 +57,7 @@ class PDO extends \Core\Storage {
             }            
         }
         $sth->execute();
-        $items = new \Core\Li();
-        foreach($sth->fetchAll(\PDO::FETCH_ASSOC) as $item) {
-            $items->append($item);
-        }
-        return $items;
+        return new \Core\Li($sth->fetchAll(\PDO::FETCH_ASSOC));
     }
 
     public function save(\Core\Mapped $object) {
@@ -138,7 +134,7 @@ class PDO extends \Core\Storage {
 
 class PDOQuery {
 
-	const Select = 'SELECT %1$s FROM %2$s';
+    const Select = 'SELECT %1$s FROM %2$s';
     const Delete = 'DELETE * FROM %s';
     const Update = 'UPDATE %s SET';
     const Insert = 'INSERT INTO %s';
