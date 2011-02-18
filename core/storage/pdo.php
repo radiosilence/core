@@ -57,11 +57,8 @@ class PDO extends \Core\Storage {
             }            
         }
         $sth->execute();
-        $items = new \Core\Li();
-        foreach($sth->fetchAll(\PDO::FETCH_ASSOC) as $item) {
-            $items->append($item);
-        }
-        return $items   ;
+        $items = new \Core\Li($sth->fetchAll(\PDO::FETCH_ASSOC));
+        return $items;
     }
 
     public function save(\Core\Mapped $object) {
