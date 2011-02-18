@@ -32,4 +32,23 @@ class ArticleMapper extends \Core\Mapper {
         $data->preview = substr(strip_tags($data->body), 0, 140);
         return Article::create($data);
     }
+
+    public function get_latest_articles() {
+        return Article::mapper()
+            ->attach_storage($this->_storage)
+            ->get_list(new \Core\Dict(array(
+                "order" => new \Core\Order('posted_on', 'desc')
+            )));
+    }
+
+    public function get_article($id) {
+        $articles = Article::mapper()
+            ->attach_storage($this->_storage)
+            ->get_list(new \Core\Dict(array(
+                "filters" => new \Core\Li(
+                    new \Core\Filter("id", $id)
+                )
+            )));
+        return $articles[0];
+    }
 }
