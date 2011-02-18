@@ -50,5 +50,6 @@ abstract class Mapped extends Contained {
 
     public function attach_mapper($type,$mapper) {
         $this->mappers[$type] = $mapper;
+        return $this;
     }
 }
