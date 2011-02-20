@@ -205,6 +205,10 @@ class Dict extends SuperClass {
         $this->__data__[$key] = $value;
     }
 
+    public function add($key, $value) {
+        $this->__data__[$key][] = $value;
+    }
+
     public function __array__() {
         return $this->__data__;
     }
@@ -249,6 +253,21 @@ class Range extends Li {
         }
         $arr->extend($range);
         return $arr;
+    }
+}
+
+class Params extends Dict {
+
+    public function __set($key, $value) {
+        if(is_array($this->__data__[$key])) {
+            $this->__data__[$key][] = $value;
+        } else {
+            $this->__data__[$key] = array($value);
+        }
+    }
+
+    public function add($key, $value) {
+            $this->__set($key, $value);
     }
 }
 ?>

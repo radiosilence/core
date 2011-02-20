@@ -12,7 +12,8 @@
 namespace Core\Storage;
 
 import('core.storage');
-
+import('core.types');
+import('core.utils.language');
 
 class PDOContainer extends \Core\ConfiguredContainer {
     public function get_storage($type) {
@@ -28,26 +29,37 @@ class PDOContainer extends \Core\ConfiguredContainer {
  * Provides some basic mapping features that don't necessarily have to be used.
  */
 class PDO extends \Core\Storage {
-
     public function attach_backend($backend) {
         $this->_backend = $backend;
         return $this;
     }
 
-    /**
-     * TODO: Make this work based on the parameters.
-     */
-    public function fetch(\Core\Dict $parameters=Null) {
+    protected function _expand_singular_parameters($pars) {
+        foreach(array('join', 'filter', 'in', 'order') as $t) {
+            if(isset($pars[$t])) {
+                $pars[\Core\Utils\Language::plural($t)][] = $pars[$t];
+                unset($pars[$t]);
+            }
+        }
+        return $pars;
+    }
+    
+    public function fetch($parameters=False) {
         $objects = array();
-        
+        $parameters = $this->_expand_singular_parameters($parameters);
+        if(is_array($parameters['in'])) {
+            foreach($parameters['in'] as $in) {
+                $in->foreign = $this->_default_table($in->foreign);
+            }
+        }
         $query = new PDOQuery(
             PDOQuery::Select,
             $this->_default_table(),
             $parameters
         );
         $sth = $this->_backend->prepare($query->sql());
-        if($parameters->filters) {
-            foreach($parameters->filters as $filter) {
+        if($parameters['filters']) {
+            foreach($parameters['filters'] as $filter) {
                 if(is_int($filter->pattern)) {
                     $type = \PDO::PARAM_INT;
                 } else {
@@ -66,6 +78,10 @@ class PDO extends \Core\Storage {
         } else {
             $this->_insert($object);   
         }
+    }
+
+    protected function _join_table_name() {
+        
     }
 
     protected function _insert(\Core\Mapped $object) {
@@ -105,7 +121,7 @@ class PDO extends \Core\Storage {
         return $returns;
     }
 
-    public function delete(\Core\Dict $parameters=Null) {
+    public function delete($parameters=Null) {
 /*        $sth = $this->_backend->prepare(
             $this->_head('delete') . 
             " WHERE id = :id");
@@ -123,8 +139,11 @@ class PDO extends \Core\Storage {
      * Create a table_name based on ClassName
      * TODO: Proper grammatical plurals, ala Django or SQLAlchemy
      */
-    protected function _default_table() {
-        return strtolower($this->_class_name()) . 's';
+    protected function _default_table($table=False) {
+        if(!$table) {
+            $table = $this->_class_name();
+        }
+        return strtolower($table) . 's';
     }
 
     protected function _filter_to_bind(\Core\Storage\Filter $filter) {
@@ -151,6 +170,9 @@ class PDOQuery {
     }
 
     public function sql() {
+        if($this->_parameters['lis']) {
+            $this->_eval_lis();
+        }
         return sprintf("%s %s %s %s",
             $this->_head(),
             $this->_joins(),
@@ -159,10 +181,14 @@ class PDOQuery {
         );
     }
 
+    protected function _eval_lis() {
+        foreach($this->_parameters['li'] as $li) {
+        }
+    }
     protected function _head() {
         if($this->_type == PDOQuery::Select) {
             $fields = new \Core\Li($this->_table . '.*');
-            if($this->_parameters->joins){
+            if($this->_parameters['joins']){
                 $fields->extend($this->_join_fields());                
             }
             return sprintf($this->_type,
@@ -176,16 +202,11 @@ class PDOQuery {
 
     protected function _get_lines($type) {
         $string = "";
-        $types = "{$type}s";
-        if($this->_parameters->$type) {
-            $this->_parameters->$types = new \Core\Li(
-                $this->_parameters->$type
-            );
-        }
-        if(!$this->_parameters->$types) {
+        $types = \Core\Utils\Language::plural($type);
+        if(!$this->_parameters[$types]) {
             return False;
         }
-        foreach ($this->_parameters->$types->__array__() as $item) {
+        foreach ($this->_parameters[$types] as $item) {
             $f = "_{$type}_to_sql";
             $string .= ' ' . $this->$f($item);
         }
@@ -207,7 +228,7 @@ class PDOQuery {
 
     private function _join_fields() {
         $fields = new \Core\Li();
-        $this->_parameters->joins->map(function($join) use($fields) {
+        foreach($this->_parameters['joins'] as $join) {
             if($join->fields) {
                 $join->fields->map(function($field) use($fields, $join) {
                     $fields->extend(sprintf('%1$s.%2$s as %1$s_%2$s',
@@ -215,10 +236,13 @@ class PDOQuery {
                     $field));
                 });
             }
-        });
+        };
         return $fields;
     }
 
+    protected function _in_table($table) {
+        
+    }
     protected function _insert_fields($data, $prefix=False) {
         if(!prefix){
             $sqls = array('id');   
@@ -243,10 +267,10 @@ class PDOQuery {
     protected function _filters() {
         $i = 0;
         $string = "";
-        if(!$this->_parameters->filters) {
+        if(!$this->_parameters['filters']) {
             return False;
         }
-        foreach ($this->_parameters->filters->__array__() as $item) {
+        foreach ($this->_parameters['filters'] as $item) {
             $string .= ($i > 0 ? ' AND ' : 'WHERE ') . $this->_filter_to_sql($item);
             $i++;
         }

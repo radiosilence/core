@@ -34,9 +34,9 @@ abstract class Storage extends \Core\Contained {
         return $this->_class;
     }
 
-    abstract public function fetch(\Core\Dict $parameters=Null);
+    abstract public function fetch($parameters=False);
     abstract public function save(\Core\Mapped $object);
-    abstract public function delete(\Core\Dict $parameters=Null);
+    abstract public function delete($parameters=False);
     abstract public function get_table_name();
 }
 
@@ -84,5 +84,14 @@ class Join {
         if($fields instanceof \Core\Li) {
             $this->fields = $fields;
         }
+    }
+}
+
+class In {
+    public $foreign;
+    public $id;
+    public function __construct($foreign, $id) {
+        $this->foreign = $foreign;
+        $this->id = $id;
     }
 }

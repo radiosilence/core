@@ -26,7 +26,7 @@ import('core.types');
 abstract class Controller extends \Core\Dict {
     protected $_args;
 
-    public function __construct($args) {
+    public function __construct($args=False) {
         $this->_args = $args;
     }
     public function load_locale($file) {

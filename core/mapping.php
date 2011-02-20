@@ -21,7 +21,7 @@ abstract class Mapper extends Dict {
         return $this;
     }
     
-    public function get_list(\Core\Dict $parameters) {
+    public function get_list($parameters=False) {
         $results = $this->_storage->fetch($parameters);
         $items = new \Core\Li();
         foreach($results as $result) {
@@ -39,7 +39,7 @@ abstract class Mapper extends Dict {
 
 abstract class Mapped extends Contained {
     protected $_fields;
-    public $mappers = array();
+    public $_mappers = array();
     public static function mapper($parameters=False) {
         return static::get_helper('Mapper', $parameters);
     }
@@ -49,7 +49,7 @@ abstract class Mapped extends Contained {
     }
 
     public function attach_mapper($type,$mapper) {
-        $this->mappers[$type] = $mapper;
+        $this->_mappers[$type] = $mapper;
         return $this;
     }
 }
