@@ -27,13 +27,6 @@ class Template extends Dict {
     protected $_current_section = null;
     protected $_utils = array();
 
-    public function url_for($url) {
-        if(!isset($this->_utils['antixsrf'])) {
-            throw new \Core\Error('AntiXSRF module not loaded.');
-        }
-        var_dump($this);
-        return $url . '/xsrf:' . $this->_utils['antixsrf']->get_hash();
-    }
 
     public function attach_util($name, $util) {
         $this->_utils[$name] = $util;
@@ -46,7 +39,7 @@ class Template extends Dict {
         }
         extract($this->__data__);
         $this->_path = sprintf("%s/templates/%s", SITE_PATH, $name);
-        if(file_exists($this->_path) == false) {
+        if(!file_exists($this->_path)) {
             throw new TemplateNotFoundError($path);
         }
         ob_start();

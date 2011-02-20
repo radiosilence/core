@@ -78,7 +78,7 @@ class Memcached extends \Core\Dict implements \Core\Session\RemoteStorage {
 
         $this->_mc->set(
             $this->_key($actual['sid'], $actual['tok'], 'remote_addr'),
-            json_encode($this->_remote_addr),
+            $this->_remote_addr,
             $this->_exp
         );
     }
@@ -109,10 +109,13 @@ class Memcached extends \Core\Dict implements \Core\Session\RemoteStorage {
     }
 
     private function find_session() {
-        if(!($data = $this->_mc->get(
+        $data = $this->_mc->get(
             $this->_key($this->untrusted['sid'], 
-            $this->untrusted['tok'], 'data'))
-        )) {
+            $this->untrusted['tok'], 'data')
+        );
+        if(empty($data)) {
+            echo $this->_key($this->untrusted['sid'], 
+            $this->untrusted['tok'], 'data');
             throw new SessionNotFoundError();
         }
         $ip = $this->_mc->get(

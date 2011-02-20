@@ -35,7 +35,7 @@ class PDO extends \Core\Storage {
     }
 
     protected function _expand_singular_parameters($pars) {
-        foreach(array('join', 'filter', 'in', 'order') as $t) {
+        foreach(array('join', 'filter', 'in', 'order', 'field') as $t) {
             if(isset($pars[$t])) {
                 $pars[\Core\Utils\Language::plural($t)][] = $pars[$t];
                 unset($pars[$t]);
@@ -187,7 +187,11 @@ class PDOQuery {
     }
     protected function _head() {
         if($this->_type == PDOQuery::Select) {
-            $fields = new \Core\Li($this->_table . '.*');
+            if(!isset($this->_parameters['fields'])) {
+                $fields = new \Core\Li($this->_table . '.*');
+            } else {
+                $fields = new \Core\Li($this->_parameters['fields']);
+            }
             if($this->_parameters['joins']){
                 $fields->extend($this->_join_fields());                
             }
