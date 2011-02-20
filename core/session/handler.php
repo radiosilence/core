@@ -239,6 +239,39 @@ class HandlerContainer extends \Core\ConfiguredContainer {
             return False;   
         }
     }
+
+
+    public function get_mc_session() {
+
+        import('core.session.handler');
+        import('core.session.remote_storage.memcached');
+        import('core.session.local_storage.cookie');
+        import('core.utils.ipv4');
+
+        $sh = new Handler();
+        $srp = new RemoteStorage\Memcached();
+        $slc = new LocalStorage\Cookie();
+
+        $srp->attach_mc(\Core\Backend\Memcached::container()
+            ->get_backend()
+        );
+
+        $this->_load_config();
+
+        try{
+            $sh->attach_remote_storage($srp)
+                ->attach_local_storage($slc)
+                ->attach_crypto_config($this->_config['crypto'])
+                ->set_remote_addr(\Core\Utils\IPV4::get())
+                ->initialize_remote_storage()
+                ->start();
+            return $sh;
+        } catch(Core\Error $e) {
+            echo "SERIOUSLY AN ERROR";
+            // Colossal failure.
+            return False;   
+        }
+    }
 }
 
 class TokenMismatchError extends \Core\Error {

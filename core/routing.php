@@ -23,11 +23,7 @@ import('core.exceptions');
 import('core.containment');
 import('core.types');
 import('core.utils.ipv4');
-
-if(extension_loaded('memcached')) {
-    import('core.backend.memcached');
-    define('MC_AVAIL', True);
-}
+import('core.backend.memcached');
 
 class Router extends Contained {
     private $_path;

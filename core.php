@@ -22,6 +22,11 @@ define("CACHE_PATH", SITE_PATH . "/.cache/");
 define("HOST", $_SERVER["HTTP_HOST"]);
 define("ROUTE", $_GET['route']);
 
+
+if(extension_loaded('memcached')) {
+    define('EXT_MC', True);
+}
+
 require('importer.php');
 
 IMPORTER::instantiate();

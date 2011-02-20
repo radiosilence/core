@@ -13,6 +13,8 @@ namespace Core\Backend;
 
 import('core.backend');
 
+class Memcached extends \Core\Contained {}
+
 class MemcachedContainer extends \Core\BackendContainer {
     protected static $_default_connection = False;
     public function get_backend() {
