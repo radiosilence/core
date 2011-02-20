@@ -14,6 +14,7 @@ namespace Core\Session;
 
 import('core.session.interfaces');
 import('core.exceptions');
+import('core.utils.bots');
 
 class Handler extends \Core\Contained {
     private $untrusted = array();
@@ -32,6 +33,10 @@ class Handler extends \Core\Contained {
     public function set_remote_addr($addr) {
         $this->remote_addr = $addr;
         return $this;
+    }
+
+    public function get_tok() {
+        return $this->actual['tok'];
     }
 
     /**
@@ -116,7 +121,7 @@ class Handler extends \Core\Contained {
     }
     
     public function __destruct() {
-        if(!empty($this->actual['sid'])) {
+        if(!empty($this->actual['sid']) and !\Core\Utils\Bots::is_bot()) {
             try {
                 $this->remote_storage->set_data($this->__data__);
                 $this->remote_storage->save();
