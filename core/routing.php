@@ -24,6 +24,7 @@ import('core.containment');
 import('core.types');
 import('core.utils.ipv4');
 import('core.backend.memcached');
+import('core.utils.env');
 
 class Router extends Contained {
     private $_path;
@@ -50,16 +51,9 @@ class Router extends Contained {
         $this->_routes[$request] = new Route($destination);
     }
 
-    protected function _get_site_name() {
-        $site_name = explode('/', $_SERVER['SCRIPT_FILENAME']);
-        array_pop($site_name);
-        array_pop($site_name);
-        return array_pop($site_name);
-    }
     public function route($uri) {
         $uri = $this->_clean_uri($uri);
         $route = $this->_find_route($uri);
-
         try {
             if(!isset($route->parameters['__cache__'])) {
                 throw new CacheNotEnabledException();
@@ -68,12 +62,13 @@ class Router extends Contained {
             $m = $mc->get_backend();
             $m->setOption(\Memcached::OPT_COMPRESSION, False);
             if($route->parameters['__cache__'] == 'on') {
-                $site_name = $this->_get_site_name();
-                $key = sprintf("site:%s:uri:%s", $site_name, $_SERVER['REQUEST_URI']);
+                $key = sprintf("site:%s:uri:%s", \Core\Utils\Env::site_name(), $_SERVER['REQUEST_URI']);
             }
 
             if($route->parameters['__cache__'] && $page = $m->get($key) && count($_POST) == 0) {
-                trigger_error("Cache hit but not used by proxy server.", \E_USER_WARNING);
+                trigger_error(sprintf("Cache hit but for key [%s] not used by proxy server.", $key), \E_USER_WARNING);
+            } else {
+                trigger_error("Cache miss.", \E_USER_WARNING);
             }
             $m_enable = True;
         } catch(\Core\FileNotFoundError $e) {
