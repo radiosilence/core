@@ -16,6 +16,7 @@ import('core.session.interfaces');
 import('core.dependency');
 import('core.types');
 import('core.backend.memcached');
+import('core.utils.env');
 
 class Memcached extends \Core\Dict implements \Core\Session\RemoteStorage {
     /**
@@ -61,7 +62,7 @@ class Memcached extends \Core\Dict implements \Core\Session\RemoteStorage {
     }
 
     protected function _key($sid, $tok, $field) {
-        return sprintf('session:%s:%s:%s', $sid, $tok, $field);
+        return sprintf('session:%s:%s:%s:%s', \Core\Utils\Env::site_name(), $sid, $tok, $field);
     }
 
     /**
