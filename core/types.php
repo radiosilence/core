@@ -62,6 +62,11 @@ abstract class SuperClass implements \Iterator, \ArrayAccess, \Countable, \Seria
     public function getData() {
         return $this->data;
     }
+
+    public function __array__() {
+        return $this->__data__;
+    }
+    
 }   
 
 /**
@@ -114,10 +119,6 @@ class Li extends SuperClass {
         $this->__data__[] = $item;
         $this->__data__ = array_merge($this->__data__, $tail);
         return $this;
-    }
-
-    public function __array__() {
-        return $this->__data__;
     }
 
     public function __get($key) {
@@ -209,10 +210,6 @@ class Dict extends SuperClass {
         $this->__data__[$key][] = $value;
     }
 
-    public function __array__() {
-        return $this->__data__;
-    }
-    
     public function rewind() {
         return \reset($this->__data__);
     }

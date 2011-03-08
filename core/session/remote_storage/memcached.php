@@ -113,7 +113,7 @@ class Memcached extends \Core\Dict implements \Core\Session\RemoteStorage {
         $data = $this->_mc->get(
             $this->_key($this->untrusted['sid'], 
             $this->untrusted['tok'], 'data')
-        );
+            );
         if(empty($data)) {
             throw new SessionNotFoundError();
         }
