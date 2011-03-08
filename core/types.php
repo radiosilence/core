@@ -91,6 +91,21 @@ class Li extends SuperClass {
     }
 
     public function contains($v) {
+
+        if(func_num_args() > 1) {
+            $args = func_get_args();
+            array_shift($args);
+            foreach($this->__data__ as $item) {
+                $data = $item;
+                foreach($args as $arg) {
+                    $data = $data[$arg];
+                }
+                if($v == $data) {
+                    return True;
+                }
+            }
+            return False;
+        }
         return in_array($v, $this->__data__);
     }
 
