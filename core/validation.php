@@ -11,22 +11,27 @@
 
 namespace Core;
 
+import('core.storage');
+
 class Validator {
     protected $errors = array();
-    protected $mappers = array();
     protected $id;
+    protected $_type;
 
-    public static function validator() {
-        return new Validator();
+
+    public static function validator($type) {
+        $v = new Validator();
+        $v->set_type($type);
+        return $v;
     }
 
-    public function attach_mapper($type, $mapper) {
-        $this->mappers[$type] = $mapper;
+    public function set_type($type) {
+        $this->_type = $type;
         return $this;
     }
-
     public function set_id($id) {
         $this->id = $id;
+        return $this;
     }
 
     public function validate($data, $validation) {
@@ -97,11 +102,11 @@ class Validator {
         } 
     }
     protected function test_complex_unique($string, $field, $parameters) {
-        $mapper = $this->mappers[$parameters['mapper']];
-        if($object = $mapper->find_by($field, $string)) {
-            if($object->id != $this->id) {
-                throw new InvalidError();            
-            }
+        $type = $this->_type;
+        $match = $type::container()
+            ->get_by_field($field, $string);
+        if($match && $match['id'] != $this->id) {            
+            throw new InvalidError();
         }
     }
 }

@@ -52,6 +52,9 @@ abstract class MappedContainer extends \Core\Container {
             ->get_list(array(
                 'filter' => new \Core\Filter($field, $query)
             ));
+        if(count($objects) < 1) {
+            return False;
+        }
         return $objects[0];
     }
 

@@ -84,36 +84,48 @@ class PDO extends \Core\Storage {
         
     }
 
+    protected function _binds($data) {
+        $binds = array();
+        foreach($data as $field => $value) {
+            $binds[':' . $field] = $value;
+        }
+        return $binds;
+    }
+
     protected function _insert(\Core\Mapped $object) {
-        $data = $this->_filter($object->_array());
-        $sth = $this->_backend->prepare(sprintf(
-            "%s\n(%s)\nVALUES (%s)
-        RETURNING id",
-            $this->_head('insert'),
-            $this->_insert_fields($data),
-            $this->_insert_fields($data, ':')
-        ));
+        $data = $this->_filter($object);
+        $query = new PDOQuery(
+            PDOQuery::Insert,
+            $this->_default_table(),
+            array(
+                'data' => $data
+            )
+        );
+        $sth = $this->_backend->prepare($query->sql());
         $sth->execute($this->_binds($data));
        $inserted = $sth->fetch();
        return $inserted['id'];
     }
     
     protected function _update(\Core\Mapped $object) {
-        $data = $this->_filter($object->_array(), $object->list_fields());
-        $sth = $this->_backend->prepare(sprintf(
-            "%s\n%s\nWHERE id = :id",
-            $this->_head('update'),
-            $this->_update_fields($data)
-        ));
-        $sth->execute($this->_binds(
-                $data,
-                $object->id
-        ));
+        $data = $this->_filter($object);
+        $query = new PDOQuery(
+            PDOQuery::Update,
+            $this->_default_table(),
+            array(
+                'data' => $data
+            )
+        );
+        $sth = $this->_backend->prepare($query->sql());
+        $binds = $this->_binds($data);
+        $binds[':id'] = $object->id;
+        $sth->execute($binds);
     }
 
-    protected function _filter($data, $fields) {
+    protected function _filter($object) {
         $returns = array();
-        foreach($data as $key => $value) {
+        $fields = $object->list_fields();
+        foreach($object as $key => $value) {
             if(in_array($key, $fields)) {
                 $returns[$key] = $value;
             }            
@@ -173,12 +185,30 @@ class PDOQuery {
         if($this->_parameters['lis']) {
             $this->_eval_lis();
         }
-        return sprintf("%s %s %s %s",
-            $this->_head(),
-            $this->_joins(),
-            $this->_filters(),
-            $this->_orders()
-        );
+        switch($this->_type) {
+            case PDOQuery::Select:
+                return sprintf("%s %s %s %s",
+                    $this->_head(),
+                    $this->_joins(),
+                    $this->_filters(),
+                    $this->_orders()
+                );
+                break;
+            case PDOQuery::Insert:
+                return sprintf("%s\n(%s)\nVALUES (%s) RETURNING id",
+                    $this->_head(),
+                    $this->_insert_fields(),
+                    $this->_insert_fields(':')
+                );
+                break;
+            case PDOQuery::Update:
+                return sprintf("%s\n%s\nWHERE id = :id",
+                    $this->_head(),
+                    $this->_update_fields()
+                );
+                break;
+            
+        }
     }
 
     protected function _eval_lis() {
@@ -273,14 +303,9 @@ class PDOQuery {
     protected function _in_table($table) {
         
     }
-    protected function _insert_fields($data, $prefix=False) {
-        if(!prefix){
-            $sqls = array('id');   
-        } else {
-            $sqls = array('NULL');
-        }
+    protected function _insert_fields($prefix=null) {
         $sqls = array();
-        foreach($data as $key => $value) {
+        foreach($this->_parameters['data'] as $key => $value) {
             $sqls[] = $prefix . $key;
         }
         return implode(",", $sqls);
@@ -288,7 +313,7 @@ class PDOQuery {
     
     protected function _update_fields($data) {
         $sqls = array();
-        foreach($data as $key => $value) {
+        foreach($this->_parameters['data'] as $key => $value) {
             $sqls[] = sprintf('%1$s = :%1$s', $key);
         }
         return implode(",\n", $sqls);
