@@ -36,6 +36,12 @@ class Error extends \Exception {
     }
 }
 
+class StandardError extends Error{
+    public function __construct() {
+        parent::__construct("Standard error.");
+    }
+}
+
 class HTTPError extends Error {
     public $error_codes = array(
         401 => "%s 401 Unauthorized",
