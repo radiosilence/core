@@ -26,19 +26,24 @@ class PDOContainer extends \Core\BackendContainer {
             // Defaulting to MySQL for the driver as it is fairly common.
             $driver = 'mysql';
         }
-        $pdo = new \PDO(sprintf('%s:host=%s;dbname=%s',
-                $driver,
-                $host,
-                $database
-            ),
+        $dsn = "{$driver}:host={$host};dbname={$database}";
+
+        if(!empty($port)) {
+            $dsn .= ";port={$port}";
+        }
+
+        $pdo = new \PDO($dsn,
             $user,
             $password,
             array(
-                \PDO::ATTR_PERSISTENT => true
+                \PDO::ATTR_PERSISTENT => $persistent
         ));
         $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
         static::$_default_connection = $pdo;
         return $pdo;
+    }
+    public function __destroy() {
+        static::$_default_connection = null;
     }
 }
 

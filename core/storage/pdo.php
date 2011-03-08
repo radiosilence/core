@@ -193,7 +193,7 @@ class PDOQuery {
                 $fields = new \Core\Li($this->_parameters['fields']);
             }
             if($this->_parameters['joins']){
-                $fields->extend($this->_join_fields());                
+                $fields->extend($this->_join_fields()); 
             }
             return sprintf($this->_type,
                 implode(', ', $fields->__array__()),
@@ -222,24 +222,50 @@ class PDOQuery {
     }
     
     private function _join_to_sql(\Core\Join $join) {
-        return sprintf('LEFT JOIN %1$s %3$s on %2$s.%3$s = %3$s.id',
+        $return = sprintf(' LEFT JOIN %1$s %3$s on %2$s.%3$s = %3$s.id',
             \Core\Storage\PDO::create($join->foreign)
                 ->get_table_name(),
             $this->_table,
             $join->local
-       );
+        );
+        if($join->subjoins) {
+            foreach($join->subjoins as $subjoin) {
+                $return .= sprintf(' LEFT JOIN %1$s %3$s on %2$s.%4$s = %3$s.id',
+                    \Core\Storage\PDO::create($subjoin->foreign)
+                        ->get_table_name(),
+                    $join->local,
+                    $join->local . '_' . $subjoin->local,
+                    $subjoin->local
+                );
+            }
+        }
+        return $return;
     }
 
-    private function _join_fields() {
+    private function _single_join_fields($join, $parent=False) {
         $fields = new \Core\Li();
-        foreach($this->_parameters['joins'] as $join) {
-            if($join->fields) {
-                $join->fields->map(function($field) use($fields, $join) {
-                    $fields->extend(sprintf('%1$s.%2$s as %1$s_%2$s',
-                    $join->local,
-                    $field));
-                });
+        if($join->fields) {
+            foreach($join->fields as $field) {
+                $fields->extend(sprintf('%1$s.%2$s as %1$s_%2$s',
+                    ($parent ? $parent->local . '_' : null) . $join->local,
+                    $field
+                ));
             }
+        }
+        if(is_array($join->subjoins)) {
+            foreach($join->subjoins as $subjoin) {
+                $fields->extend($this->_single_join_fields($subjoin, $join));
+            }
+        }
+
+        return $fields;
+    }
+
+    private function _join_fields($current=False, $parent=False) {
+        $fields = new \Core\Li();
+        foreach($joins = $this->_parameters['joins'] as $join) {
+            $fields->extend($this->_single_join_fields($join));
+          
         };
         return $fields;
     }

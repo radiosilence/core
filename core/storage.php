@@ -78,11 +78,15 @@ class Join {
     public $foreign;
     public $local;
     public $fields;
-    public function __construct($local, $foreign, $fields=False) {
+    public $subjoins;
+    public function __construct($local, $foreign, $fields=False, $subjoins=False) {
         $this->local = $local;
         $this->foreign = $foreign;
-        if($fields instanceof \Core\Li) {
-            $this->fields = $fields;
+        $this->fields = $fields;
+        if($subjoins && !is_array($subjoins)) {
+            $this->subjoins = array($subjoins);
+        } else {
+            $this->subjoins = $subjoins;
         }
     }
 }
