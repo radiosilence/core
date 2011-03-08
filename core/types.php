@@ -90,6 +90,10 @@ class Li extends SuperClass {
         parent::__construct();
     }
 
+    public function contains($v) {
+        return in_array($v, $this->__data__);
+    }
+
     public function map($function) {
         foreach($this->__data__ as $value) {
             $function($value);
