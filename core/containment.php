@@ -32,6 +32,34 @@ abstract class Container {
             throw new \Core\Error(sprintf("Trying to use invalid parameter. %s is not an instance of %s.", $parameter, $type));
         }
     }
+
+    protected function _get_class() {
+        return array_pop(explode("\\", str_replace("Container", null, get_called_class())));
+    }
+    protected function _get_full_class() {
+        return "\\" . str_replace("Container", null, get_called_class());
+    }
+}
+
+abstract class MappedContainer extends \Core\Container {
+    
+    public function get_by_field($field, $query) {
+        $cls = $this->_get_class();
+        $fcls = $this->_get_full_class();
+
+        $objects = $fcls::mapper()
+            ->attach_storage(\Core\Storage::container()
+                ->get_storage($cls))
+            ->get_list(array(
+                'filter' => new \Core\Filter($field, $query)
+            ));
+        return $objects[0];
+    }
+
+    public function get_by_id($id) {
+        return $this->get_by_field('id', $id);
+    }
+
 }
     
 abstract class Contained extends \Core\Dict {
@@ -42,11 +70,12 @@ abstract class Contained extends \Core\Dict {
     protected static function get_helper($type, $parameters) {
         $class = get_called_class() . $type;
         if(!class_exists($class)) {
-            throw new \Core\Error("Class $class does not exist.");
+            throw new \Core\Error("Class {$class} does not exist.");
         }
         $helper = new $class($parameters);
         return $helper;
     }
+
 }
 
 abstract class ConfiguredContainer extends Container {
@@ -96,5 +125,4 @@ abstract class ConfiguredContainer extends Container {
             throw new \Core\Error("Container config not loaded: " . get_called_class());
         }
     }
-
 }
