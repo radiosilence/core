@@ -32,19 +32,19 @@ abstract class SuperClass implements \Iterator, \ArrayAccess, \Countable, \Seria
         return '\\' . get_called_class();
     }
     
-    public function offsetExists ($offset) {
+    public function offsetExists($offset) {
         return isset($this->__data__[$offset]);
     }
     
-    public function offsetGet ($offset) {
+    public function offsetGet($offset) {
         return $this->__data__[$offset];
     }
     
-    public function offsetSet ($offset, $value) {
+    public function offsetSet($offset, $value) {
         $this->__data__[$offset] = $value;
     }
     
-    public function offsetUnset ($offset) {
+    public function offsetUnset($offset) {
         unset($this->__data__[$offset]);
     }
 

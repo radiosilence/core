@@ -10,7 +10,7 @@
  */
 
 namespace Core;
-
+import('core.exceptions');
 abstract class Storage extends \Core\Contained {
     protected $_class;
     protected $_backend;
@@ -36,7 +36,7 @@ abstract class Storage extends \Core\Contained {
 
     abstract public function fetch($parameters=False);
     abstract public function save(\Core\Mapped $object);
-    abstract public function delete($parameters=False);
+    abstract public function delete(\Core\Mapped $object);
     abstract public function get_table_name();
 }
 
@@ -47,6 +47,7 @@ class StorageContainer extends \Core\ConfiguredContainer {
             ->get_storage($type);
     }
 }
+class StorageError extends \Core\Error {}
 
 class Filter {
     public $field;

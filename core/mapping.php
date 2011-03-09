@@ -52,4 +52,8 @@ abstract class Mapped extends Contained {
         $this->_mappers[$type] = $mapper;
         return $this;
     }
+
+    public function __toString() {
+        return (string)$this->id;
+    }
 }

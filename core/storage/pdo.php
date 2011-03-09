@@ -78,6 +78,7 @@ class PDO extends \Core\Storage {
         } else {
             $this->_insert($object);   
         }
+        return $this;
     }
 
     protected function _join_table_name() {
@@ -104,6 +105,7 @@ class PDO extends \Core\Storage {
         $sth = $this->_backend->prepare($query->sql());
         $sth->execute($this->_binds($data));
        $inserted = $sth->fetch();
+       $object->id = $inserted['id'];
        return $inserted['id'];
     }
     
@@ -122,7 +124,7 @@ class PDO extends \Core\Storage {
         $sth->execute($binds);
     }
 
-    protected function _filter($object) {
+    protected function _filter(\Core\Mapped $object) {
         $returns = array();
         $fields = $object->list_fields();
         foreach($object as $key => $value) {
@@ -133,14 +135,20 @@ class PDO extends \Core\Storage {
         return $returns;
     }
 
-    public function delete($parameters=Null) {
-/*        $sth = $this->_backend->prepare(
-            $this->_head('delete') . 
-            " WHERE id = :id");
+    public function delete(\Core\Mapped $object) {
+        if($object->id < 1) {
+            throw new \Core\StorageError("Trying to delete non-existent object.");
+        }
+        $query = new PDOQuery(
+            PDOQuery::Delete,
+            $this->_default_table()
+        );
+        $sth = $this->_backend->prepare($query->sql());
         $sth->execute(array(
-            ':id' => $id
+            ':id' => $object->id
         ));
-*/
+        $object->id = '-1';
+        return $this;
     }
     
     public function get_table_name() {
@@ -162,11 +170,10 @@ class PDO extends \Core\Storage {
         return array(":" . $filter->hash(), $filter->pattern );
     }
 }
-
 class PDOQuery {
 
     const Select = 'SELECT %1$s FROM %2$s';
-    const Delete = 'DELETE * FROM %s';
+    const Delete = 'DELETE FROM %s';
     const Update = 'UPDATE %s SET';
     const Insert = 'INSERT INTO %s';
     
@@ -175,7 +182,7 @@ class PDOQuery {
     protected $_type;
     
     private $_filter_no = 0;
-    public function __construct($type, $table, $parameters) {
+    public function __construct($type, $table, $parameters=False) {
         $this->_parameters = $parameters;
         $this->_table = $table;
         $this->_type = $type;
@@ -206,6 +213,10 @@ class PDOQuery {
                     $this->_head(),
                     $this->_update_fields()
                 );
+                break;
+            case PDOQuery::Delete:
+                return sprintf("%s\nWHERE id = :id",
+                    $this->_head());
                 break;
             
         }
@@ -311,7 +322,7 @@ class PDOQuery {
         return implode(",", $sqls);
     }
     
-    protected function _update_fields($data) {
+    protected function _update_fields() {
         $sqls = array();
         foreach($this->_parameters['data'] as $key => $value) {
             $sqls[] = sprintf('%1$s = :%1$s', $key);
