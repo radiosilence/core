@@ -13,11 +13,29 @@ namespace Core;
 
 import('3rdparty.phpass');
 import('core.containment');
+import('core.exceptions');
 
 class Auth extends \Core\Contained {
     protected $_table;
     protected $_session;
     protected $_storage;
+
+    public static function hash($data, $field=False) {
+        $t_hasher = new \PasswordHash(8, FALSE);
+        if($field) {
+            if(empty($data[$field])) {
+                throw new AuthEmptyPasswordError();
+            }
+            $data[$field] = $t_hasher->HashPassword($data[$field]);
+            return $data;
+        } else {
+            if(empty($data)) {
+                throw new AuthEmptyPasswordError();
+            }
+            return $t_hasher->HashPassword($data);
+        }
+    }
+
     
     public function __construct($parameters) {
         $this->_password_field = $parameters['password_field'] ?
@@ -62,7 +80,27 @@ class Auth extends \Core\Contained {
             'data' => $data
         );
     }
+
+    public function user_data() {
+        $this->_check_logged_in();
+        return $this->_session['auth']['data'];
+    }
+
+    public function user_id() {
+        $this->_check_logged_in();
+        return $this->_session['auth']['id'];
+    }
+
+    protected function _check_logged_in() {
+        if($this->_session['auth']['id'] <= 0) {
+            throw new AuthNotLoggedInError();
+        }
+    }
 }
+
+
+class AuthNotLoggedInError extends \Core\StandardError {}
+class AuthEmptyPasswordError extends \Core\StandardError {}
 
 class AuthContainer extends \Core\Container {
     public function get_auth($table, \Core\Session\Handler $session, $parameters=False) {

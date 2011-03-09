@@ -17,7 +17,7 @@ class Validator {
     protected $errors = array();
     protected $id;
     protected $_type;
-
+    protected $_data;
 
     public static function validator($type) {
         $v = new Validator();
@@ -35,7 +35,7 @@ class Validator {
     }
 
     public function validate($data, $validation) {
-        $this->data = $data;
+        $this->_data = $data;
         foreach($validation as $k => $v) {
                 $this->validate_field($k, $v);
         }
@@ -49,17 +49,17 @@ class Validator {
         try {
             if(is_array($validation) && isset($validation['type'])) {
                 $f = 'test_complex_' . $validation['type'];
-                $this->$f($this->data[$field], $field, $validation);
+                $this->$f($this->_data[$field], $field, $validation);
             } else if(is_array($validation)) {
                 foreach($validation as $v) {
                     $this->validate_field($field, $v);
                 }
             } else {
                 $f = 'test_valid_' . $validation; 
-                $this->$f($this->data[$field]);                
+                $this->$f($this->_data[$field]);                
             }
         } catch(InvalidError $e) {
-            $this->errors[] = $this->get_message($field, $validation);
+            $this->errors[] = $this->get_message($field, $validation, $e->msg, $e->show_field);
         }
     } 
 
@@ -71,8 +71,16 @@ class Validator {
         
     }
 
-    protected function get_message($field, $validation) {
-        if($validation == 'default') {
+    protected function get_message($field, $validation, $msg, $show_field) {
+        if(!empty($msg) && $show_field) {
+            return sprintf("%s %s",
+                ucfirst($field),
+                $msg
+            );
+        } else if(!empty($msg) && !$show_field) {
+            return $msg;
+        }
+        else if($validation == 'default') {
             return sprintf("%s must be set.",
                 ucfirst($field));
         } else if(is_array($validation)) {
@@ -101,6 +109,15 @@ class Validator {
             throw new InvalidError();
         } 
     }
+    protected function test_complex_password($string, $field, $parameters) {
+        $array = func_get_args();
+        if(empty($string)) {
+            return 0;
+        }
+        if($string != $this->_data[$parameters["2ndfield"]]) {
+            throw new InvalidError("Passwords must match.", False);
+        }
+    }
     protected function test_complex_unique($string, $field, $parameters) {
         $type = $this->_type;
         $match = $type::container()
@@ -124,7 +141,11 @@ class ValidationError extends Error {
 }
 
 class InvalidError extends Error {
-    public function __construct() {
+    public $msg;
+    public $show_field;
+    public function __construct($msg=False, $show_field=True) {
+        $this->msg = $msg;
+        $this->show_field = $show_field;
         parent::__construct('Invalid data.');
     }
 }
