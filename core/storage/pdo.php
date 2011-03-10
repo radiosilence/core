@@ -29,13 +29,15 @@ class PDOContainer extends \Core\ConfiguredContainer {
  * Provides some basic mapping features that don't necessarily have to be used.
  */
 class PDO extends \Core\Storage {
+    protected $_parameters;
+
     public function attach_backend($backend) {
         $this->_backend = $backend;
         return $this;
     }
 
     protected function _expand_singular_parameters($pars) {
-        foreach(array('join', 'filter', 'in', 'order', 'field') as $t) {
+        foreach(array('join', 'filter', 'in', 'order', 'field', 'bind') as $t) {
             if(isset($pars[$t])) {
                 $pars[\Core\Utils\Language::plural($t)][] = $pars[$t];
                 unset($pars[$t]);
@@ -47,6 +49,7 @@ class PDO extends \Core\Storage {
     public function fetch($parameters=False) {
         $objects = array();
         $parameters = $this->_expand_singular_parameters($parameters);
+        $this->_parameters = $parameters;
         if(is_array($parameters['in'])) {
             foreach($parameters['in'] as $in) {
                 $in->foreign = $this->_default_table($in->foreign);
@@ -58,17 +61,13 @@ class PDO extends \Core\Storage {
             $parameters
         );
         $sth = $this->_backend->prepare($query->sql());
+        $binds = $this->_binds();
         if($parameters['filters']) {
             foreach($parameters['filters'] as $filter) {
-                if(is_int($filter->pattern)) {
-                    $type = \PDO::PARAM_INT;
-                } else {
-                    $type = \PDO::PARAM_STR;
-                }
-                $sth->bindValue(':' . $filter->hash, $filter->pattern, $type);
+                $binds[':' . $filter->hash] = $filter->pattern;
             }            
         }
-        $sth->execute();
+        $sth->execute($binds);
         return new \Core\Li($sth->fetchAll(\PDO::FETCH_ASSOC));
     }
 
@@ -85,10 +84,15 @@ class PDO extends \Core\Storage {
         
     }
 
-    protected function _binds($data) {
+    protected function _binds($data=array()) {
         $binds = array();
         foreach($data as $field => $value) {
             $binds[':' . $field] = $value;
+        }
+        if(is_array($this->_parameters['binds'])) {
+            foreach($this->_parameters['binds'] as $k => $v) {
+                $binds[$k] = $v;
+            }            
         }
         return $binds;
     }
@@ -231,7 +235,7 @@ class PDOQuery {
             if(!isset($this->_parameters['fields'])) {
                 $fields = new \Core\Li($this->_table . '.*');
             } else {
-                $fields = new \Core\Li($this->_parameters['fields']);
+                $fields = new \Core\Li($this->_table . '.*', $this->_parameters['fields']);
             }
             if($this->_parameters['joins']){
                 $fields->extend($this->_join_fields()); 
