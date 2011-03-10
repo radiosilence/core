@@ -95,16 +95,23 @@ class Li extends SuperClass {
         if(func_num_args() > 1) {
             $args = func_get_args();
             array_shift($args);
+            $items = array();
             foreach($this->__data__ as $item) {
                 $data = $item;
                 foreach($args as $arg) {
                     $data = $data[$arg];
                 }
                 if($v == $data) {
-                    return True;
+                    $items[] = $item;
                 }
             }
-            return False;
+            if(count($items) == 1) {
+                return $items[0];
+            } else if(count($items) > 1) {
+                return $items;
+            } else {
+                return False;            
+            }
         }
         return in_array($v, $this->__data__);
     }
