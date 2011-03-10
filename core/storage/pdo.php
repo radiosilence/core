@@ -64,7 +64,9 @@ class PDO extends \Core\Storage {
         $binds = $this->_binds();
         if($parameters['filters']) {
             foreach($parameters['filters'] as $filter) {
-                $binds[':' . $filter->hash] = $filter->pattern;
+                if(!$filter->complex) {
+                    $binds[':' . $filter->hash] = $filter->pattern;
+                }
             }            
         }
         $sth->execute($binds);
@@ -168,10 +170,6 @@ class PDO extends \Core\Storage {
             $table = $this->_class_name();
         }
         return strtolower($table) . 's';
-    }
-
-    protected function _filter_to_bind(\Core\Storage\Filter $filter) {
-        return array(":" . $filter->hash(), $filter->pattern );
     }
 }
 class PDOQuery {
@@ -340,16 +338,24 @@ class PDOQuery {
         if(!$this->_parameters['filters']) {
             return False;
         }
-        foreach ($this->_parameters['filters'] as $item) {
-            $string .= ($i > 0 ? ' AND ' : 'WHERE ') . $this->_filter_to_sql($item);
+        foreach ($this->_parameters['filters'] as $filter) {
+            $string .= ($i > 0 ? ' AND ' : 'WHERE ') . $this->_filter_to_sql($filter);
             $i++;
         }
         return $string;
     }
     
     public function _filter_to_sql(\Core\Filter $filter) {
+        if($filter->complex) {
+            return $filter->complex_text;
+        }
+        if($filter->explicit) {
+            $field = $filter->field;
+        } else {
+            $field = $this->_table . '.' . $filter->field;
+        }
         $return = sprintf("%s %s %s",
-            $this->_table . '.' . $filter->field,
+            $field,
             $filter->operand,
             ':' . $filter->hash
         );

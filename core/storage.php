@@ -54,11 +54,22 @@ class Filter {
     public $pattern;
     public $operand;
     public $hash;
-    public function __construct($field, $pattern, $operand='='){
+    public $explicit;
+    public $complex;
+    public $complex_text;
+    public function __construct($field, $pattern, $operand='=', $explicit=False){
+        $this->explicit = $explicit;
         $this->field = $field;
         $this->pattern = $pattern;
         $this->operand = $operand;
         $this->make_hash();
+    }
+
+    public static function create_complex($text) {
+        $f = new Filter(null,null);
+        $f->complex = True;
+        $f->complex_text = $text;
+        return $f;
     }
 
     private function make_hash() {
