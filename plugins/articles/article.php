@@ -34,21 +34,17 @@ class ArticleMapper extends \Core\Mapper {
     }
 
     public function get_latest_articles() {
-        return Article::mapper()
-            ->attach_storage($this->_storage)
-            ->get_list(new \Core\Dict(array(
+        $items = $this->_storage->fetch(new \Core\Dict(array(
                 "order" => new \Core\Order('posted_on', 'desc')
-            )));
+        )));
+        return Article::mapper()
+            ->get_list($items);
     }
 
     public function get_article($id) {
-        $articles = Article::mapper()
-            ->attach_storage($this->_storage)
-            ->get_list(new \Core\Dict(array(
-                "filters" => new \Core\Li(
-                    new \Core\Filter("id", $id)
-                )
-            )));
-        return $articles[0];
+        return Article::container()
+            ->get_by_id($id);
     }
 }
+
+class ArticleContainer extends \Core\MappedContainer {}
