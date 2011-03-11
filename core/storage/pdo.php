@@ -82,10 +82,6 @@ class PDO extends \Core\Storage {
         return $this;
     }
 
-    protected function _join_table_name() {
-        
-    }
-
     protected function _binds($data=array()) {
         $binds = array();
         foreach($data as $field => $value) {
