@@ -21,13 +21,12 @@ abstract class Mapper extends Dict {
         return $this;
     }
     
-    public function get_list($parameters=False) {
-        $results = $this->_storage->fetch($parameters);
-        $items = new \Core\Li();
-        foreach($results as $result) {
-            $items->append($this->create_object($result));            
+    public function get_list($items) {
+        $objects = new \Core\Li();
+        foreach($items as $item) {
+            $objects->append($this->create_object($item));            
         }
-        return $items;
+        return $objects;
     }
     
     public function update($data) {

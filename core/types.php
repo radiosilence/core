@@ -185,7 +185,8 @@ class Li extends SuperClass {
 
 class Dict extends SuperClass {
     public function __construct($init=False) {
-        if(is_array($init) or $init instanceof Dict) {        
+        if(is_array($init) or $init instanceof Dict) {
+            
             foreach($init as $k => $v) {
                 $this->__data__[$k] = $v;
             }
