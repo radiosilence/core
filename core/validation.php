@@ -126,6 +126,14 @@ class Validator {
             throw new InvalidError();
         }
     }
+    protected function test_complex_foreign($string, $field, $parameters) {
+        $type = $parameters['class'];
+        $match = $type::container()
+            ->get_by_field('id', $string);
+        if(count($match) == 0) {        
+            throw new InvalidError('must be selected.');
+        }
+    }
 }
 
 class ValidationError extends Error {
