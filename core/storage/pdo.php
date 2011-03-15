@@ -86,14 +86,22 @@ class PDO extends \Core\Storage {
     protected function _binds($data=array()) {
         $binds = array();
         foreach($data as $field => $value) {
-            $binds[':' . $field] = $value;
+            $binds[':' . $field] = $this->_common_to_string($value);
         }
         if(is_array($this->_parameters['binds'])) {
-            foreach($this->_parameters['binds'] as $k => $v) {
-                $binds[$k] = $v;
+            foreach($this->_parameters['binds'] as $field => $value) {
+                $binds[$field] = $this->_common_to_string($value);
             }            
         }
         return $binds;
+    }
+
+    protected function _common_to_string($mixed) {
+        if($mixed instanceof \DateTime) {
+            return $mixed->format('c');
+        }
+
+        return $mixed;
     }
 
     protected function _insert(\Core\Mapped $object) {
@@ -130,6 +138,9 @@ class PDO extends \Core\Storage {
     protected function _filter(\Core\Mapped $object) {
         $returns = array();
         $fields = $object->list_fields();
+        if(!is_array($fields)) {
+            throw new \Core\Error('Mapped object must have enumerable fields.');
+        }
         foreach($object as $key => $value) {
             if(in_array($key, $fields)) {
                 $returns[$key] = $value;
