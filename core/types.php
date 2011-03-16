@@ -89,14 +89,15 @@ class Li extends SuperClass {
         }
         parent::__construct();
     }
-
     public function filter($v) {
         if(func_num_args() > 1) {
             $args = func_get_args();
             array_shift($args);
             $items = array();
+
             foreach($this->__data__ as $item) {
                 $data = $item;
+                $i = 0;
                 foreach($args as $arg) {
                     $data = $data[$arg];
                 }
@@ -285,18 +286,4 @@ class Range extends Li {
     }
 }
 
-class Params extends Dict {
-
-    public function __set($key, $value) {
-        if(is_array($this->__data__[$key])) {
-            $this->__data__[$key][] = $value;
-        } else {
-            $this->__data__[$key] = array($value);
-        }
-    }
-
-    public function add($key, $value) {
-            $this->__set($key, $value);
-    }
-}
 ?>
