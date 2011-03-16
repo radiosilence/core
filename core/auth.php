@@ -13,6 +13,7 @@ namespace Core;
 
 import('3rdparty.phpass');
 import('core.containment');
+import('core.mapping');
 import('core.exceptions');
 
 class Auth extends \Core\Contained {
@@ -103,6 +104,17 @@ class Auth extends \Core\Contained {
             throw new AuthNotLoggedInError();
         }
     }
+
+    public function check_admin($type, $entity, $user_id=False) {
+        if(!$user_id) {
+            $user_id = $this->user_id();
+        }
+        $admin = Admin::container()
+            ->get_by_role($user_id, $entity, $type, $this->_table);
+        if(!$admin) {
+            throw new AuthDeniedError();
+        }
+    }
 }
 
 
@@ -136,9 +148,50 @@ class IncorrectPasswordError extends \Core\Error {
 }
 
 class Admin extends \Core\Mapped {
-    $_fields = array("entity", "type");
+    protected $_fields = array("entity", "type");
+    public function set_user_field($user_field) {
+        $this->_fields[] = $user_field;
+        return $this;
+    }
+}
 
-    public function __construct($init, $sanitize=False, $parameters=False) {
-        
+class AdminMapper extends \Core\Mapper {
+    public function create_object($data, $user_field='user') {
+        $admin = Admin::create($data)
+            ->set_user_field($user_field);
+        return $admin;
+    }
+}
+
+class AdminContainer extends \Core\MappedContainer {
+    public function get_by_role($user_id, $entity, $type, $user_field='user') {
+        $fetched = \Core\Storage::container()
+            ->get_storage('Admin')
+            ->fetch(array(
+                'filters' => array(
+                    new \Core\Filter($user_field, $user_id),
+                    new \Core\Filter('entity', $entity),
+                    new \Core\Filter('type', $type)
+                )
+            ));
+        if(count($fetched) > 0) {
+            return Admin::mapper()->create_object($fetched[0])
+                ->set_user_field($user_field);
+        }
+
+        $roots = \Core\Storage::container()
+            ->get_storage('Admin')
+            ->fetch(array(
+                'filters' => array(
+                    new \Core\Filter($user_field, $user_id),
+                    new \Core\Filter('type', 'ROOT')
+                )
+            ));
+        if(count($roots) > 0) {
+            return Admin::mapper()
+                ->create_object($roots[0], $user_field);
+        }
+
+        return False;
     }
 }
