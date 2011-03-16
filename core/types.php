@@ -90,8 +90,7 @@ class Li extends SuperClass {
         parent::__construct();
     }
 
-    public function contains($v) {
-
+    public function filter($v) {
         if(func_num_args() > 1) {
             $args = func_get_args();
             array_shift($args);
@@ -101,19 +100,25 @@ class Li extends SuperClass {
                 foreach($args as $arg) {
                     $data = $data[$arg];
                 }
-                if($v == $data) {
+                if($v == $data && isset($data)) {
                     $items[] = $item;
                 }
             }
-            if(count($items) == 1) {
-                return $items[0];
-            } else if(count($items) > 1) {
+            if(count($items) >= 1) {
                 return $items;
             } else {
                 return False;            
             }
         }
         return in_array($v, $this->__data__);
+    }
+
+    protected function _empty($string) { 
+        $string = trim($string);
+        if(!is_numeric($string)) {
+            return empty($string);
+        }
+        return False; 
     }
 
     public function map($function) {
