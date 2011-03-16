@@ -35,7 +35,6 @@ class Auth extends \Core\Contained {
             return $t_hasher->HashPassword($data);
         }
     }
-
     
     public function __construct($parameters) {
         $this->_password_field = $parameters['password_field'] ?
@@ -109,6 +108,7 @@ class Auth extends \Core\Contained {
 
 class AuthNotLoggedInError extends \Core\StandardError {}
 class AuthEmptyPasswordError extends \Core\StandardError {}
+class AuthDeniedError extends \Core\StandardError {}
 
 class AuthContainer extends \Core\Container {
     public function get_auth($table, \Core\Session\Handler $session, $parameters=False) {
@@ -132,5 +132,13 @@ class InvalidUserError extends \Core\Error {
 class IncorrectPasswordError extends \Core\Error {
     public function __construct() {
         parent::__construct("Incorrect password.");
+    }
+}
+
+class Admin extends \Core\Mapped {
+    $_fields = array("entity", "type");
+
+    public function __construct($init, $sanitize=False, $parameters=False) {
+        
     }
 }

@@ -39,6 +39,10 @@ abstract class Mapper extends Dict {
 abstract class Mapped extends Contained {
     protected $_fields;
     public $_mappers = array();
+    abstract public function __construct($init, $sanitize=False) {
+        
+    }
+    
     public static function mapper($parameters=False) {
         return static::get_helper('Mapper', $parameters);
     }
