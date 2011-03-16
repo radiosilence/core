@@ -14,6 +14,7 @@ namespace Plugins\Articles;
 import('core.types');
 import('core.mapping');
 import('core.exceptions');
+import('core.utils.env');
 import('3rdparty.markdown');
 
 class Article extends \Core\Mapped {
@@ -22,6 +23,8 @@ class Article extends \Core\Mapped {
 
 class ArticleMapper extends \Core\Mapper {
     public function create_object($data) {
+        $mc = new \Core\Backend\MemcachedContainer();
+        $m = $mc->get_backend();
         $data = \Core\Dict::create($data);
         $data->posted_on = new \DateTime($data->posted_on);
         if(strlen($data->custom_url) > 0) {
@@ -30,7 +33,14 @@ class ArticleMapper extends \Core\Mapper {
             $data->seo_title = strtolower(str_replace(' ', '-', $data->title));        
         }
         $data->preview = substr(strip_tags($data->body), 0, 440);
-        $data->body = Markdown($data->body);
+        $key = sprintf("site:%s:article:%s:body", \Core\Utils\Env::site_name(), $data['id']);
+        $body = $m->get($key);
+        if(!$data['body']) {
+            $data['body'] = Markdown($data['body']);
+            $m->set($key, $data['body'], 60);        
+        } else {
+            $data['body'] = $body;
+        }
         return Article::create($data);
     }
 
