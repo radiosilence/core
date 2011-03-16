@@ -51,6 +51,10 @@ abstract class MappedContainer extends \Core\Container {
             ->fetch(array(
                 'filter' => new \Core\Filter($field, $query)
             ));
+
+        if(count($fetched) == 0) {
+            return False;
+        }
         return $fcls::mapper()->create_object($fetched[0]);
     }
 

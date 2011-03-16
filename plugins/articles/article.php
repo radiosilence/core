@@ -14,7 +14,7 @@ namespace Plugins\Articles;
 import('core.types');
 import('core.mapping');
 import('core.exceptions');
-
+import('3rdparty.markdown');
 
 class Article extends \Core\Mapped {
     protected $_storage;
@@ -29,7 +29,8 @@ class ArticleMapper extends \Core\Mapper {
         } else {
             $data->seo_title = strtolower(str_replace(' ', '-', $data->title));        
         }
-        $data->preview = substr(strip_tags($data->body), 0, 140);
+        $data->preview = substr(strip_tags($data->body), 0, 440);
+        $data->body = Markdown($data->body);
         return Article::create($data);
     }
 

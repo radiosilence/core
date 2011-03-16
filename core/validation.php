@@ -48,14 +48,14 @@ class Validator {
     protected function validate_field($field, $validation) {
         try {
             if(is_array($validation) && isset($validation['type'])) {
-                $f = 'test_complex_' . $validation['type'];
+                $f = 'test_' . $validation['type'];
                 $this->$f($this->_data[$field], $field, $validation);
             } else if(is_array($validation)) {
                 foreach($validation as $v) {
                     $this->validate_field($field, $v);
                 }
             } else {
-                $f = 'test_valid_' . $validation; 
+                $f = 'test_' . $validation; 
                 $this->$f($this->_data[$field]);                
             }
         } catch(InvalidError $e) {
@@ -72,44 +72,45 @@ class Validator {
     }
 
     protected function get_message($field, $validation, $msg, $show_field) {
+        $field = (strlen($validation['title']) > 1 ? $validation['title'] : ucfirst($field));
         if(!empty($msg) && $show_field) {
-            return sprintf("%s %s",
-                ucfirst($field),
+            return sprintf("<strong>%s</strong> %s",
+                $field,
                 $msg
             );
         } else if(!empty($msg) && !$show_field) {
             return $msg;
         }
-        else if($validation == 'default') {
-            return sprintf("%s must be set.",
-                ucfirst($field));
+        else if($validation == 'default' || $validation['type'] == 'default') {
+            return sprintf("<strong>%s</strong> must be set.",
+                $field);
         } else if(is_array($validation)) {
-            return sprintf("%s must be %s",
-                ucfirst($field),
+            return sprintf("<strong>%s</strong> must be %s",
+                $field,
                 $validation['type']);
         } else {
-            return sprintf("%s must be valid %s.",
-                ucfirst($field),
+            return sprintf("<strong>%s</strong> must be valid %s.",
+                $field,
                 ucfirst($validation)
             );
         }
     }
-    protected function test_valid_default($string) {
+    protected function test_default($string) {
         if(strlen($string) < 1) {
             throw new InvalidError();
         }
     }
-    protected function test_valid_number($string) {
+    protected function test_number($string) {
         if(!filter_var($string, FILTER_VALIDATE_INT)) {
             throw new InvalidError();
         }
     }
-    protected function test_valid_email($string) {
+    protected function test_email($string, $field, $parameters) {
         if(!filter_var($string, FILTER_VALIDATE_EMAIL)) {
-            throw new InvalidError();
+            throw new InvalidError('must be valid e-mail address.');
         } 
     }
-    protected function test_complex_password($string, $field, $parameters) {
+    protected function test_password($string, $field, $parameters) {
         $array = func_get_args();
         if(empty($string)) {
             return 0;
@@ -118,7 +119,7 @@ class Validator {
             throw new InvalidError("Passwords must match.", False);
         }
     }
-    protected function test_complex_unique($string, $field, $parameters) {
+    protected function test_unique($string, $field, $parameters) {
         $type = $this->_type;
         $match = $type::container()
             ->get_by_field($field, $string);
@@ -126,11 +127,11 @@ class Validator {
             throw new InvalidError();
         }
     }
-    protected function test_complex_foreign($string, $field, $parameters) {
+    protected function test_foreign($string, $field, $parameters) {
         $type = $parameters['class'];
         $match = $type::container()
             ->get_by_field('id', $string);
-        if(count($match) == 0) {        
+        if(!$match) {        
             throw new InvalidError('must be selected.');
         }
     }

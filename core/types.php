@@ -184,18 +184,18 @@ class Li extends SuperClass {
 }
 
 class Dict extends SuperClass {
-    public function __construct($init=False) {
+    public function __construct($init=False, $sanitize=False) {
         if(is_array($init) or $init instanceof Dict) {
-            
             foreach($init as $k => $v) {
-                $this->__data__[$k] = $v;
+                $this->__data__[$k] = $sanitize ? filter_var($v, \FILTER_SANITIZE_STRING) : $v;
             }
         }
         parent::__construct();
     }
-    public static function create($init=False) {
+
+    public static function create($init=False, $sanitize=False) {
         $type = get_called_class();
-        $dict = new $type($init);
+        $dict = new $type($init, $sanitize);
         return $dict;
     }
 
@@ -209,14 +209,14 @@ class Dict extends SuperClass {
         }
     }
 
-    public function overwrite($array) {
+    public function overwrite($array, $sanitize=False, $parameters=False) {
         foreach($array as $key => $value) {
             if($parameters['exclude']) {
                 if(!in_array($key, $parameters['exclude'])) { 
-                    $this->__data__[$key] = $value;
+                    $this->__data__[$key] = $sanitize ? filter_var($value, \FILTER_SANITIZE_STRING) : $value;
                 }
             } else {
-                $this->__data__[$key] = $value;
+                $this->__data__[$key] = $sanitize ? filter_var($value, \FILTER_SANITIZE_STRING) : $value;
             }
         }
     }

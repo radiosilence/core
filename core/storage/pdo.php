@@ -130,8 +130,9 @@ class PDO extends \Core\Storage {
             )
         );
         $sth = $this->_backend->prepare($query->sql());
+
         $binds = $this->_binds($data);
-        $binds[':id'] = $object->id;
+        $binds[':id'] = (int)$object->id;
         $sth->execute($binds);
     }
 

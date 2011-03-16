@@ -61,6 +61,7 @@ class Auth extends \Core\Contained {
             'filters' => new \Core\Li(
                 new \Core\Filter($this->_user_field, $username)
             ))));
+
         if(count($result) == 0){
             throw new InvalidUserError();
         }
@@ -81,9 +82,16 @@ class Auth extends \Core\Contained {
         );
     }
 
-    public function user_data() {
-        $this->_check_logged_in();
-        return $this->_session['auth']['data'];
+    public function user_data($data=False) {
+        if($data) {
+            $this->_session['auth'] = array(
+                'id' => $this->user_id(),
+                'data' => $data
+            );
+        } else {
+            $this->_check_logged_in();
+            return $this->_session['auth']['data'];            
+        }
     }
 
     public function user_id() {
