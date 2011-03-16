@@ -54,6 +54,7 @@ class Filter {
     public $pattern;
     public $operand;
     public $hash;
+    public $hashes;
     public $explicit;
     public $complex;
     public $complex_text;
@@ -73,7 +74,13 @@ class Filter {
     }
 
     private function make_hash() {
-        $this->hash = 'p' . hash("crc32", $this->field . $this->pattern . $this->operand);
+        if($this->operand == 'in') {
+            foreach($this->pattern as $pat) {
+                $this->hashes[] = 'i' . hash("crc32", $this->field . $pat . $this->operand);
+            }   
+        } else {
+            $this->hash = 'p' . hash("crc32", $this->field . $this->pattern . $this->operand);            
+        }
     }
 }
 

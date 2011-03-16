@@ -64,14 +64,24 @@ class PDO extends \Core\Storage {
         $sth = $this->_backend->prepare($query->sql());
         $binds = $this->_binds();
         if($parameters['filters']) {
-            foreach($parameters['filters'] as $filter) {
-                if(!$filter->complex) {
-                    $binds[':' . $filter->hash] = $filter->pattern;
-                }
-            }            
+            $binds = array_merge($binds, $this->_filter_binds($parameters['filters']));         
         }
         $sth->execute($binds);
         return new \Core\Li($sth->fetchAll(\PDO::FETCH_ASSOC));
+    }
+
+    protected function _filter_binds($filters) {
+        $binds = array();
+        foreach($filters as $filter) {
+            if($filter->operand == 'in') {
+                foreach($filter->hashes as $k => $hash){
+                    $binds[':' . $hash] = $filter->pattern[$k];
+                }
+            } else if(!$filter->complex) {
+                $binds[':' . $filter->hash] = $filter->pattern;
+            }
+        }   
+        return $binds;
     }
 
     public function save(\Core\Mapped $object) {
@@ -362,6 +372,16 @@ class PDOQuery {
             $field = $filter->field;
         } else {
             $field = $this->_table . '.' . $filter->field;
+        }
+        if($filter->operand == 'in') {
+            $prefixed = array_map(function($v) {
+                return ':'.$v;
+            }, $filter->hashes);
+            $collapsed = implode(',', $prefixed);
+            return sprintf("%s in(%s)",
+                $field,
+                $collapsed
+            );
         }
         $return = sprintf("%s %s %s",
             $field,
