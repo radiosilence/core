@@ -20,6 +20,7 @@ class Auth extends \Core\Contained {
     protected $_table;
     protected $_session;
     protected $_storage;
+    protected $_roots = array();
 
     public static function hash($data, $field=False) {
         $t_hasher = new \PasswordHash(8, FALSE);
@@ -94,6 +95,23 @@ class Auth extends \Core\Contained {
         }
     }
 
+    public function is_root($user_id) {
+        if(!$user_id) {
+            $user_id = $this->user_id();
+        }
+        if(in_array($user_id, $this->_roots)) {
+            return True;
+        } else {
+            $root = Admin::container()
+                ->is_root($user_id, $this->_table);
+            if($root) {
+                $this->_roots[] = $user_id;
+                return True;
+            }
+        }
+        return False;
+    }
+
     public function user_id() {
         $this->_check_logged_in();
         return $this->_session['auth']['id'];
@@ -109,11 +127,44 @@ class Auth extends \Core\Contained {
         if(!$user_id) {
             $user_id = $this->user_id();
         }
-        $admin = Admin::container()
-            ->get_by_role($user_id, $entity, $type, $this->_table);
-        if(!$admin) {
-            throw new AuthDeniedError();
+        if(!$this->is_root($user_id)) {
+            $admin = Admin::container()
+                ->get_by_role($user_id, $entity, $type, $this->_table);
+            if(!$admin) {
+                throw new AuthDeniedError();
+            }        
         }
+    }
+
+    public function add_admin($type, $entity, $user_id=False) {
+        if(!$user_id) {
+            $user_id = $this->user_id();
+        }
+        $admin = Admin::mapper()->create_object(array(
+            'type' => $type,
+            'entity' => $entity,
+            $this->_table => $user_id
+        ), $this->_table);
+        \Core\Storage::container()
+            ->get_storage('Admin')
+            ->save($admin);
+    }
+
+    public function get_administrated_ids($type, $user_id=False) {
+        if(!$user_id) {
+            $user_id = $this->user_id();
+        }
+        $params = array('type'=>$type);
+        $entities = array();
+        if(!$this->is_root($user_id)) {
+            $params['user_id'] = $user_id;
+        }
+        $admins = Admin::container()
+            ->list_privileges($params, $this->_table);
+        foreach($admins as $admin) {
+            $entities[] = $admin['entity'];
+        }
+        return $entities;
     }
 }
 
@@ -165,7 +216,7 @@ class AdminMapper extends \Core\Mapper {
 
 class AdminContainer extends \Core\MappedContainer {
     public function get_by_role($user_id, $entity, $type, $user_field='user') {
-        $fetched = \Core\Storage::container()
+        $non_roots = \Core\Storage::container()
             ->get_storage('Admin')
             ->fetch(array(
                 'filters' => array(
@@ -174,12 +225,39 @@ class AdminContainer extends \Core\MappedContainer {
                     new \Core\Filter('type', $type)
                 )
             ));
-        if(count($fetched) > 0) {
-            return Admin::mapper()->create_object($fetched[0])
+        if(count($non_roots) > 0) {
+            return Admin::mapper()->create_object($non_roots[0])
                 ->set_user_field($user_field);
         }
 
-        $roots = \Core\Storage::container()
+
+        return False;
+    }
+
+    public function list_privileges($parameters, $user_field='user') {
+        $list = new \Core\Li();
+        $filters = array();
+        if($parameters['type']) {
+            $filters[] = new \Core\Filter('type', $parameters['type']);
+        }
+        if($parameters['user_id']) {
+            $filters[] = new \Core\Filter($user_field, $parameters['user_id']);
+        }
+        $results = \Core\Storage::container()
+            ->get_storage('Admin')
+            ->fetch(array(
+                'filters' => $filters
+            ));
+        foreach($results as $result) {
+            $list->append(Admin::mapper()
+                ->create_object($result, $user_field));
+        }
+
+        return $list;
+    }
+
+    public function is_root($user_id, $user_field='user') {
+         $roots = \Core\Storage::container()
             ->get_storage('Admin')
             ->fetch(array(
                 'filters' => array(
@@ -188,10 +266,8 @@ class AdminContainer extends \Core\MappedContainer {
                 )
             ));
         if(count($roots) > 0) {
-            return Admin::mapper()
-                ->create_object($roots[0], $user_field);
+            return True;
         }
-
         return False;
     }
 }
