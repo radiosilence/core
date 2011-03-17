@@ -168,10 +168,10 @@ class Auth extends \Core\Contained {
     }
 }
 
-
-class AuthNotLoggedInError extends \Core\StandardError {}
-class AuthEmptyPasswordError extends \Core\StandardError {}
-class AuthDeniedError extends \Core\StandardError {}
+class AuthError extends \Core\StandardError {}
+class AuthNotLoggedInError extends AuthError {}
+class AuthEmptyPasswordError extends AuthError {}
+class AuthDeniedError extends AuthError {}
 
 class AuthContainer extends \Core\Container {
     public function get_auth($table, \Core\Session\Handler $session, $parameters=False) {
