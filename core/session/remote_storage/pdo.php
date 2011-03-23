@@ -65,10 +65,10 @@ class PDO extends \Core\Dict implements \Core\Session\RemoteStorage {
     public function add($actual) {
         $sth = $this->pdo->prepare("
             INSERT INTO sessions (
-              sid, tok, remote_addr, data, latest
+              sid, tok, remote_addr, data
             )
             VALUES (
-              :sid, :tok, :remote_addr, :data, :latest
+              :sid, :tok, :remote_addr, :data
 
             )
         ");
@@ -77,8 +77,7 @@ class PDO extends \Core\Dict implements \Core\Session\RemoteStorage {
             ":sid" => $actual['sid'],
             ":tok" => $actual['tok'],
             ":remote_addr" => $this->remote_addr,
-            ":data" => json_encode($this->__data__),
-            ":latest" => $current->Format('r')
+            ":data" => json_encode($this->__data__)
         ));
         $this->actual = $actual;
     }
@@ -99,14 +98,12 @@ class PDO extends \Core\Dict implements \Core\Session\RemoteStorage {
     public function save() {
         $sth = $this->pdo->prepare("
             UPDATE sessions
-            SET data = :data,
-              latest = :latest
+            SET data = :data
             WHERE sid = :sid
         ");
         $current = new \DateTime();
         $ok = $sth->execute(array(
             ":data" => json_encode($this->__data__),
-            ":latest" => $current->Format('r'),
             ":sid" => $this->actual['sid']
         ));
     }

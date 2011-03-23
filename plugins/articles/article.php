@@ -23,8 +23,11 @@ class Article extends \Core\Mapped {
 
 class ArticleMapper extends \Core\Mapper {
     public function create_object($data) {
-        $mc = new \Core\Backend\MemcachedContainer();
-        $m = $mc->get_backend();
+        try {
+            $mc = new \Core\Backend\MemcachedContainer();
+            $m = $mc->get_backend();
+            $m_enable = True;
+        } catch(\Core\Backend\MemcachedNotLoadedError $e) {}
         $data = \Core\Dict::create($data);
         $data->posted_on = new \DateTime($data->posted_on);
         if(strlen($data->custom_url) > 0) {
@@ -34,10 +37,16 @@ class ArticleMapper extends \Core\Mapper {
         }
         $data->preview = substr(strip_tags($data->body), 0, 440);
         $key = sprintf("site:%s:article:%s:body", \Core\Utils\Env::site_name(), $data['id']);
-        $body = $m->get($key);
-        if(!$data['body']) {
+        if($m_enable) {
+            $body = $m->get($key);
+        } else {
+            $body = False;
+        }
+        if(!$body) {
             $data['body'] = Markdown($data['body']);
-            $m->set($key, $data['body'], 60);        
+            if($m_enable) {
+                $m->set($key, $data['body'], 60);        
+            }
         } else {
             $data['body'] = $body;
         }

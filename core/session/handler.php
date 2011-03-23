@@ -211,18 +211,20 @@ class Handler extends \Core\Contained {
 
 class HandlerContainer extends \Core\ConfiguredContainer {
 
-    public function get_standard_session() {
+    public function get_pdo_session() {
 
         import('core.session.handler');
         import('core.session.remote_storage.pdo');
         import('core.session.local_storage.cookie');
         import('core.utils.ipv4');
+        import('core.backend');
 
         $sh = new Handler();
         $srp = new RemoteStorage\PDO();
         $slc = new LocalStorage\Cookie();
 
-        $srp->attach_pdo($this->parameters['pdo']);
+        $srp->attach_pdo(\Core\Backend::container()
+            ->get_backend());
         $this->_load_config();
 
         try{

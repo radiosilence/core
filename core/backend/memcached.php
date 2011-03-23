@@ -18,6 +18,9 @@ class Memcached extends \Core\Contained {}
 class MemcachedContainer extends \Core\BackendContainer {
     protected static $_default_connection = False;
     public function get_backend() {
+        if(!extension_loaded('memcached')) {
+            throw new MemcachedNotLoadedError();
+        }
         if(static::$_default_connection instanceof \Memcached) {
             return static::$_default_connection;
         }
@@ -32,3 +35,5 @@ class MemcachedContainer extends \Core\BackendContainer {
         return $m;
     }
 }
+
+class MemcachedNotLoadedError extends \Core\StandardError {}

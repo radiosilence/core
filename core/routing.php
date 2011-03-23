@@ -29,8 +29,6 @@ import('core.utils.env');
 class Router extends Contained {
     private $_path;
     private $_routes = array();
-    private $_memcached_available = False;
-
     public function __construct($routes_file=null) {
             
         if(empty($routes_file)) {
@@ -56,7 +54,7 @@ class Router extends Contained {
         $route = $this->_find_route($uri);
         try {
             if(!isset($route->parameters['__cache__'])) {
-                throw new CacheNotEnabledException();
+                throw new CacheNotEnabledError();
             }
             $mc = new \Core\Backend\MemcachedContainer();
             $m = $mc->get_backend();
@@ -75,7 +73,8 @@ class Router extends Contained {
             trigger_error("Disabling route cache due to no config file.", \E_USER_WARNING);
         } catch(\Core\Error $e) {
             trigger_error("Disabling route cache due to no memcached section in config.", \E_USER_WARNING);
-        } catch(CacheNotEnabledException $e) {}
+        } catch(CacheNotEnabledError $e) {
+        } catch(\Core\Backend\MemcachedNotLoadedError $e) {}
         import('controllers.' . strtolower($route->class));
         $class = sprintf('\Controllers\%s', str_replace('.', '\\', $route->class));
 
@@ -162,4 +161,4 @@ class Route extends Dict {
 }
 class RoutingError extends Error{}
 class RouteNotFoundError extends RoutingError {}
-class CacheNotEnabledException extends \Core\SkipException{}
+class CacheNotEnabledError extends \Core\SkipException{}
