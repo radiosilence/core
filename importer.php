@@ -26,7 +26,7 @@ class ImportError extends \Exception {
 class Importer {
     private static $importer;
     public $include_paths = array();
-
+    public static $_imported = array();
     private $module_dir_parts = array();
     private $module_full_parts = array();
     private $module_last_part;
@@ -38,10 +38,14 @@ class Importer {
     }
 
     public static function import_module($module_name) {
+        if(in_array($module_name, static::$_imported)) {
+            return True;
+        }
         self::$importer->populate_properties($module_name);
         if(!self::$importer->try_paths()) {
             throw new ImportError($module_name);
         }
+	array_push(static::$_imported, $module_name);
     }
 
     public static function add_include_path($path) {
@@ -50,15 +54,9 @@ class Importer {
 
     public function set_include_paths($include_paths=False) {
         if(!$include_paths) {
-            $include_paths = array_merge(
-                array(
-                    SITE_PATH,
-                    CORE_PATH
-                ),
-                explode(
-                    PATH_SEPARATOR,
-                    ini_get('include_path')
-                )
+            $include_paths = array(
+                realpath(SITE_PATH),
+                realpath(CORE_PATH)
             );
         }
         $this->include_paths = $include_paths;
@@ -98,12 +96,12 @@ class Importer {
     }
 
     private function include_module($path) {
-        if(file_exists($path)) {
+        if(is_file($path)) {
             require_once($path);
-            return True;
+            return True; 
         } else {
             return False;
-        } 
+        }
     }
 }
 ?>
