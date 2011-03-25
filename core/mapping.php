@@ -37,17 +37,19 @@ abstract class Mapper extends Dict {
 }
 
 abstract class Mapped extends Contained {
-    protected $_fields;
+    public static $fields;
     public $_mappers = array();
 
     public static function mapper($parameters=False) {
         return static::get_helper('Mapper', $parameters);
     }
 
-    public function list_fields() {
-        return $this->_fields;
+    public static function list_fields() {
+        return static::$_fields;
     }
-
+    public static function table_name() {
+        return strtolower(static::get_class()) . 's';
+    }
     public function attach_mapper($type,$mapper) {
         $this->_mappers[$type] = $mapper;
         return $this;

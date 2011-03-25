@@ -14,6 +14,7 @@ namespace Core\Storage;
 import('core.storage');
 import('core.types');
 import('core.utils.language');
+import('core.backend.hs');
 
 class PDOContainer extends \Core\ConfiguredContainer {
     public function get_storage($type) {
@@ -30,6 +31,7 @@ class PDOContainer extends \Core\ConfiguredContainer {
  */
 class PDO extends \Core\Storage {
     protected $_parameters;
+    protected $_backend;
 
     public function attach_backend($backend) {
         $this->_backend = $backend;
@@ -184,12 +186,13 @@ class PDO extends \Core\Storage {
      * Create a table_name based on ClassName
      * TODO: Proper grammatical plurals, ala Django or SQLAlchemy
      */
-    protected function _default_table($table=False) {
-        if(!$table) {
-            $table = $this->_class_name();
+    protected function _default_table($class=False) {
+        if(!$class) {
+            $class = $this->_class_name();
         }
-        return strtolower($table) . 's';
+        return strtolower($class).'s';
     }
+
 }
 class PDOQuery {
 

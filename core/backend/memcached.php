@@ -12,6 +12,7 @@
 namespace Core\Backend;
 
 import('core.backend');
+import('core.exceptions');
 
 class Memcached extends \Core\Contained {}
 

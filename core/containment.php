@@ -33,32 +33,68 @@ abstract class Container {
         }
     }
 
-    protected function _get_class() {
+    public static function get_class() {
         return array_pop(explode("\\", str_replace("Container", null, get_called_class())));
     }
-    protected function _get_full_class() {
+    public static function get_full_class() {
         return "\\" . str_replace("Container", null, get_called_class());
     }
 }
 
 abstract class MappedContainer extends \Core\Container {
-    
+    protected static $_hs_index = 0;
+    protected $_hs = False;
+    protected $_cls;
+    protected $_fcls;
+
+    public function __construct($args) {
+        parent::__construct($args);
+
+        $this->_cls = static::get_class();
+        $this->_fcls = static::get_full_class();
+
+        try {
+            $this->_hs = \Core\Backend\HS::container()
+                ->get_backend();
+            $this->_hs_db = \Core\Backend\HS::container()
+                ->get_db_name();
+        } catch(\Core\Backend\HSNotLoadedError $e) {}
+    }
+
     public function get_by_field($field, $query) {
-        $cls = $this->_get_class();
-        $fcls = $this->_get_full_class();
+        $cls = $this->_cls;
+        $fcls = $this->_fcls;
+    
         $fetched = \Core\Storage::container()
-            ->get_storage($cls)
-            ->fetch(array(
-                'filter' => new \Core\Filter($field, $query)
-            ));
+        ->get_storage($cls)
+        ->fetch(array(
+            'filter' => new \Core\Filter($field, $query)
+        ));
 
         if(count($fetched) == 0) {
             return False;
         }
+
         return $fcls::mapper()->create_object($fetched[0]);
     }
 
     public function get_by_id($id) {
+        $cls = $this->_cls;
+        $fcls = $this->_fcls;
+        if($this->_hs) {
+            $hs = $this->_hs;
+            $index = self::$_hs_index++;
+            $hs->openIndex(
+                $index,
+                $this->_hs_db,
+                $fcls::table_name(),
+                \HandlerSocket::PRIMARY,
+                implode(',', $fcls::$fields));
+            $fetched = $hs->executeSingle($index, '=', array($id), 1, 0);
+            if($fetched) {
+                return $fcls::mapper()->create_object($fetched);
+            }
+        }
         return $this->get_by_field('id', $id);
     }
 
@@ -78,6 +114,12 @@ abstract class Contained extends \Core\Dict {
         return $helper;
     }
 
+    public static function get_class() {
+        return array_pop(explode("\\", get_called_class()));
+    }
+    public static function get_full_class() {
+        return "\\" . get_called_class();
+    }
 }
 
 abstract class ConfiguredContainer extends Container {
