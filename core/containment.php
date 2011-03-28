@@ -13,6 +13,7 @@ namespace Core;
 
 import('core.types');
 import('core.exceptions');
+import('core.backend.hs');
 
 abstract class Container {
     protected $parameters = array();
@@ -97,7 +98,6 @@ abstract class MappedContainer extends \Core\Container {
         }
         return $this->get_by_field('id', $id);
     }
-
 }
     
 abstract class Contained extends \Core\Dict {

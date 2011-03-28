@@ -33,6 +33,19 @@ class PDO extends \Core\Storage {
     protected $_parameters;
     protected $_backend;
 
+    protected static $_hs_index = 50;
+    protected $_hs = False;
+
+    public function __construct($args) {
+        parent::__construct($args);
+        try {
+            $this->_hs = \Core\Backend\HS::container()
+                ->get_backend(True);
+            $this->_hs_db = \Core\Backend\HS::container()
+                ->get_db_name();
+        } catch(\Core\Backend\HSNotLoadedError $e) {}
+    }
+
     public function attach_backend($backend) {
         $this->_backend = $backend;
         return $this;
@@ -98,26 +111,83 @@ class PDO extends \Core\Storage {
     protected function _binds($data=array()) {
         $binds = array();
         foreach($data as $field => $value) {
-            $binds[':' . $field] = $this->_common_to_string($value);
+            $binds[':' . $field] = $value;
         }
         if(is_array($this->_parameters['binds'])) {
             foreach($this->_parameters['binds'] as $field => $value) {
-                $binds[$field] = $this->_common_to_string($value);
+                $binds[$field] = $value;
             }            
         }
         return $binds;
     }
 
-    protected function _common_to_string($mixed) {
+    protected function _purify_input($data) {
+        $this->_parameters['binds'] = array_map(
+            \Core\Storage\PDO::common_to_string($v),
+            $this->_parameters['binds']
+        );
+
+        $ret = array_map(function($v) {
+            return \Core\Storage\PDO::common_to_string($v);
+        }, $data);
+        return $ret;
+    }
+    public static function common_to_string($mixed) {
         if($mixed instanceof \DateTime) {
-            return $mixed->format('c');
+            return $mixed->format('Y-m-d H:i:s');
         }
 
         return $mixed;
     }
 
-    protected function _insert(\Core\Mapped $object) {
+    protected function _open_index($object) {
+        $i = self::$_hs_index++;
+        $fields = 'id,' . implode(',', $object->list_fields());
+        $this->_hs->openIndex($i,
+            $this->_hs_db,
+            $this->_default_table(),
+            \HandlerSocket::PRIMARY,
+            $fields
+        );
+        var_dump($fields);
+        return $i;
+    }
+
+    protected function _hs_insert_array($fields, $data) {
+        $ret = array();
+        foreach($fields as $f) {
+            echo "$f>>";
+            array_push($ret, (isset($data[$f]) ?  $data[$f] : ''));
+        }
+
+        return $ret;
+    }
+    protected function _insert(\Core\Mapped $object, $force_id=False) {
+        echo "a";
         $data = $this->_filter($object);
+        $data = $this->_purify_input($data);
+        
+        if($this->_hs) {
+            $data = $this->_hs_insert_array(
+                $object->list_fields(), $data);
+            $i = $this->_open_index($object);
+
+            $iters = 0;
+            try{
+                do {
+                    $id = $force_id ? $force_id : mt_rand(1,1000000000);
+                    $idata = $data;
+                    array_unshift($idata, $id);
+                    $success = $this->_hs->executeInsert($i, $idata);
+                    if($iters++ > 4) {
+                        throw new HSInsertFailedError();
+                    }
+                } while(!$success);
+                var_dump($idata);
+                $object->id = $id;       
+                return $id;
+            } catch(HSInsertFailedError $e) {}
+        }
         $query = new PDOQuery(
             PDOQuery::Insert,
             $this->_default_table(),
@@ -127,13 +197,14 @@ class PDO extends \Core\Storage {
         );
         $sth = $this->_backend->prepare($query->sql());
         $sth->execute($this->_binds($data));
-       $inserted = $sth->fetch();
-       $object->id = $inserted['id'];
-       return $inserted['id'];
+        $inserted = $sth->fetch();
+        $object->id = $inserted['id'];
+        return $inserted['id'];
     }
     
     protected function _update(\Core\Mapped $object) {
         $data = $this->_filter($object);
+        $data = $this->_purify_input($data);
         $query = new PDOQuery(
             PDOQuery::Update,
             $this->_default_table(),
@@ -194,6 +265,8 @@ class PDO extends \Core\Storage {
     }
 
 }
+
+class HSInsertFailedError extends \Core\StandardError {}
 class PDOQuery {
 
     const Select = 'SELECT %1$s FROM %2$s';

@@ -18,7 +18,7 @@ class HS extends \Core\Contained {}
 
 class HSContainer extends \Core\BackendContainer {
     protected static $_default_connection = False;
-    public function get_backend() {
+    public function get_backend($write=False) {
         if(!class_exists('\HandlerSocket')) {
             throw new HSNotLoadedError();
         }
@@ -28,7 +28,10 @@ class HSContainer extends \Core\BackendContainer {
             return static::$_default_connection;
         } 
         $conf = $this->_config['handlersocket'];
-        $hs = new \HandlerSocket($conf['host'], $conf['port']);
+        $hs = new \HandlerSocket(
+            $conf['host'],
+            ($write ? $conf['port_wr'] : $conf['port'])
+        );
         static::$_default_connection = $hs;
         return $hs;
     }

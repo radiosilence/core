@@ -45,7 +45,7 @@ abstract class Mapped extends Contained {
     }
 
     public static function list_fields() {
-        return static::$_fields;
+        return static::$fields;
     }
     public static function table_name() {
         return strtolower(static::get_class()) . 's';

@@ -201,7 +201,7 @@ class IncorrectPasswordError extends \Core\Error {
 class Admin extends \Core\Mapped {
     public static $fields = array("entity", "type");
     public function set_user_field($user_field) {
-        $this->_fields[] = $user_field;
+        array_push(static::$fields, $user_field);
         return $this;
     }
 }
