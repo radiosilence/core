@@ -15,7 +15,6 @@ import('core.types');
 import('core.mapping');
 import('core.exceptions');
 import('core.utils.env');
-import('3rdparty.markdown');
 
 class Article extends \Core\Mapped {
     public static $fields = array("title", "body", "posted_on", "author", "custom_url");
@@ -38,18 +37,25 @@ class ArticleMapper extends \Core\Mapper {
         }
         $data->preview = substr(strip_tags($data->body), 0, 440);
         $key = sprintf("site:%s:article:%s:body", \Core\Utils\Env::site_name(), $data['id']);
-        if($m_enable) {
-            $body = $m->get($key);
-        } else {
-            $body = False;
-        }
-        if(!$body) {
-            $data['body'] = Markdown($data['body']);
+        if(extension_loaded('discount')) {
+            $md = \MarkdownDocument::createFromString($data['body']);
+            $md->compile();
+            $data['body'] = $md->getHtml();
+        } else {            
             if($m_enable) {
-                $m->set($key, $data['body'], 60);        
+                $body = $m->get($key);
+            } else {
+                $body = False;
             }
-        } else {
-            $data['body'] = $body;
+            if(!$body) {
+                import('3rdparty.markdown');
+                $data['body'] = Markdown($data['body']);
+                if($m_enable) {
+                    $m->set($key, $data['body'], 60);        
+                }
+            } else {
+                $data['body'] = $body;
+            }
         }
         return Article::create($data);
     }
