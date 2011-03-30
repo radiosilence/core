@@ -18,6 +18,7 @@ import('core.utils.env');
 import('3rdparty.markdown');
 
 class Article extends \Core\Mapped {
+    public static $fields = array("title", "body", "posted_on", "author", "custom_url");
     protected $_storage;
 }
 

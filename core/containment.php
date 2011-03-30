@@ -57,8 +57,6 @@ abstract class MappedContainer extends \Core\Container {
         try {
             $this->_hs = \Core\Backend\HS::container()
                 ->get_backend();
-            $this->_hs_db = \Core\Backend\HS::container()
-                ->get_db_name();
         } catch(\Core\Backend\HSNotLoadedError $e) {}
     }
 
@@ -84,18 +82,12 @@ abstract class MappedContainer extends \Core\Container {
         $fcls = $this->_fcls;
         if($this->_hs) {
             $hs = $this->_hs;
-            $index = self::$_hs_index++;
-            $hs->openIndex(
-                $index,
-                $this->_hs_db,
-                $fcls::table_name(),
-                \HandlerSocket::PRIMARY,
-                implode(',', $fcls::$fields));
-            $fetched = $hs->executeSingle($index, '=', array($id), 1, 0);
+            $fetched = $hs->get($id, $fcls);
             if($fetched) {
                 return $fcls::mapper()->create_object($fetched);
             }
         }
+        echo "FAILED HANDLERSOCKET";
         return $this->get_by_field('id', $id);
     }
 }

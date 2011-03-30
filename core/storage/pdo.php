@@ -38,12 +38,6 @@ class PDO extends \Core\Storage {
 
     public function __construct($args) {
         parent::__construct($args);
-        try {
-            $this->_hs = \Core\Backend\HS::container()
-                ->get_backend(True);
-            $this->_hs_db = \Core\Backend\HS::container()
-                ->get_db_name();
-        } catch(\Core\Backend\HSNotLoadedError $e) {}
     }
 
     public function attach_backend($backend) {
@@ -122,11 +116,12 @@ class PDO extends \Core\Storage {
     }
 
     protected function _purify_input($data) {
-        $this->_parameters['binds'] = array_map(
-            \Core\Storage\PDO::common_to_string($v),
-            $this->_parameters['binds']
-        );
-
+        if(is_array($this->_parameters['binds'])) {
+            $this->_parameters['binds'] = array_map(
+                \Core\Storage\PDO::common_to_string($v),
+                $this->_parameters['binds']
+            );            
+        }
         $ret = array_map(function($v) {
             return \Core\Storage\PDO::common_to_string($v);
         }, $data);
@@ -140,54 +135,10 @@ class PDO extends \Core\Storage {
         return $mixed;
     }
 
-    protected function _open_index($object) {
-        $i = self::$_hs_index++;
-        $fields = 'id,' . implode(',', $object->list_fields());
-        $this->_hs->openIndex($i,
-            $this->_hs_db,
-            $this->_default_table(),
-            \HandlerSocket::PRIMARY,
-            $fields
-        );
-        var_dump($fields);
-        return $i;
-    }
-
-    protected function _hs_insert_array($fields, $data) {
-        $ret = array();
-        foreach($fields as $f) {
-            echo "$f>>";
-            array_push($ret, (isset($data[$f]) ?  $data[$f] : ''));
-        }
-
-        return $ret;
-    }
     protected function _insert(\Core\Mapped $object, $force_id=False) {
-        echo "a";
         $data = $this->_filter($object);
         $data = $this->_purify_input($data);
-        
-        if($this->_hs) {
-            $data = $this->_hs_insert_array(
-                $object->list_fields(), $data);
-            $i = $this->_open_index($object);
 
-            $iters = 0;
-            try{
-                do {
-                    $id = $force_id ? $force_id : mt_rand(1,1000000000);
-                    $idata = $data;
-                    array_unshift($idata, $id);
-                    $success = $this->_hs->executeInsert($i, $idata);
-                    if($iters++ > 4) {
-                        throw new HSInsertFailedError();
-                    }
-                } while(!$success);
-                var_dump($idata);
-                $object->id = $id;       
-                return $id;
-            } catch(HSInsertFailedError $e) {}
-        }
         $query = new PDOQuery(
             PDOQuery::Insert,
             $this->_default_table(),
@@ -197,9 +148,9 @@ class PDO extends \Core\Storage {
         );
         $sth = $this->_backend->prepare($query->sql());
         $sth->execute($this->_binds($data));
-        $inserted = $sth->fetch();
-        $object->id = $inserted['id'];
-        return $inserted['id'];
+        $inserted = $this->_backend->lastInsertId('id');
+        $object->id = $inserted;
+        return $inserted;
     }
     
     protected function _update(\Core\Mapped $object) {
@@ -299,7 +250,7 @@ class PDOQuery {
                 );
                 break;
             case PDOQuery::Insert:
-                return sprintf("%s\n(%s)\nVALUES (%s) RETURNING id",
+                return sprintf("%s\n(%s)\nVALUES (%s)",
                     $this->_head(),
                     $this->_insert_fields(),
                     $this->_insert_fields(':')
