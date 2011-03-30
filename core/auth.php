@@ -19,7 +19,6 @@ import('core.exceptions');
 class Auth extends \Core\Contained {
     protected $_table;
     protected $_session;
-    protected $_storage;
     protected $_roots = array();
 
     public static function hash($data, $field=False) {
@@ -58,7 +57,9 @@ class Auth extends \Core\Contained {
         return $this;
     }
     public function attempt($username, $password) {
-        $result = $this->_storage->fetch(new \Core\Dict(array(
+        $result = \Core\Storage::container()
+            ->get_storage($this->_table)
+            ->fetch(new \Core\Dict(array(
             'filters' => new \Core\Li(
                 new \Core\Filter($this->_user_field, $username)
             ))));
@@ -175,13 +176,10 @@ class AuthDeniedError extends AuthError {}
 
 class AuthContainer extends \Core\Container {
     public function get_auth($table, \Core\Session\Handler $session, $parameters=False) {
-        $storage = Storage::container()
-            ->get_storage($table);
 
         return Auth::create($parameters)
             ->set_table($table)
-            ->attach_session($session)
-            ->attach_storage($storage);
+            ->attach_session($session);
     }
     
 }
