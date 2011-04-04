@@ -53,11 +53,6 @@ abstract class MappedContainer extends \Core\Container {
 
         $this->_cls = static::get_class();
         $this->_fcls = static::get_full_class();
-
-        try {
-            $this->_hs = \Core\Backend\HS::container()
-                ->get_backend();
-        } catch(\Core\Backend\HSNotLoadedError $e) {}
     }
 
     public function get_by_field($field, $query) {
@@ -80,14 +75,6 @@ abstract class MappedContainer extends \Core\Container {
     public function get_by_id($id) {
         $cls = $this->_cls;
         $fcls = $this->_fcls;
-        if($this->_hs) {
-            $hs = $this->_hs;
-            $fetched = $hs->get($id, $fcls);
-            if($fetched) {
-                return $fcls::mapper()->create_object($fetched);
-            }
-        }
-        echo "FAILED HANDLERSOCKET";
         return $this->get_by_field('id', $id);
     }
 }

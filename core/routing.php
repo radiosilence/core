@@ -77,13 +77,13 @@ class Router extends Contained {
         } catch(\Core\Backend\MemcachedNotLoadedError $e) {}
         import('controllers.' . strtolower($route->class));
         $class = sprintf('\Controllers\%s', str_replace('.', '\\', $route->class));
-
         $controller = new $class($route->parameters);
         $method = $route->parameters['method'];
         if(!method_exists($controller, $method)) {
             $method = 'index';
         }
         ob_start();
+//        die($method);
         $controller->$method();
         $page = ob_get_contents();
         if($m_enable) {
@@ -102,14 +102,9 @@ class Router extends Contained {
     }
 
     private function _find_route($uri) {
-        $xsrf_pattern = '/\/?xsrf:([0-9]+)/';
-        preg_match($xsrf_pattern, $uri, $reqid);    
-        $uri = preg_replace($xsrf_pattern, '', $uri);
-        $reqid = array_pop($reqid);
         foreach($this->_routes as $potential => $route) {
             $potential = str_replace('/', '\/', $potential);
             if(preg_match('/\/?' . $potential . '/', $uri, $matches)) {
-                $route->__antixsrf_reqid__ = $reqid;
                 return $route->assign_vars($matches);
             }
         }

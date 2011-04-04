@@ -13,6 +13,7 @@ namespace Plugins\Articles;
 
 import('core.types');
 import('core.mapping');
+import('core.containment');
 import('core.exceptions');
 import('core.utils.env');
 
@@ -69,6 +70,7 @@ class ArticleMapper extends \Core\Mapper {
     }
 
     public function get_article($id) {
+        $v = Article::container();
         return Article::container()
             ->get_by_id($id);
     }
