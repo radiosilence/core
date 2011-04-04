@@ -13,8 +13,7 @@ namespace Core;
 
 import('core.types');
 import('core.exceptions');
-import('core.backend.hs');
-
+import('core.storage');
 abstract class Container {
     protected $parameters = array();
 
@@ -60,10 +59,10 @@ abstract class MappedContainer extends \Core\Container {
         $fcls = $this->_fcls;
     
         $fetched = \Core\Storage::container()
-        ->get_storage($cls)
-        ->fetch(array(
-            'filter' => new \Core\Filter($field, $query)
-        ));
+            ->get_storage($cls)
+            ->fetch(array(
+                'filter' => new \Core\Filter($field, $query)
+            ));
 
         if(count($fetched) == 0) {
             return False;
@@ -114,6 +113,9 @@ abstract class ConfiguredContainer extends Container {
         $this->_load_config();
         $this->_check_config();
         $this->_backend = $this->_config['general']['backend'];
+        if(empty($this->_backend)) {
+            $this->_backend = 'PDO';
+        }
         
         $class = '\\' . str_replace('Container', '\\', get_called_class());
         $container_class = $class . $this->_backend .'Container';
