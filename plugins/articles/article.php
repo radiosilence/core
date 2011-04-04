@@ -71,9 +71,15 @@ class ArticleMapper extends \Core\Mapper {
 
     public function get_article($id) {
         $v = Article::container();
-        return Article::container()
+        $article = Article::container()
             ->get_by_id($id);
+        if(!$article) {
+            throw new ArticleNotFoundError();
+        }
+        return $article;
     }
 }
+
+class ArticleNotFoundError extends \Core\StandardError {}
 
 class ArticleContainer extends \Core\MappedContainer {}

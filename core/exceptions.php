@@ -49,7 +49,7 @@ class HTTPError extends Error {
     );
     public function __construct($code, $url=False){
         if(!isset($this->error_codes[$code])){
-            throw new Exception("HTTP error with unknown error code.");
+            throw new \Exception("HTTP error with unknown error code.");
         }
         $error = sprintf($this->error_codes[$code], $_SERVER['SERVER_PROTOCOL']);
         header($error);
