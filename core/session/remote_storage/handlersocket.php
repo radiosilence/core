@@ -15,7 +15,7 @@ import('core.session.remote_storage.exceptions');
 import('core.session.interfaces');
 import('core.dependency');
 import('core.types');
-import('core.backend.memcached');
+import('core.backend.hs');
 import('core.utils.env');
 
 
