@@ -26,24 +26,42 @@ class Template extends Dict {
     protected $_sections = array();
     protected $_current_section = null;
     protected $_utils = array();
-
+    protected $_file;
+    protected $_absolute = False;
 
     public function attach_util($name, $util) {
         $this->_utils[$name] = $util;
         return $this;
     }
 
-    public function render($name) {
-        if($this->_utils['antixsrf'] instanceof \Core\Security\AntiXSRF) {
-            $this->__xsrf__ = '/xsrf:' . $this->_utils['antixsrf']->get_hash();
+    public function set_file($file) {
+        $this->_file = $file;
+    }
+
+    public function render($name=False) {
+        if(!$name) {
+            $name = $this->_file;
         }
-        extract($this->__data__);
-        $this->_path = sprintf("%s/templates/%s", SITE_PATH, $name);
-        if(!file_exists($this->_path)) {
-            throw new TemplateNotFoundError($path);
+        $valid_path = False;
+        if(file_exists($name)) {
+            $valid_path = $name;
+        } else {
+            $paths = array(SITE_PATH, CORE_PATH);
+            foreach($paths as $path) {
+                $t = sprintf("%s/templates/%s", $path, $name);
+                if(file_exists($t)) {
+                    $valid_path = $t;
+                    break; 
+                }
+            }            
         }
+        if(!$valid_path) {
+            throw new TemplateNotFoundError($name);
+        }
+
         ob_start();
-        require($this->_path);
+        extract($this->__data__);
+        require($valid_path);
         return ob_get_clean();
     }   
 }

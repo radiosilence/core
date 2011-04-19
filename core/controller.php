@@ -38,5 +38,30 @@ abstract class Controller extends \Core\Dict {
      */
     abstract function index();
    
+
+    protected function _return_message($status, $message, $errors=array(), $t=False) {
+        if($this->_async) {
+            return json_encode(array(
+                'status'=> $status,
+                'message' => $message,
+                'errors' => $errors
+            ));
+        } else {
+            if(!$t) {
+                $t = $this->_template;
+            }
+            $t->_status = $status;
+            $t->_message = $message;
+            $t->_errors = $errors;
+            return $t->render();
+        }
+    }
+
+    protected function _unhandled_exception($e) {
+        trigger_error($e->getMessage(), E_USER_WARNING);
+        $this->_return_message("Error",
+            "Unhandled exception.");
+    }
+
 }
 ?>

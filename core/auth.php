@@ -174,6 +174,11 @@ class AuthNotLoggedInError extends AuthError {}
 class AuthEmptyPasswordError extends AuthError {}
 class AuthDeniedError extends AuthError {}
 
+
+class AuthAttemptError extends AuthError {}
+class InvalidUserError extends AuthAttemptError {}
+class IncorrectPasswordError extends AuthAttemptError {}
+
 class AuthContainer extends \Core\Container {
     public function get_auth($table, \Core\Session\Handler $session, $parameters=False) {
 
@@ -182,18 +187,6 @@ class AuthContainer extends \Core\Container {
             ->attach_session($session);
     }
     
-}
-
-class InvalidUserError extends \Core\Error {
-    public function __construct() {
-        parent::__construct("Invalid user.");
-    }
-}
-
-class IncorrectPasswordError extends \Core\Error {
-    public function __construct() {
-        parent::__construct("Incorrect password.");
-    }
 }
 
 class Admin extends \Core\Mapped {
