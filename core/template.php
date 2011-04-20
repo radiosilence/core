@@ -19,7 +19,7 @@
 namespace Core;
 
 import('core.types');
-import('core.security.antixsrf');
+
 class Template extends Dict {
     protected $_parent;
     protected $_path;

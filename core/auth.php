@@ -11,7 +11,7 @@
 
 namespace Core;
 
-import('3rdparty.phpass');
+import('core.hasher');
 import('core.containment');
 import('core.mapping');
 import('core.exceptions');
@@ -22,18 +22,18 @@ class Auth extends \Core\Contained {
     protected $_roots = array();
 
     public static function hash($data, $field=False) {
-        $t_hasher = new \PasswordHash(8, FALSE);
+        $t_hasher = new Hasher();
         if($field) {
             if(empty($data[$field])) {
                 throw new AuthEmptyPasswordError();
             }
-            $data[$field] = $t_hasher->HashPassword($data[$field]);
+            $data[$field] = $t_hasher->hash_password($data[$field]);
             return $data;
         } else {
             if(empty($data)) {
                 throw new AuthEmptyPasswordError();
             }
-            return $t_hasher->HashPassword($data);
+            return $t_hasher->hash_password($data);
         }
     }
     
@@ -67,8 +67,8 @@ class Auth extends \Core\Contained {
         if(count($result) == 0){
             throw new InvalidUserError();
         }
-        $t_hasher = new \PasswordHash(8, False);
-        if(!$t_hasher->CheckPassword($password, $result[0][$this->_password_field])) {
+        $t_hasher = new Hasher();
+        if(!$t_hasher->check_password($password, $result[0][$this->_password_field])) {
             throw new IncorrectPasswordError();
         }
         $this->_set_session($result[0]['id'], $result[0]);

@@ -38,15 +38,6 @@ class Article extends \Core\Mapped {
     public function form_values() {
         $this->form_posted_on = $this->posted_on;
         $this->posted_on = new \DateTime($this->posted_on);
-        $this->form_body = $this->body;
-        if(extension_loaded('discount')) {
-            $md = \MarkdownDocument::createFromString($this->body);
-            $md->compile();
-            $this->body = $md->getHtml();
-        } else {            
-            import('3rdparty.markdown');
-            $this->body = Markdown($this->body);
-        }
         return $this;
     }
 }
@@ -65,22 +56,30 @@ class ArticleMapper extends \Core\Mapper {
             $data->seo_title = strtolower(str_replace(' ', '-', $data->title));        
         }
         $data->preview = substr(strip_tags($data->body), 0, 440);
-        $key = sprintf("site:%s:article:%s:body", \Core\Utils\Env::site_name(), $data['id']);
 
+        if(extension_loaded('discount')) {
+            $md = \MarkdownDocument::createFromString($data['body']);
+            $md->compile();
+            $data['body_html'] = $md->getHtml();
+        } else {            
+            import('3rdparty.markdown');
+            $data['body_html'] = Markdown($data['body']);
+        }
         $a = Article::create($data)
             ->form_values();
         return $a;
         
     }
-    public function get_latest_articles() {
+    public function get_latest_articles($usertype="User", $userfield="username") {
         $items = $this->_storage->fetch(array(
-                "order" => new \Core\Order('posted_on', 'desc')
+                "order" => new \Core\Order('posted_on', 'desc'),
+                "join" => new\Core\Join("author", $usertype, array($userfield))
         ));
         return Article::mapper()
             ->get_list($items);
     }
 
-    public function get_article($id) {
+    public function get_article($id, $usertype="User") {
         $v = Article::container();
         $article = Article::container()
             ->get_by_id($id);

@@ -340,6 +340,8 @@ class PDOQuery {
                     $field
                 ));
             }
+        } else {
+            $fields->extend(sprintf("%s.*", $join->local));
         }
         if(is_array($join->subjoins)) {
             foreach($join->subjoins as $subjoin) {
