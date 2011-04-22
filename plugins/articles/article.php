@@ -27,7 +27,7 @@ class Plugin extends \Core\Plugin {
 }
 
 class Article extends \Core\Mapped {
-    public static $fields = array("title", "body", "posted_on", "author", "custom_url");
+    public static $fields = array("title", "body", "posted_on", "author", "custom_url", "active");
     protected $_storage;
     public function validation() {
         return array(
@@ -55,7 +55,6 @@ class ArticleMapper extends \Core\Mapper {
         } else {
             $data->seo_title = strtolower(str_replace(' ', '-', $data->title));        
         }
-        $data->preview = substr(strip_tags($data->body), 0, 440);
 
         if(extension_loaded('discount')) {
             $md = \MarkdownDocument::createFromString($data['body']);
@@ -65,16 +64,22 @@ class ArticleMapper extends \Core\Mapper {
             import('3rdparty.markdown');
             $data['body_html'] = Markdown($data['body']);
         }
+
+        $data->preview = substr(strip_tags($data['body_html']), 0, 440);
         $a = Article::create($data)
             ->form_values();
         return $a;
         
     }
-    public function get_latest_articles($usertype="User", $userfield="username") {
-        $items = $this->_storage->fetch(array(
+    public function get_latest_articles($show_inactive=False, $usertype="User", $userfield="username") {
+        $params = array(
                 "order" => new \Core\Order('posted_on', 'desc'),
-                "join" => new\Core\Join("author", $usertype, array($userfield))
-        ));
+                "join" => new \Core\Join("author", $usertype, array($userfield))
+        );
+        if(!$show_inactive) {
+                $params["filter"] = new \Core\Filter("active", 1);
+        }
+        $items = $this->_storage->fetch($params);
         return Article::mapper()
             ->get_list($items);
     }
@@ -83,7 +88,7 @@ class ArticleMapper extends \Core\Mapper {
         $v = Article::container();
         $article = Article::container()
             ->get_by_id($id);
-        if(!$article) {
+        if(!$article || $article->active == 0) {
             throw new ArticleNotFoundError();
         }
         return $article;

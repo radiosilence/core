@@ -25,9 +25,11 @@ import('core.types');
 
 abstract class Controller extends \Core\Dict {
     protected $_args;
+    protected $_async;
 
     public function __construct($args=False) {
         $this->_args = $args;
+        $this->_async = ($_POST['_async'] == 'true');
     }
     public function load_locale($file) {
         include SITE_PATH . "/languages/" . LOCALE . '/' . $file . ".php";
@@ -41,11 +43,12 @@ abstract class Controller extends \Core\Dict {
 
     protected function _return_message($status, $message, $errors=array(), $t=False) {
         if($this->_async) {
-            return json_encode(array(
+            echo json_encode(array(
                 'status'=> $status,
                 'message' => $message,
                 'errors' => $errors
             ));
+            exit();
         } else {
             if(!$t) {
                 $t = $this->_template;
