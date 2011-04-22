@@ -19,7 +19,7 @@
   <p><label for="custom_url">Custom URL</label><br/>
   <input type="text" name="custom_url" placeholder="(Automatically generated)" id="custom_url" value="<?=$article->custom_url?>"/></p>
   <p><label for="body">Body</label><br/>
-  <textarea name="body" placeholder="(Ex. Blah blah blah)" id="body"><?=$article->body?></textarea></p>
+  <textarea name="body" placeholder="(Ex. Blah blah blah)" id="body" class="markdown"><?=$article->body?></textarea></p>
   <p><input type="submit" value="Save"/></p>
  </div>
 </form>

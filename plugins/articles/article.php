@@ -36,8 +36,8 @@ class Article extends \Core\Mapped {
     }
 
     public function form_values() {
-        $this->form_posted_on = $this->posted_on;
         $this->posted_on = new \DateTime($this->posted_on);
+        $this->form_posted_on = $this->posted_on->format('Y-m-d');
         return $this;
     }
 }
