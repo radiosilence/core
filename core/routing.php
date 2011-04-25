@@ -98,7 +98,7 @@ class Router extends Contained {
         if(substr($uri, -1) == '/') {
             $uri = substr($uri, 0, -1);
         }
-        return $uri;
+        return filter_var($uri, FILTER_SANITIZE_STRING);
     }
 
     private function _find_route($uri) {
