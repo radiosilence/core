@@ -29,16 +29,11 @@ abstract class Mapper extends Dict {
         return $objects;
     }
     
-    public function update($data) {
-        $validator = \Core\Validator::validator()
-            ->attach_mapper(get_called_class(), $mapper);
-    }
     abstract public function create_object($data);
 }
 
 abstract class Mapped extends Contained {
     public static $fields;
-    public $_mappers = array();
 
     public static function mapper($parameters=False) {
         return static::get_helper('Mapper', $parameters);
