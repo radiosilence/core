@@ -55,26 +55,28 @@ abstract class MappedContainer extends \Core\Container {
     }
 
     public function get_by_field($field, $query) {
-        $cls = $this->_cls;
-        $fcls = $this->_fcls;
-    
-        $fetched = \Core\Storage::container()
-            ->get_storage($cls)
-            ->fetch(array(
-                'filter' => new \Core\Filter($field, $query)
-            ));
-
-        if(count($fetched) == 0) {
-            return False;
-        }
-
-        return $fcls::mapper()->create_object($fetched[0]);
+        $l = $this->get(array(
+            'filter' => new \Core\Filter($field, $query)
+        ));
+        return $l[0];
     }
 
     public function get_by_id($id) {
         $cls = $this->_cls;
         $fcls = $this->_fcls;
         return $this->get_by_field('id', $id);
+    }
+
+    public function get($p=False) {
+        $cls = $this->_cls;
+        $fcls = $this->_fcls;
+        $objects = new \Core\Li();
+
+        return $fcls::mapper()
+            ->get_list(\Core\Storage::container()
+                ->get_storage($cls)
+                ->fetch($p)
+            );
     }
 }
     
