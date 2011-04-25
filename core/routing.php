@@ -83,7 +83,6 @@ class Router extends Contained {
             $method = 'index';
         }
         ob_start();
-//        die($method);
         $controller->$method();
         $page = ob_get_contents();
         if($m_enable) {
