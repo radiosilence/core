@@ -277,13 +277,19 @@ class PDOQuery {
     protected function _head() {
         if($this->_type == PDOQuery::Select) {
             if(!isset($this->_parameters['fields'])) {
-                $fields = new \Core\Li($this->_table . '.*');
+                $fields = new \Core\Li(
+                    $this->_table . '.*'
+                );
             } else {
-                $fields = new \Core\Li($this->_table . '.*', $this->_parameters['fields']);
+                $fields = new \Core\Li(
+                    $this->_table . '.*',
+                    $this->_parameters['fields']
+                );
             }
             if($this->_parameters['joins']){
-                $fields->extend($this->_join_fields()); 
+                $fields->extend($this->_join_fields());
             }
+            $fields->extend($this->_table . '.id as id');
             return sprintf($this->_type,
                 implode(', ', $fields->__array__()),
                 $this->_table
