@@ -159,10 +159,6 @@ class Li extends SuperClass {
         }
         return $this->__data__[$key];
     }
-    
-    public function g($key) {
-        return $this->$key;
-    }
 
     public function __set($key, $value) {
         if(!is_numeric($key)) {
