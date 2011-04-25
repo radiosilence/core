@@ -59,25 +59,32 @@ class Auth extends \Core\Contained {
     public function attempt($username, $password) {
         $result = \Core\Storage::container()
             ->get_storage($this->_table)
-            ->fetch(new \Core\Dict(array(
-            'filters' => new \Core\Li(
-                new \Core\Filter($this->_user_field, $username)
-            ))));
+            ->fetch(array(
+                'filter' => new \Core\Filter($this->_user_field, $username)
+            ))->{0};
 
-        if(count($result) == 0){
+        if(!$result){
             throw new InvalidUserError();
         }
         $t_hasher = new Hasher();
-        if(!$t_hasher->check_password($password, $result[0][$this->_password_field])) {
+        if(!$t_hasher->check_password($password, $result[$this->_password_field])) {
             throw new IncorrectPasswordError();
         }
-        $this->_set_session($result[0]['id'], $result[0]);
+        $this->_set_session($result['id'], $result);
     }
 
     public function logout() {
         $this->_session->remove('auth');
     }
-    protected function _set_session($id, $data) {
+
+    protected function _set_session($id, $data=False) {
+        if(!$data) {
+            $data = \Core\Storage::container()
+                ->get_storage($this->_table)
+                ->fetch(array(
+                    'filter' => new \Core\Filter('id', $id)
+                ))->{0};
+        }
         $this->_session['auth'] = array(
             'id' => $id,
             'data' => $data
