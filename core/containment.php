@@ -55,10 +55,9 @@ abstract class MappedContainer extends \Core\Container {
     }
 
     public function get_by_field($field, $query) {
-        $l = $this->get(array(
+        return $this->get(array(
             'filter' => new \Core\Filter($field, $query)
-        ));
-        return $l[0];
+        ))->{0};
     }
 
     public function get_by_id($id) {
