@@ -69,7 +69,6 @@ class PDO extends \Core\Storage {
             $this->_default_table(),
             $parameters
         );
-
         $sth = $this->_backend->prepare($query->sql());
         $binds = $this->_binds();
         if($parameters['filters']) {

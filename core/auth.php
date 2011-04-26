@@ -77,6 +77,11 @@ class Auth extends \Core\Contained {
         $this->_session->remove('auth');
     }
 
+    public function update_user_data() {
+        $this->_set_session($this->user_id());
+        return $this;
+    }
+
     protected function _set_session($id, $data=False) {
         if(!$data) {
             $data = \Core\Storage::container()

@@ -290,7 +290,6 @@ class HandlerContainer extends \Core\ConfiguredContainer {
         );
 
         $this->_load_config();
-        
         try{
             $sh->attach_remote_storage($srp)
                 ->attach_local_storage($slc)

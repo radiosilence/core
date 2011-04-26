@@ -67,7 +67,6 @@ class HS extends \Core\Contained {
             $values
         );
         if(!$was_set) {
-            var_dump("a", $index, $values);
             throw new HSError("Failed to add {$key}: " . $this->_handlersocket_wr->getError());
             die();
         }

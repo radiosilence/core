@@ -47,7 +47,7 @@ abstract class MappedContainer extends \Core\Container {
     protected $_cls;
     protected $_fcls;
 
-    public function __construct($args) {
+    public function __construct($args=False) {
         parent::__construct($args);
 
         $this->_cls = static::get_class();
@@ -80,6 +80,13 @@ abstract class MappedContainer extends \Core\Container {
 }
     
 abstract class Contained extends \Core\Dict {
+    public function __construct($args=False) {
+        parent::__construct($args);
+
+        $this->_cls = static::get_class();
+        $this->_fcls = static::get_full_class();
+    }
+
     public static function container($parameters=False) {
         return static::get_helper('Container', $parameters);
     }

@@ -3,3 +3,5 @@
 .cache/*
 .buildpath*
 *.sublime-project
+*.swp
+*~

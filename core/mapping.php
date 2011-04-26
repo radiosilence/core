@@ -28,7 +28,7 @@ abstract class Mapper extends Dict {
         }
         return $objects;
     }
-    
+
     abstract public function create_object($data);
 }
 
@@ -47,6 +47,13 @@ abstract class Mapped extends Contained {
     }
     public function attach_mapper($type,$mapper) {
         $this->_mappers[$type] = $mapper;
+        return $this;
+    }
+
+    public function save() {
+        \Core\Storage::container()
+            ->get_storage($this->_cls)
+            ->save($this);
         return $this;
     }
 

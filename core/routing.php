@@ -30,7 +30,6 @@ class Router extends Contained {
     private $_path;
     private $_routes = array();
     public function __construct($routes_file=null) {
-            
         if(empty($routes_file)) {
             $routes_file = SITE_PATH . '/routes.php';
         }
@@ -75,6 +74,7 @@ class Router extends Contained {
             trigger_error("Disabling route cache due to no memcached section in config.", \E_USER_WARNING);
         } catch(CacheNotEnabledError $e) {
         } catch(\Core\Backend\MemcachedNotLoadedError $e) {}
+        
         import('controllers.' . strtolower($route->class));
         $class = sprintf('\Controllers\%s', str_replace('.', '\\', $route->class));
         $controller = new $class($route->parameters);

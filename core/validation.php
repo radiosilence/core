@@ -34,7 +34,9 @@ class Validator {
         return $this;
     }
 
-    public function validate($data, $validation) {
+    public function validate($data) {
+        $type = $this->_type;
+        $validation = $type::validation();
         $this->_data = $data;
         foreach($validation as $k => $v) {
                 $this->validate_field($k, $v);
