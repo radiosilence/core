@@ -13,7 +13,7 @@
 
 namespace Core\Utils;
 
-class IPV4 {
+class IPv4 {
     /**
      * Retrieves the best guess of the client's actual IP address.
      * Takes into account numerous HTTP proxy headers due to variations
