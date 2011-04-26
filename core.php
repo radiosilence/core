@@ -15,12 +15,12 @@ if(version_compare(phpversion(), "5.3.1", "<")) {
 
 define("DEBUG", True);
 define("LOCALE", "en_GB");
-#define("CORE_PATH", realpath(__DIR__ . '/'));
+
 define("SITE_PATH", dirname($_SERVER["SCRIPT_FILENAME"]) . '/..' );
 define("BASE_HREF", preg_replace("/(.*?)\/index.php/", "$1", $_SERVER['PHP_SELF']));
 define("CACHE_PATH", SITE_PATH . "/.cache/");
 define("HOST", $_SERVER["HTTP_HOST"]);
-define("ROUTE", $_GET['route']);
+define("URI", $_SERVER['REQUEST_URI']);
 
 
 if(extension_loaded('memcached')) {
