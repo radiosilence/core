@@ -22,18 +22,18 @@ class Auth extends \Core\Contained {
     protected $_roots = array();
 
     public static function hash($data, $field=False) {
-        $t_hasher = new Hasher();
+        $hasher = new Hasher();
         if($field) {
             if(empty($data[$field])) {
                 throw new AuthEmptyPasswordError();
             }
-            $data[$field] = $t_hasher->hash_password($data[$field]);
+            $data[$field] = $hasher->hash_password($data[$field]);
             return $data;
         } else {
             if(empty($data)) {
                 throw new AuthEmptyPasswordError();
             }
-            return $t_hasher->hash_password($data);
+            return $hasher->hash_password($data);
         }
     }
     
@@ -66,11 +66,13 @@ class Auth extends \Core\Contained {
         if(!$result){
             throw new InvalidUserError();
         }
-        $t_hasher = new Hasher();
-        if(!$t_hasher->check_password($password, $result[$this->_password_field])) {
+        try {
+            $hasher = Hasher::create()
+                ->check_password($password, $result[$this->_password_field]);            
+            $this->_set_session($result['id'], $result);
+        } catch(HashMismatch $e) {
             throw new IncorrectPasswordError();
         }
-        $this->_set_session($result['id'], $result);
     }
 
     public function logout() {

@@ -1,6 +1,10 @@
 <?php
 namespace Core;
-class Hasher {
+
+import('core.exceptions');
+import('core.types');
+
+class Hasher extends \Core\Dict {
     protected $_strength;
     protected $_itoa64 = './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 
@@ -20,11 +24,10 @@ class Hasher {
 
     public function check_password($attempt, $hash) {
         $bits = explode('$', $hash);
-        if($this->_hash_multi($bits[3] . $attempt, $bits[2]) == $bits[4]) {
-            return True;
-        } else {
-            return False;
+        if(!($this->_hash_multi($bits[3] . $attempt, $bits[2]) == $bits[4])) {
+            throw new HashMismatch();
         }
+        return $this;
     }
 
     protected function _hash_multi($string, $strength) {
@@ -81,4 +84,6 @@ class Hasher {
         return $output;
     }
 }
+
+class HashMismatch extends \Core\StandardError {};
 ?>
