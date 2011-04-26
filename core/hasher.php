@@ -9,7 +9,7 @@ class Hasher {
     }
     public function hash_password($password, $salt=False) {
         if(!$salt) {
-            $salt = $this->_gen_salt();        
+            $salt = $this->gen_chars();        
         }
         return sprintf(
             '$w$%s$%s$%s',
@@ -34,8 +34,8 @@ class Hasher {
         return $string;
     }
 
-    protected function _gen_salt() {
-        return $this->_encode64($this->_get_random_bytes(90), 89);
+    public function gen_chars($len=90) {
+        return $this->_encode64($this->_get_random_bytes($len), $len-1);
     }
 
     protected function _get_random_bytes($count) {
