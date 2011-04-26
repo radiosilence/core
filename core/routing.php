@@ -55,8 +55,8 @@ class Router extends Contained {
             if(!isset($route->parameters['__cache__'])) {
                 throw new CacheNotEnabledError();
             }
-            $mc = new \Core\Backend\MemcachedContainer();
-            $m = $mc->get_backend();
+            $m = \Core\Backend\Memcached::container()
+                ->get_backend();
             $m->setOption(\Memcached::OPT_COMPRESSION, False);
             if($route->parameters['__cache__'] == 'on') {
                 $key = sprintf("site:%s:uri:%s", \Core\Utils\Env::site_name(), $_SERVER['REQUEST_URI']);
