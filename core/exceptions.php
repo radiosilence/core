@@ -45,7 +45,9 @@ class StandardError extends Error{
 class HTTPError extends Error {
     public $error_codes = array(
         401 => "%s 401 Unauthorized",
-        404 => "%s 404 Not Found"
+        403 => "%s 403 Forbidden",
+        404 => "%s 404 Not Found",
+        418 => "%s 418 I'm a teapot"
     );
     public function __construct($code, $url=False){
         if(!isset($this->error_codes[$code])){
