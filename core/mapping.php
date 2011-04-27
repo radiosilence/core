@@ -34,7 +34,8 @@ abstract class Mapper extends Dict {
 
 abstract class Mapped extends Contained {
     public static $fields;
-
+    protected $_cls;
+    protected $_fcls;
     public static function mapper($parameters=False) {
         return static::get_helper('Mapper', $parameters);
     }
