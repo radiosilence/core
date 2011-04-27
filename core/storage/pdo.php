@@ -14,7 +14,6 @@ namespace Core\Storage;
 import('core.storage');
 import('core.types');
 import('core.utils.language');
-import('core.backend.hs');
 
 class PDOContainer extends \Core\ConfiguredContainer {
     public function get_storage($type) {
@@ -32,9 +31,6 @@ class PDOContainer extends \Core\ConfiguredContainer {
 class PDO extends \Core\Storage {
     protected $_parameters;
     protected $_backend;
-
-    protected static $_hs_index = 50;
-    protected $_hs = False;
 
     public function __construct($args) {
         parent::__construct($args);
@@ -216,7 +212,6 @@ class PDO extends \Core\Storage {
 
 }
 
-class HSInsertFailedError extends \Core\StandardError {}
 class PDOQuery {
 
     const Select = 'SELECT %1$s FROM %2$s';
