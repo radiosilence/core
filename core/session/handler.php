@@ -92,9 +92,9 @@ class Handler extends \Core\Contained {
      */
     public function start() {
         try {
-            $this->check_setup();
-            $this->detect_existing_session();
-            $this->set_session();
+            $this->_check_setup();
+            $this->_detect_existing_session();
+            $this->_set_session();
             return $this;
         } catch(RemoteStorage\SessionNotFoundError $e) {
             $this->local_storage->destroy();
@@ -104,7 +104,7 @@ class Handler extends \Core\Contained {
             // Delete incase of tampering.
             $this->local_storage->destroy();
         }
-        $this->initialise();
+        $this->_initialise();
         return $this;
     }
 
@@ -131,8 +131,8 @@ class Handler extends \Core\Contained {
         }
     }
 
-    private function initialise() {
-        $this->generate_session();
+    private function _initialise() {
+        $this->_generate_session();
         try {
             $this->remote_storage->add($this->actual);
             $this->local_storage->set($this->actual);
@@ -141,7 +141,7 @@ class Handler extends \Core\Contained {
         }
     }
     
-    private function check_setup() {
+    private function _check_setup() {
         if(empty($this->remote_addr)) {
             throw new SetupIncompleteError("Remote address not set.");
         }   
@@ -156,35 +156,35 @@ class Handler extends \Core\Contained {
         }
     }
 
-    private function detect_existing_session() {
-            $this->read_local_storage();
+    private function _detect_existing_session() {
+            $this->_read_local_storage();
             $this->remote_storage->load($this->untrusted);
-            $this->test_token();
+            $this->_test_token();
     }
 
-    private function generate_session() {
-        $this->actual['sid'] = $this->create_sid();
-        $this->actual['tok'] = $this->create_token($this->actual['sid']);
+    private function _generate_session() {
+        $this->actual['sid'] = $this->_create_sid();
+        $this->actual['tok'] = $this->_create_token($this->actual['sid']);
     }
 
     /**
      * Regenerate token and compare to the cookie.
      */
-    private function test_token() {
-        $chall = $this->create_token($this->untrusted['sid']);
+    private function _test_token() {
+        $chall = $this->_create_token($this->untrusted['sid']);
         if($chall != $this->untrusted['tok']) {
             throw new TokenMismatchError();
         }
     }
 
-    private function read_local_storage() {
+    private function _read_local_storage() {
         $this->untrusted = $this->local_storage->get();
     }
 
     /**
      * Sets the object's session to the right things.
      */
-    private function set_session() {
+    private function _set_session() {
         $this->actual = $this->untrusted;
         $this->__data__ = $this->remote_storage->__array__();
     }
@@ -194,7 +194,7 @@ class Handler extends \Core\Contained {
      * @param string $passhash Password hash.
      * @param string $email User's email.
      */
-    private function create_token($sid) {
+    private function _create_token($sid) {
         # Token generation code.
         $hash = sha1($this->keyphrase . $this->remote_addr . $sid);
         return $hash;
@@ -204,7 +204,7 @@ class Handler extends \Core\Contained {
      * Generate a simple sid hash.
      * @return hash sid
      */
-    private function create_sid() {
+    private function _create_sid() {
         return sha1(microtime() . $this->remote_addr);
     }
 }
