@@ -20,7 +20,7 @@ define("SITE_PATH", dirname($_SERVER["SCRIPT_FILENAME"]) . '/..' );
 define("BASE_HREF", preg_replace("/(.*?)\/index.php/", "$1", $_SERVER['PHP_SELF']));
 define("CACHE_PATH", SITE_PATH . "/.cache/");
 define("HOST", $_SERVER["HTTP_HOST"]);
-define("URI", $_SERVER['REQUEST_URI']);
+define("URI", $_GET['route']);
 
 
 if(extension_loaded('memcached')) {

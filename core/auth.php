@@ -27,13 +27,13 @@ class Auth extends \Core\Contained {
             if(empty($data[$field])) {
                 throw new AuthEmptyPasswordError();
             }
-            $data[$field] = $hasher->hash_password($data[$field]);
+            $data[$field] = $hasher->hash($data[$field]);
             return $data;
         } else {
             if(empty($data)) {
                 throw new AuthEmptyPasswordError();
             }
-            return $hasher->hash_password($data);
+            return $hasher->hash($data);
         }
     }
     
@@ -68,7 +68,7 @@ class Auth extends \Core\Contained {
         }
         try {
             $hasher = Hasher::create()
-                ->check_password($password, $result[$this->_password_field]);            
+                ->check($password, $result[$this->_password_field]);            
             $this->_set_session($result['id'], $result);
         } catch(HashMismatch $e) {
             throw new IncorrectPasswordError();

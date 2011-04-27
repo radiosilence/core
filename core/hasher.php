@@ -11,7 +11,7 @@ class Hasher extends \Core\Dict {
     public function __construct($strength=14) {
         $this->_strength = $strength;
     }
-    public function hash_password($password, $salt=False) {
+    public function hash($password, $salt=False) {
         if(!$salt) {
             $salt = $this->gen_chars();        
         }
@@ -22,7 +22,7 @@ class Hasher extends \Core\Dict {
             $this->_hash_multi($salt . $password, $this->_strength));
     }
 
-    public function check_password($attempt, $hash) {
+    public function check($attempt, $hash) {
         $bits = explode('$', $hash);
         if(!($this->_hash_multi($bits[3] . $attempt, $bits[2]) == $bits[4])) {
             throw new HashMismatch();
