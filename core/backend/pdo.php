@@ -39,6 +39,7 @@ class PDOContainer extends \Core\BackendContainer {
                 \PDO::ATTR_PERSISTENT => $persistent
         ));
         $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+        $pdo->setAttribute(\PDO::ATTR_EMULATE_PREPARES, False);
         static::$_default_connection = $pdo;
         return $pdo;
     }
