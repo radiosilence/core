@@ -212,11 +212,15 @@ class Handler extends \Core\Contained {
 class HandlerContainer extends \Core\ConfiguredContainer {
 
     public function get_pdo_session() {
+        import('core.utils.ipv4');
+        return $this->_pdo_session(\Core\Utils\IPV4::get());
+    }
+
+    protected function _pdo_session($ip) {
 
         import('core.session.handler');
         import('core.session.remote_storage.pdo');
         import('core.session.local_storage.cookie');
-        import('core.utils.ipv4');
         import('core.backend');
 
         $sh = new Handler();
@@ -231,7 +235,7 @@ class HandlerContainer extends \Core\ConfiguredContainer {
             $sh->attach_remote_storage($srp)
                 ->attach_local_storage($slc)
                 ->attach_crypto_config($this->_config['crypto'])
-                ->set_remote_addr(\Core\Utils\IPV4::get())
+                ->set_remote_addr($ip)
                 ->initialize_remote_storage()
                 ->start();
             return $sh;
@@ -244,11 +248,18 @@ class HandlerContainer extends \Core\ConfiguredContainer {
 
 
     public function get_mc_session() {
+        import('core.utils.ipv4');
+        return $this->_mc_session(\Core\Utils\IPV4::get());
+    }
 
+    public function get_anon_mc_session() {
+        return $this->_mc_session('U MAD?');
+    }
+
+    protected function _mc_session($ip) {
         import('core.session.handler');
         import('core.session.remote_storage.memcached');
         import('core.session.local_storage.cookie');
-        import('core.utils.ipv4');
 
         $sh = new Handler();
         $srp = new RemoteStorage\Memcached();
@@ -264,7 +275,7 @@ class HandlerContainer extends \Core\ConfiguredContainer {
             $sh->attach_remote_storage($srp)
                 ->attach_local_storage($slc)
                 ->attach_crypto_config($this->_config['crypto'])
-                ->set_remote_addr(\Core\Utils\IPV4::get())
+                ->set_remote_addr($ip)
                 ->initialize_remote_storage()
                 ->start();
             return $sh;

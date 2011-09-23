@@ -106,7 +106,7 @@ class Auth extends \Core\Contained {
             );
         } else {
             $this->_check_logged_in();
-            return $this->_session['auth']['data'];            
+            return new \Core\Dict($this->_session['auth']['data']); 
         }
     }
 

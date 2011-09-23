@@ -22,6 +22,11 @@ class Hasher extends \Core\Dict {
             $this->_hash_multi($salt . $password, $this->_strength));
     }
 
+    public function pull_salt($hash) {
+        $bits = explode('$', $hash);
+        return $bits[3];
+    }
+
     public function check($attempt, $hash) {
         $bits = explode('$', $hash);
         if(!($this->_hash_multi($bits[3] . $attempt, $bits[2]) == $bits[4])) {

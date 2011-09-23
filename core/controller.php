@@ -22,6 +22,8 @@ namespace Core;
 
 import('core.dependency');
 import('core.types');
+import('core.utils.throttle');
+import('core.auth');
 
 abstract class Controller extends \Core\Dict {
     protected $_args;
@@ -64,6 +66,29 @@ abstract class Controller extends \Core\Dict {
         trigger_error($e->getMessage(), E_USER_WARNING);
         $this->_return_message("Error",
             "Unhandled exception.");
+    }
+
+    protected function _throttle($args=False) {
+        if(!$args) {
+            $args = array(
+                \Core\Utils\Throttle::Second => 10,
+                \Core\Utils\Throttle::Minute => 120
+            );
+        }
+        try {
+            $tid = $this->_auth->user_id();
+        } catch(\Core\AuthNotLoggedInError $e) {
+            $tid = False;
+        }
+        try {
+            $throttle = new \Core\Utils\Throttle($args, $tid);
+        } catch(\Core\Utils\TooManyReqsError $e) {
+            $this->_template->set_file('message.php');
+            $this->_template->content = $this->_return_message('Fail',
+                'Too many requests. Please wait and try again soon.');
+            $this->_template->render('main.php');
+            throw new \Core\HTTPError(403);
+        }
     }
 
 }
