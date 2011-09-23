@@ -30,7 +30,7 @@ class IPv4 {
             // check if multiple ips exist in var
             $iplist = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
             foreach ($iplist as $ip) {
-                if ($this->validate_ip($ip)) {
+                if (static::validate_ip($ip)) {
                     return $ip;
                 }
             }
